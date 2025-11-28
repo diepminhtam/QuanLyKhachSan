@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run ASP.NET Core app",
+			"type": "shell",
+			"command": "dotnet run --project QuanLiKhachSan/QuanLiKhachSan.csproj",
+			"isBackground": false,
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		}
+	]
+}

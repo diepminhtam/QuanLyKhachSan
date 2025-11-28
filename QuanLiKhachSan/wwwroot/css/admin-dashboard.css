@@ -1,0 +1,374 @@
+﻿/* Admin Dashboard Styles */
+:root {
+    --primary-color: #3a6ea5;
+    --secondary-color: #004e89;
+    --accent-color: #ff6b35;
+    --light-color: #f9f7f7;
+    --dark-color: #112d4e;
+    --success-color: #1cc88a;
+    --warning-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --info-color: #36b9cc;
+}
+
+.admin-dashboard {
+    padding: 1.5rem;
+    background-color: #f8f9fc;
+}
+
+/* Metric Cards */
+.metric-card {
+    border: 0;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 0.35rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    transition: transform 0.2s ease;
+}
+
+    .metric-card:hover {
+        transform: translateY(-3px);
+    }
+
+.metric-title {
+    text-transform: uppercase;
+    color: #6c757d;
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.metric-value {
+    color: #5a5c69;
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+}
+
+.metric-change {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+    .metric-change.positive {
+        color: var(--success-color);
+    }
+
+    .metric-change.negative {
+        color: var(--danger-color);
+    }
+
+.metric-icon {
+    font-size: 2rem;
+    opacity: 0.3;
+    color: var(--primary-color);
+}
+
+/* Cards */
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    border: none;
+    border-radius: 0.35rem;
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+    padding: 1rem 1.25rem;
+}
+
+.card-title {
+    color: #5a5c69;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+/* Tables */
+.table {
+    margin-bottom: 0;
+}
+
+    .table thead th {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: #6c757d;
+        border-top: none;
+    }
+
+.table-light {
+    background-color: #f8f9fc;
+}
+
+.table tr {
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 1rem;
+    color: #5a5c69;
+}
+
+/* Badges */
+.badge {
+    font-weight: 600;
+    font-size: 75%;
+    padding: 0.35em 0.65em;
+    border-radius: 0.35rem;
+}
+
+/* Room Status Summary */
+.room-status-summary {
+    margin-top: 1.5rem;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+}
+
+.status-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-right: 1rem;
+}
+
+    .status-icon.available {
+        background-color: rgba(28, 200, 138, 0.1);
+        color: var(--success-color);
+    }
+
+    .status-icon.occupied {
+        background-color: rgba(246, 194, 62, 0.1);
+        color: var(--warning-color);
+    }
+
+    .status-icon.cleaning {
+        background-color: rgba(54, 185, 204, 0.1);
+        color: var(--info-color);
+    }
+
+    .status-icon.maintenance {
+        background-color: rgba(231, 74, 59, 0.1);
+        color: var(--danger-color);
+    }
+
+.status-details h4 {
+    font-weight: 700;
+    color: #5a5c69;
+    margin-bottom: 0.25rem;
+    font-size: 1.25rem;
+}
+
+.status-details p {
+    color: #858796;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+}
+
+/* Customer List */
+.customer-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* Reviews List */
+.reviews-list {
+    overflow-y: auto;
+    max-height: 430px;
+}
+
+.review-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+    .review-item:last-child {
+        border-bottom: none;
+    }
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+}
+
+.reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 0.75rem;
+}
+
+.reviewer-info h6 {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.review-date {
+    font-size: 0.75rem;
+    color: #858796;
+}
+
+.review-rating {
+    color: var(--warning-color);
+    font-size: 0.875rem;
+}
+
+.review-room {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.review-content p {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    color: #5a5c69;
+}
+
+/* Notifications List */
+.notifications-list {
+    overflow-y: auto;
+    max-height: 380px;
+}
+
+.notification-item {
+    display: flex;
+    padding: 1rem;
+    border-bottom: 1px solid #e3e6f0;
+    transition: background-color 0.2s;
+    text-decoration: none;
+    color: inherit;
+}
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .notification-item.unread {
+        background-color: rgba(58, 110, 165, 0.05);
+    }
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #5a5c69;
+    font-size: 0.9rem;
+}
+
+.notification-text {
+    color: #858796;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.notification-time {
+    color: #aab0bc;
+    font-size: 0.75rem;
+}
+
+.card-footer {
+    background-color: #f8f9fc;
+    border-top: 1px solid #e3e6f0;
+    padding: 0.75rem 1.25rem;
+}
+
+/* Date Range Picker */
+.date-range-picker .input-group {
+    width: 300px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .reviews-list, .notifications-list {
+        max-height: 350px;
+    }
+}
+
+@media (max-width: 992px) {
+    .admin-dashboard {
+        padding: 1rem;
+    }
+
+    .metric-value {
+        font-size: 1.25rem;
+    }
+
+    .metric-icon {
+        font-size: 1.5rem;
+    }
+
+    .date-range-picker .input-group {
+        width: 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .date-range-picker {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+        .date-range-picker .input-group {
+            width: 100%;
+        }
+
+    .status-item {
+        margin-bottom: 1rem;
+    }
+}

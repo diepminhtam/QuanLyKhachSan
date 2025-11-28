@@ -1,0 +1,29 @@
+﻿html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+/* Thêm vào file site.css */
+body {
+    margin-bottom: 60px;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', sans-serif;
+    line-height: 1.6;
+}
+
+/* Đảm bảo tất cả text đều dùng font hỗ trợ tiếng Việt */
+* {
+    font-family: inherit;
+}

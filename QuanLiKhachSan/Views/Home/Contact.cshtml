@@ -1,0 +1,497 @@
+﻿@{
+    ViewData["Title"] = "Liên hệ";
+}
+
+<div class="contact-page">
+    <!-- Hero Section -->
+    <section class="contact-hero bg-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Liên hệ với chúng tôi</h1>
+                    <p class="lead mb-4">Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn 24/7</p>
+                    <div class="hero-stats row">
+                        <div class="col-auto">
+                            <div class="stat-item">
+                                <h3 class="stat-number">24/7</h3>
+                                <p class="stat-label">Hỗ trợ khách hàng</p>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat-item">
+                                <h3 class="stat-number">15'</h3>
+                                <p class="stat-label">Phản hồi nhanh</p>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat-item">
+                                <h3 class="stat-number">100%</h3>
+                                <p class="stat-label">Hài lòng</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <i class="fas fa-headset hero-icon" style="font-size: 8rem;"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Information -->
+    <section class="container py-5">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="contact-form-section">
+                    <h2 class="section-title mb-4">Gửi tin nhắn cho chúng tôi</h2>
+                    <form id="contactForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">Họ *</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Tên *</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control" id="phone">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Chủ đề *</label>
+                            <select class="form-select" id="subject" required>
+                                <option value="">Chọn chủ đề</option>
+                                <option value="booking">Đặt phòng & Giá cả</option>
+                                <option value="service">Dịch vụ khách sạn</option>
+                                <option value="event">Sự kiện & Hội nghị</option>
+                                <option value="complaint">Khiếu nại</option>
+                                <option value="partnership">Hợp tác</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Nội dung tin nhắn *</label>
+                            <textarea class="form-control" id="message" rows="6" required placeholder="Xin vui lòng mô tả chi tiết yêu cầu của bạn..."></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="newsletter">
+                            <label class="form-check-label" for="newsletter">
+                                Đăng ký nhận bản tin khuyến mãi
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Gửi tin nhắn
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="contact-info-section">
+                    <h2 class="section-title mb-4">Thông tin liên hệ</h2>
+
+                    <div class="contact-info-card mb-4">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Địa chỉ</h5>
+                                <p>123 Đường Nguyễn Huệ, Quận 1<br>Thành phố Hồ Chí Minh, Việt Nam</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-info-card mb-4">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Điện thoại</h5>
+                                <p>
+                                    <a href="tel:+84281234567">+84 28 1234 567</a><br>
+                                    <a href="tel:+84901234567">+84 90 1234 567</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-info-card mb-4">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Email</h5>
+                                <p>
+                                    <a href="mailto:info@luxuryhotel.com">info@luxuryhotel.com</a><br>
+                                    <a href="mailto:booking@luxuryhotel.com">booking@luxuryhotel.com</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-info-card mb-4">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Giờ làm việc</h5>
+                                <p>
+                                    Thứ 2 - Chủ nhật: 24/7<br>
+                                    Lễ Tết: Bình thường
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="social-links">
+                        <h5 class="mb-3">Theo dõi chúng tôi</h5>
+                        <div class="d-flex gap-3">
+                            <a href="#" class="social-link facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-link twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="social-link instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="social-link youtube">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                            <a href="#" class="social-link tiktok">
+                                <i class="fab fa-tiktok"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="map-section">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="map-container">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.395377376041!2d106.70427231533437!3d10.779008661953312!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f46fb9a63c9%3A0x7f015cedb91c7c15!2zMTIzIE5ndXnhu4VuIEh1w6osIFBoxrDhu51uZyBOZ2jDqSwgUXXhuq1uIDEsIFRow6BuaCBwaOG7kSBI4buTIENow60gTWluaCwgVmlldG5hbQ!5e0!3m2!1sen!2s!4v1645521234567!5m2!1sen!2s"
+                                width="100%"
+                                height="450"
+                                style="border:0;"
+                                allowfullscreen=""
+                                loading="lazy"
+                                title="Bản đồ vị trí khách sạn">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section bg-light py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Câu hỏi thường gặp</h2>
+                <p class="text-muted">Tìm câu trả lời cho những thắc mắc phổ biến</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Giờ check-in và check-out là khi nào?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Giờ check-in từ 14:00 và check-out trước 12:00. Quý khách có thể yêu cầu check-in sớm hoặc check-out muộn với chi phí phụ thu theo quy định.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Khách sạn có bữa sáng không?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Có, chúng tôi phục vụ buffet sáng từ 6:00 đến 10:00 với đa dạng món ăn Á - Âu. Bữa sáng có thể được bao gồm trong giá phòng hoặc đặt riêng.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Có dịch vụ đưa đón sân bay không?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Có, chúng tôi cung cấp dịch vụ đưa đón sân bay 24/7 với nhiều loại xe. Vui lòng đặt trước ít nhất 24 giờ để chúng tôi sắp xếp.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Styles {
+    <style>
+        .contact-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .hero-icon {
+            opacity: 0.8;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+            .section-title::after {
+                content: '';
+                position: absolute;
+                bottom: -10px;
+                left: 0;
+                width: 50px;
+                height: 3px;
+                background: #667eea;
+                border-radius: 2px;
+            }
+
+        .contact-info-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .contact-details h5 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-details p {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        .contact-details a {
+            color: #6c757d;
+            text-decoration: none;
+        }
+
+            .contact-details a:hover {
+                color: #667eea;
+            }
+
+        .social-links {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+            .social-link:hover {
+                transform: translateY(-3px);
+                color: white;
+            }
+
+        .facebook {
+            background: #3b5998;
+        }
+
+        .twitter {
+            background: #1da1f2;
+        }
+
+        .instagram {
+            background: #e4405f;
+        }
+
+        .youtube {
+            background: #cd201f;
+        }
+
+        .tiktok {
+            background: #000000;
+        }
+
+        .map-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .contact-form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+        .accordion-button {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+            .accordion-button:not(.collapsed) {
+                background-color: #f8f9fa;
+                color: #667eea;
+            }
+
+        @@media (max-width: 768px) {
+            .hero-stats {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .contact-form-section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactForm = document.getElementById('contactForm');
+
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Lấy dữ liệu form
+                const formData = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    subject: document.getElementById('subject').value,
+                    message: document.getElementById('message').value,
+                    newsletter: document.getElementById('newsletter').checked
+                };
+
+                // Hiển thị thông báo thành công
+                alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong thời gian sớm nhất.\n\nThông tin đã gửi:\n- Họ tên: ' + formData.firstName + ' ' + formData.lastName + '\n- Email: ' + formData.email + '\n- Chủ đề: ' + document.getElementById('subject').options[document.getElementById('subject').selectedIndex].text);
+
+                // Reset form
+                contactForm.reset();
+            });
+
+            // Thêm hiệu ứng cho accordion
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            accordionItems.forEach(item => {
+                item.addEventListener('show.bs.collapse', function() {
+                    this.querySelector('.accordion-button').classList.add('active');
+                });
+
+                item.addEventListener('hide.bs.collapse', function() {
+                    this.querySelector('.accordion-button').classList.remove('active');
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,481 @@
+﻿@model QuanLiKhachSan.ViewModels.Booking.BookingDetailsViewModel
+@{
+    ViewData["Title"] = $"Chi tiết đặt phòng #{Model.BookingNumber}";
+}
+
+<!-- Booking Details Banner -->
+<div class="booking-details-banner">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="banner-content">
+            <h1>Chi tiết đặt phòng</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Bookings" asp-action="Index">Đặt phòng của tôi</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chi tiết đặt phòng</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="booking-details-container">
+    <div class="container py-5">
+        <!-- Booking Status Bar -->
+        <div class="booking-status-bar @GetStatusClass(Model.Status) mb-4">
+            <div class="booking-id">Mã đặt phòng: <strong>#@Model.BookingNumber</strong></div>
+            <div class="status-badge">@Model.Status</div>
+        </div>
+
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Booking Timeline -->
+                <div class="booking-timeline mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i> Tiến trình đặt phòng</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                @foreach (var activity in Model.BookingActivities.OrderByDescending(a => a.Date))
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker @GetActivityClass(activity.Type)">
+                                            <i class="@GetActivityIcon(activity.Type)"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">@activity.Title</h6>
+                                            <p class="mb-1">@activity.Description</p>
+                                            <small class="text-muted">@activity.Date.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Details -->
+                <div class="booking-room-details mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-bed me-2"></i> Thông tin phòng</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <img src="@Model.RoomImageUrl" alt="@Model.RoomName" class="img-fluid rounded">
+                                </div>
+                                <div class="col-md-8">
+                                    <h5>@Model.RoomName</h5>
+                                    <div class="room-rating mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= Math.Floor(Model.RoomRating))
+                                            {
+                                                <i class="fas fa-star"></i>
+                                            }
+                                            else if (i - Model.RoomRating < 1 && i - Model.RoomRating > 0)
+                                            {
+                                                <i class="fas fa-star-half-alt"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="far fa-star"></i>
+                                            }
+                                        }
+                                        <span>@Model.RoomRating</span>
+                                    </div>
+                                    <div class="room-specs mb-3">
+                                        <span class="room-spec"><i class="fas fa-ruler-combined"></i> @Model.RoomSize m²</span>
+                                        <span class="room-spec"><i class="fas fa-users"></i> Tối đa @Model.RoomCapacity người</span>
+                                        <span class="room-spec"><i class="fas fa-bed"></i> @Model.BedType</span>
+                                        <span class="room-spec"><i class="fas fa-map-marker-alt"></i> Tầng @Model.Floor, @Model.Building</span>
+                                    </div>
+                                    <p>@Model.RoomDescription</p>
+                                    <a href="@Url.Action("Details", "Rooms", new { id = Model.RoomId })" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-info-circle"></i> Xem chi tiết phòng
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stay Details -->
+                <div class="booking-stay-details mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> Thông tin lưu trú</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="stay-detail-item">
+                                        <div class="detail-label">Nhận phòng</div>
+                                        <div class="detail-value">
+                                            <span class="date">@Model.CheckInDate.ToString("dddd, dd/MM/yyyy")</span>
+                                            <span class="time">Từ 14:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="stay-detail-item">
+                                        <div class="detail-label">Trả phòng</div>
+                                        <div class="detail-value">
+                                            <span class="date">@Model.CheckOutDate.ToString("dddd, dd/MM/yyyy")</span>
+                                            <span class="time">Trước 12:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="stay-detail-item">
+                                        <div class="detail-label">Thời gian lưu trú</div>
+                                        <div class="detail-value">@Model.NightCount đêm</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="stay-detail-item">
+                                        <div class="detail-label">Số khách</div>
+                                        <div class="detail-value">@Model.GuestsCount người</div>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.SpecialRequests))
+                            {
+                                <div class="special-requests mt-3">
+                                    <h6><i class="fas fa-clipboard-list"></i> Yêu cầu đặc biệt</h6>
+                                    <p>@Model.SpecialRequests</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guest Details -->
+                <div class="booking-guest-details mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-user me-2"></i> Thông tin khách hàng</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="guest-detail-item">
+                                        <div class="detail-label">Họ tên</div>
+                                        <div class="detail-value">@Model.GuestName</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="guest-detail-item">
+                                        <div class="detail-label">Email</div>
+                                        <div class="detail-value">@Model.GuestEmail</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="guest-detail-item">
+                                        <div class="detail-label">Điện thoại</div>
+                                        <div class="detail-value">@Model.GuestPhone</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancellation Policy -->
+                <div class="booking-policy mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i> Chính sách</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="policy-item">
+                                <h6><i class="fas fa-calendar-times"></i> Chính sách hủy phòng</h6>
+                                <p>Miễn phí hủy phòng trước 72 giờ kể từ thời điểm nhận phòng. Hủy phòng sau thời gian này sẽ bị tính phí một đêm.</p>
+                                @if (Model.IsCancellable)
+                                {
+                                    <div class="cancellation-deadline">
+                                        <span>Hạn hủy miễn phí:</span>
+                                        <strong>@Model.FreeCancellationDeadline.ToString("HH:mm dd/MM/yyyy")</strong>
+                                    </div>
+                                }
+                            </div>
+                            <hr />
+                            <div class="policy-item">
+                                <h6><i class="fas fa-clock"></i> Chính sách nhận/trả phòng</h6>
+                                <p>Nhận phòng từ 14:00 - 22:00. Trả phòng trước 12:00. Nhận phòng sớm và trả phòng muộn có thể phát sinh phí bổ sung.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Payment Summary -->
+                <div class="booking-payment-summary mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-receipt me-2"></i> Tóm tắt thanh toán</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="payment-item">
+                                <div class="payment-label">Giá phòng x @Model.NightCount đêm</div>
+                                <div class="payment-value">@Model.RoomPrice.ToString("N0") VNĐ</div>
+                            </div>
+                            <div class="payment-item">
+                                <div class="payment-label">Phí dịch vụ</div>
+                                <div class="payment-value">@Model.ServiceFee.ToString("N0") VNĐ</div>
+                            </div>
+                            <div class="payment-item">
+                                <div class="payment-label">Thuế</div>
+                                <div class="payment-value">@Model.TaxFee.ToString("N0") VNĐ</div>
+                            </div>
+                            @if (Model.Discount > 0)
+                            {
+                                <div class="payment-item discount">
+                                    <div class="payment-label">Giảm giá</div>
+                                    <div class="payment-value">-@Model.Discount.ToString("N0") VNĐ</div>
+                                </div>
+                            }
+                            <div class="payment-total">
+                                <div class="total-label">Tổng cộng</div>
+                                <div class="total-value">@Model.TotalPrice.ToString("N0") VNĐ</div>
+                            </div>
+
+                            <div class="payment-method">
+                                <div class="payment-method-header">
+                                    <h6><i class="fas fa-credit-card me-2"></i> Phương thức thanh toán</h6>
+                                    <span class="payment-status @GetPaymentStatusClass(Model.PaymentStatus)">@Model.PaymentStatus</span>
+                                </div>
+                                <div class="payment-method-details">
+                                    <p class="mb-0">@Model.PaymentMethod</p>
+                                    @if (!string.IsNullOrEmpty(Model.PaymentDetails))
+                                    {
+                                        <small class="text-muted">@Model.PaymentDetails</small>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="booking-actions mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="@Url.Action("Index", "Bookings")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left"></i> Quay lại danh sách đặt phòng
+                                </a>
+
+                                @if (Model.IsCancellable)
+                                {
+                                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                        <i class="fas fa-times"></i> Hủy đặt phòng
+                                    </button>
+                                }
+
+                                @if (Model.CanReview)
+                                {
+                                    <a href="@Url.Action("AddReview", "Reviews", new { bookingId = Model.Id })" class="btn btn-warning">
+                                        <i class="fas fa-star"></i> Viết đánh giá
+                                    </a>
+                                }
+
+                                @if (Model.HasReview)
+                                {
+                                    <a href="@Url.Action("ViewReview", "Reviews", new { bookingId = Model.Id })" class="btn btn-outline-success">
+                                        <i class="fas fa-comment-alt"></i> Xem đánh giá của bạn
+                                    </a>
+                                }
+
+                                <button class="btn btn-primary" onclick="window.print()">
+                                    <i class="fas fa-print"></i> In thông tin đặt phòng
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Support -->
+                <div class="booking-support mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-headset me-2"></i> Hỗ trợ</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Nếu bạn có thắc mắc về đơn đặt phòng này, vui lòng liên hệ với chúng tôi:</p>
+                            <div class="support-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+84 123 456 789</span>
+                            </div>
+                            <div class="support-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>support@luxuryhotel.com</span>
+                            </div>
+                            <div class="support-item">
+                                <i class="fas fa-comments"></i>
+                                <span>Chat trực tuyến</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+@if (Model.IsCancellable)
+{
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel">Xác nhận hủy đặt phòng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Bạn có chắc chắn muốn hủy đặt phòng <strong>#@Model.BookingNumber</strong>?</span>
+                    </div>
+                    <p>Lưu ý:</p>
+                    <ul>
+                        <li>Hủy đặt phòng trước @Model.FreeCancellationDeadline.ToString("dd/MM/yyyy HH:mm") sẽ được hoàn tiền 100%.</li>
+                        <li>Hủy đặt phòng sau thời gian này sẽ bị tính phí 1 đêm đầu tiên.</li>
+                        <li>Sau khi hủy, không thể khôi phục lại đặt phòng.</li>
+                    </ul>
+                    <div class="form-group mt-3">
+                        <label for="cancelReason" class="form-label">Lý do hủy</label>
+                        <select class="form-select" id="cancelReason">
+                            <option value="">-- Chọn lý do hủy --</option>
+                            <option value="Thay đổi kế hoạch">Thay đổi kế hoạch</option>
+                            <option value="Tìm thấy lựa chọn tốt hơn">Tìm thấy lựa chọn tốt hơn</option>
+                            <option value="Vấn đề cá nhân">Vấn đề cá nhân</option>
+                            <option value="other">Lý do khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-3" id="otherReasonGroup" style="display: none;">
+                        <label for="otherReason" class="form-label">Lý do khác</label>
+                        <textarea class="form-control" id="otherReason" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không, giữ đặt phòng</button>
+                    <form asp-controller="Bookings" asp-action="Cancel" method="post">
+                        <input type="hidden" name="bookingId" value="@Model.Id" />
+                        <input type="hidden" id="cancelReasonInput" name="reason" value="" />
+                        <button type="submit" class="btn btn-danger" id="confirm-cancel">Xác nhận hủy</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý hiển thị lý do khác
+            const cancelReason = document.getElementById('cancelReason');
+            const otherReasonGroup = document.getElementById('otherReasonGroup');
+            const otherReason = document.getElementById('otherReason');
+            const cancelReasonInput = document.getElementById('cancelReasonInput');
+            const confirmCancel = document.getElementById('confirm-cancel');
+
+            if (cancelReason) {
+                cancelReason.addEventListener('change', function() {
+                    if (this.value === 'other') {
+                        otherReasonGroup.style.display = 'block';
+                    } else {
+                        otherReasonGroup.style.display = 'none';
+                        cancelReasonInput.value = this.value;
+                    }
+                });
+            }
+
+            if (confirmCancel) {
+                confirmCancel.addEventListener('click', function(e) {
+                    if (!cancelReason.value) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn lý do hủy đặt phòng');
+                        return;
+                    }
+
+                    if (cancelReason.value === 'other' && !otherReason.value.trim()) {
+                        e.preventDefault();
+                        alert('Vui lòng nhập lý do hủy đặt phòng');
+                        return;
+                    }
+
+                    if (cancelReason.value === 'other') {
+                        cancelReasonInput.value = otherReason.value.trim();
+                    }
+                });
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/booking-details.css" asp-append-version="true" />
+}
+
+@functions {
+    string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Chờ xác nhận" => "status-pending",
+            "Đã xác nhận" => "status-confirmed",
+            "Hoàn thành" => "status-completed",
+            "Đã hủy" => "status-cancelled",
+            _ => "status-default"
+        };
+    }
+
+    string GetPaymentStatusClass(string status)
+    {
+        return status switch
+        {
+            "Chờ thanh toán" => "status-pending",
+            "Đã thanh toán" => "status-success",
+            "Thanh toán thất bại" => "status-danger",
+            "Đã hoàn tiền" => "status-warning",
+            _ => "status-default"
+        };
+    }
+
+    string GetActivityClass(string type)
+    {
+        return type switch
+        {
+            "create" => "marker-success",
+            "update" => "marker-info",
+            "confirm" => "marker-primary",
+            "cancel" => "marker-danger",
+            "complete" => "marker-success",
+            "payment" => "marker-warning",
+            _ => "marker-default"
+        };
+    }
+
+    string GetActivityIcon(string type)
+    {
+        return type switch
+        {
+            "create" => "fas fa-plus",
+            "update" => "fas fa-edit",
+            "confirm" => "fas fa-check",
+            "cancel" => "fas fa-times",
+            "complete" => "fas fa-check-double",
+            "payment" => "fas fa-credit-card",
+            _ => "fas fa-circle"
+        };
+    }
+}

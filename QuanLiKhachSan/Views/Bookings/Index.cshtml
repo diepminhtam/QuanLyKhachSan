@@ -1,0 +1,434 @@
+﻿@model QuanLiKhachSan.ViewModels.Booking.BookingListViewModel
+@{
+    ViewData["Title"] = "Đặt phòng của tôi";
+}
+
+<!-- Booking List Header -->
+<div class="booking-list-banner">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="banner-content">
+            <h1>Đặt phòng của tôi</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Đặt phòng của tôi</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="booking-list-container">
+    <div class="container py-5">
+        <!-- Status filters tabs -->
+        <ul class="nav nav-tabs booking-status-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link @(string.IsNullOrEmpty(Model.Status) ? "active" : "")"
+                   asp-controller="Bookings" asp-action="Index">
+                    Tất cả <span class="badge bg-secondary">@Model.GetBookingCountByStatus(null)</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.Status == "Chờ xác nhận" ? "active" : "")"
+                   asp-controller="Bookings" asp-action="Index" asp-route-status="Chờ xác nhận">
+                    Chờ xác nhận <span class="badge bg-warning text-dark">@Model.GetBookingCountByStatus("Chờ xác nhận")</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.Status == "Đã xác nhận" ? "active" : "")"
+                   asp-controller="Bookings" asp-action="Index" asp-route-status="Đã xác nhận">
+                    Đã xác nhận <span class="badge bg-primary">@Model.GetBookingCountByStatus("Đã xác nhận")</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.Status == "Hoàn thành" ? "active" : "")"
+                   asp-controller="Bookings" asp-action="Index" asp-route-status="Hoàn thành">
+                    Hoàn thành <span class="badge bg-success">@Model.GetBookingCountByStatus("Hoàn thành")</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.Status == "Đã hủy" ? "active" : "")"
+                   asp-controller="Bookings" asp-action="Index" asp-route-status="Đã hủy">
+                    Đã hủy <span class="badge bg-danger">@Model.GetBookingCountByStatus("Đã hủy")</span>
+                </a>
+            </li>
+        </ul>
+
+        @if (!Model.FilteredBookings.Any())
+        {
+            <div class="empty-bookings text-center py-5">
+                <div class="empty-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h3>Không tìm thấy đặt phòng nào</h3>
+                <p class="text-muted">@(string.IsNullOrEmpty(Model.Status) ? "Bạn chưa có đặt phòng nào" : $"Bạn không có đặt phòng nào có trạng thái '{Model.Status}'")</p>
+                <a asp-controller="Home" asp-action="Rooms" class="btn btn-primary mt-3">Tìm và đặt phòng ngay</a>
+            </div>
+        }
+        else
+        {
+            <!-- Upcoming bookings if any -->
+            @if (Model.FilteredBookings.Any(b => b.IsUpcoming))
+            {
+                <div class="booking-section mb-4">
+                    <h3 class="section-title">Sắp tới</h3>
+                    <div class="bookings-grid">
+                        @foreach (var booking in Model.FilteredBookings.Where(b => b.IsUpcoming).OrderBy(b => b.CheckInDate))
+                        {
+                            <div class="booking-card">
+                                <div class="booking-status @GetStatusClass(booking.Status)">
+                                    <span>@booking.Status</span>
+                                </div>
+                                <div class="booking-image">
+                                    <img src="@booking.RoomImageUrl" alt="@booking.RoomName">
+                                </div>
+                                <div class="booking-content">
+                                    <div class="booking-header">
+                                        <h4>@booking.RoomName</h4>
+                                        <div class="booking-number">@booking.BookingNumber</div>
+                                    </div>
+                                    <div class="booking-info">
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-calendar-check"></i> Nhận phòng</div>
+                                            <div class="info-value">@booking.CheckInDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-calendar-times"></i> Trả phòng</div>
+                                            <div class="info-value">@booking.CheckOutDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-moon"></i> Số đêm</div>
+                                            <div class="info-value">@booking.NightCount đêm</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-users"></i> Số khách</div>
+                                            <div class="info-value">@booking.GuestsCount người</div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-price">
+                                        <div class="price-label">Tổng cộng</div>
+                                        <div class="price-value">@booking.TotalPrice.ToString("N0") VNĐ</div>
+                                    </div>
+                                    <div class="booking-actions">
+                                        <a href="@Url.Action("Details", "Bookings", new { id = booking.Id })" class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                        @if (booking.CanCancel)
+                                        {
+                                            <button class="btn btn-outline-danger cancel-booking" data-bs-toggle="modal"
+                                                    data-bs-target="#cancelModal" data-booking-id="@booking.Id" data-booking-number="@booking.BookingNumber">
+                                                <i class="fas fa-times"></i> Hủy đặt phòng
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Active bookings if any -->
+            @if (Model.FilteredBookings.Any(b => b.IsActive))
+            {
+                <div class="booking-section mb-4">
+                    <h3 class="section-title">Đang diễn ra</h3>
+                    <div class="bookings-grid">
+                        @foreach (var booking in Model.FilteredBookings.Where(b => b.IsActive).OrderBy(b => b.CheckOutDate))
+                        {
+                            <div class="booking-card active-booking">
+                                <div class="booking-status @GetStatusClass(booking.Status)">
+                                    <span>@booking.Status</span>
+                                </div>
+                                <div class="booking-image">
+                                    <img src="@booking.RoomImageUrl" alt="@booking.RoomName">
+                                    <div class="active-badge">
+                                        <i class="fas fa-clock"></i> Đang diễn ra
+                                    </div>
+                                </div>
+                                <div class="booking-content">
+                                    <div class="booking-header">
+                                        <h4>@booking.RoomName</h4>
+                                        <div class="booking-number">@booking.BookingNumber</div>
+                                    </div>
+                                    <div class="booking-info">
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-calendar-check"></i> Nhận phòng</div>
+                                            <div class="info-value">@booking.CheckInDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-calendar-times"></i> Trả phòng</div>
+                                            <div class="info-value">@booking.CheckOutDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-moon"></i> Số đêm</div>
+                                            <div class="info-value">@booking.NightCount đêm</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-users"></i> Số khách</div>
+                                            <div class="info-value">@booking.GuestsCount người</div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-price">
+                                        <div class="price-label">Tổng cộng</div>
+                                        <div class="price-value">@booking.TotalPrice.ToString("N0") VNĐ</div>
+                                    </div>
+                                    <div class="booking-actions">
+                                        <a href="@Url.Action("Details", "Bookings", new { id = booking.Id })" class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Past bookings if any -->
+            @if (Model.FilteredBookings.Any(b => b.IsPast))
+            {
+                <div class="booking-section">
+                    <h3 class="section-title">Đã hoàn thành</h3>
+                    <div class="bookings-grid">
+                        @foreach (var booking in Model.FilteredBookings.Where(b => b.IsPast).OrderByDescending(b => b.CheckOutDate))
+                        {
+                            <div class="booking-card past-booking">
+                                <div class="booking-status @GetStatusClass(booking.Status)">
+                                    <span>@booking.Status</span>
+                                </div>
+                                <div class="booking-image">
+                                    <img src="@booking.RoomImageUrl" alt="@booking.RoomName">
+                                </div>
+                                <div class="booking-content">
+                                    <div class="booking-header">
+                                        <h4>@booking.RoomName</h4>
+                                        <div class="booking-number">@booking.BookingNumber</div>
+                                    </div>
+                                    <div class="booking-info">
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-calendar-check"></i> Nhận phòng</div>
+                                            <div class="info-value">@booking.CheckInDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-calendar-times"></i> Trả phòng</div>
+                                            <div class="info-value">@booking.CheckOutDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-moon"></i> Số đêm</div>
+                                            <div class="info-value">@booking.NightCount đêm</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-users"></i> Số khách</div>
+                                            <div class="info-value">@booking.GuestsCount người</div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-price">
+                                        <div class="price-label">Tổng cộng</div>
+                                        <div class="price-value">@booking.TotalPrice.ToString("N0") VNĐ</div>
+                                    </div>
+                                    <div class="booking-actions">
+                                        <a href="@Url.Action("Details", "Bookings", new { id = booking.Id })" class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                        @if (booking.CanReview)
+                                        {
+                                            <a href="@Url.Action("AddReview", "Reviews", new { bookingId = booking.Id })" class="btn btn-warning">
+                                                <i class="fas fa-star"></i> Đánh giá
+                                            </a>
+                                        }
+                                        @if (booking.HasReview)
+                                        {
+                                            <a href="@Url.Action("ViewReview", "Reviews", new { bookingId = booking.Id })" class="btn btn-outline-success">
+                                                <i class="fas fa-comment-alt"></i> Xem đánh giá
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Cancelled bookings if any and filter is "All" or "Cancelled" -->
+            @if ((string.IsNullOrEmpty(Model.Status) || Model.Status == "Đã hủy") && Model.FilteredBookings.Any(b => b.Status == "Đã hủy"))
+            {
+                <div class="booking-section">
+                    <h3 class="section-title">Đã hủy</h3>
+                    <div class="bookings-grid">
+                        @foreach (var booking in Model.FilteredBookings.Where(b => b.Status == "Đã hủy").OrderByDescending(b => b.BookingDate))
+                        {
+                            <div class="booking-card cancelled-booking">
+                                <div class="booking-status @GetStatusClass(booking.Status)">
+                                    <span>@booking.Status</span>
+                                </div>
+                                <div class="booking-image">
+                                    <img src="@booking.RoomImageUrl" alt="@booking.RoomName">
+                                </div>
+                                <div class="booking-content">
+                                    <div class="booking-header">
+                                        <h4>@booking.RoomName</h4>
+                                        <div class="booking-number">@booking.BookingNumber</div>
+                                    </div>
+                                    <div class="booking-info">
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-calendar-check"></i> Nhận phòng</div>
+                                            <div class="info-value">@booking.CheckInDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-calendar-times"></i> Trả phòng</div>
+                                            <div class="info-value">@booking.CheckOutDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-moon"></i> Số đêm</div>
+                                            <div class="info-value">@booking.NightCount đêm</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label"><i class="fas fa-users"></i> Số khách</div>
+                                            <div class="info-value">@booking.GuestsCount người</div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-price">
+                                        <div class="price-label">Tổng cộng</div>
+                                        <div class="price-value">@booking.TotalPrice.ToString("N0") VNĐ</div>
+                                    </div>
+                                    <div class="booking-actions">
+                                        <a href="@Url.Action("Details", "Bookings", new { id = booking.Id })" class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
+                                        </a>
+                                        <a asp-controller="Home" asp-action="Rooms" class="btn btn-outline-secondary">
+                                            <i class="fas fa-redo"></i> Đặt lại
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">Xác nhận hủy đặt phòng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Bạn có chắc chắn muốn hủy đặt phòng <strong id="cancelBookingNumber"></strong>?</span>
+                </div>
+                <p>Lưu ý:</p>
+                <ul>
+                    <li>Hủy đặt phòng trước 72 giờ kể từ thời điểm nhận phòng sẽ được hoàn tiền 100%.</li>
+                    <li>Hủy đặt phòng trong vòng 72 giờ kể từ thời điểm nhận phòng sẽ bị tính phí 1 đêm đầu tiên.</li>
+                    <li>Sau khi hủy, không thể khôi phục lại đặt phòng.</li>
+                </ul>
+                <div class="form-group mt-3">
+                    <label for="cancelReason" class="form-label">Lý do hủy</label>
+                    <select class="form-select" id="cancelReason">
+                        <option value="">-- Chọn lý do hủy --</option>
+                        <option value="Thay đổi kế hoạch">Thay đổi kế hoạch</option>
+                        <option value="Tìm thấy lựa chọn tốt hơn">Tìm thấy lựa chọn tốt hơn</option>
+                        <option value="Vấn đề cá nhân">Vấn đề cá nhân</option>
+                        <option value="other">Lý do khác</option>
+                    </select>
+                </div>
+                <div class="form-group mt-3" id="otherReasonGroup" style="display: none;">
+                    <label for="otherReason" class="form-label">Lý do khác</label>
+                    <textarea class="form-control" id="otherReason" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không, giữ đặt phòng</button>
+                <form id="cancelForm" asp-controller="Bookings" asp-action="Cancel" method="post">
+                    <input type="hidden" id="bookingId" name="bookingId" value="" />
+                    <input type="hidden" id="cancelReasonInput" name="reason" value="" />
+                    <button type="submit" class="btn btn-danger">Xác nhận hủy</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý modal hủy đặt phòng
+            $('#cancelModal').on('show.bs.modal', function (event) {
+                const button = $(event.relatedTarget);
+                const bookingId = button.data('booking-id');
+                const bookingNumber = button.data('booking-number');
+
+                $('#bookingId').val(bookingId);
+                $('#cancelBookingNumber').text(bookingNumber);
+            });
+
+            // Xử lý hiển thị lý do khác
+            $('#cancelReason').on('change', function() {
+                if (this.value === 'other') {
+                    $('#otherReasonGroup').show();
+                } else {
+                    $('#otherReasonGroup').hide();
+                }
+            });
+
+            // Xử lý form hủy đặt phòng
+            $('#cancelForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const reason = $('#cancelReason').val();
+                if (!reason) {
+                    alert('Vui lòng chọn lý do hủy đặt phòng');
+                    return;
+                }
+
+                if (reason === 'other') {
+                    const otherReason = $('#otherReason').val();
+                    if (!otherReason) {
+                        alert('Vui lòng nhập lý do hủy đặt phòng');
+                        return;
+                    }
+                    $('#cancelReasonInput').val(otherReason);
+                } else {
+                    $('#cancelReasonInput').val(reason);
+                }
+
+                // Trong thực tế, form sẽ submit bình thường
+                // Ở đây ta chỉ hiển thị thông báo cho demo
+                alert('Đã hủy đặt phòng thành công!');
+                $('#cancelModal').modal('hide');
+
+                // Reload page after 1 second
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            });
+        });
+    </script>
+}
+
+@functions {
+    string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Chờ xác nhận" => "status-pending",
+            "Đã xác nhận" => "status-confirmed",
+            "Hoàn thành" => "status-completed",
+            "Đã hủy" => "status-cancelled",
+            _ => "status-default"
+        };
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/bookings.css" asp-append-version="true" />
+}

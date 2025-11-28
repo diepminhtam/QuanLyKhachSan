@@ -1,0 +1,320 @@
+﻿/* Register Page Styles */
+:root {
+    --primary-color: #3a6ea5;
+    --secondary-color: #004e89;
+    --accent-color: #ff6b35;
+    --light-color: #f9f7f7;
+    --dark-color: #112d4e;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+}
+
+html, body {
+    height: 100%;
+}
+
+.register-container {
+    min-height: calc(100vh - 56px);
+    overflow: hidden;
+}
+
+.register-banner {
+    position: relative;
+    background: url('/images/register-banner.jpg') no-repeat center center;
+    background-size: cover;
+    height: calc(100vh - 56px);
+}
+
+    .register-banner .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+.banner-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
+    width: 80%;
+    z-index: 2;
+}
+
+    .banner-content h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .banner-content p {
+        font-size: 1.2rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+.register-form-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-color);
+    padding: 30px;
+}
+
+.register-form-wrapper {
+    width: 100%;
+    max-width: 600px;
+    padding: 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.register-logo {
+    font-size: 3rem;
+    color: var(--accent-color);
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.register-header {
+    margin-bottom: 30px;
+}
+
+    .register-header h2 {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 10px;
+    }
+
+    .register-header p {
+        color: #6c757d;
+    }
+
+.register-form .form-floating {
+    margin-bottom: 20px;
+}
+
+.register-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(58, 110, 165, 0.25);
+}
+
+.register-form .btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    padding: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+    .register-form .btn-primary:hover {
+        background-color: #e55a29;
+        border-color: #e55a29;
+        transform: translateY(-2px);
+    }
+
+.password-container {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.password-strength {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+    .password-strength p {
+        margin-bottom: 5px;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .password-strength .progress {
+        height: 6px;
+        margin-bottom: 10px;
+    }
+
+.password-hints {
+    list-style: none;
+    padding-left: 0;
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+    .password-hints li {
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+    }
+
+        .password-hints li i {
+            margin-right: 5px;
+            font-size: 12px;
+        }
+
+    .password-hints .fa-times-circle {
+        color: var(--danger-color);
+    }
+
+    .password-hints .fa-check-circle {
+        color: var(--success-color);
+    }
+
+.register-divider {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+}
+
+    .register-divider::before,
+    .register-divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .register-divider span {
+        padding: 0 15px;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+.social-login {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.btn-social {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+    .btn-social:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+    }
+
+.google-btn:hover {
+    color: #db4437;
+    border-color: #db4437;
+}
+
+.facebook-btn:hover {
+    color: #4267B2;
+    border-color: #4267B2;
+}
+
+.btn-social i {
+    font-size: 1.2rem;
+}
+
+.login-link {
+    padding-top: 15px;
+    border-top: 1px solid #dee2e6;
+    margin-top: 15px;
+}
+
+    .login-link a {
+        color: var(--accent-color);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+        .login-link a:hover {
+            color: #e55a29;
+            text-decoration: underline;
+        }
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+}
+
+.modal-header {
+    border-bottom-color: #eee;
+    background-color: var(--light-color);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.modal-footer {
+    border-top-color: #eee;
+}
+
+.modal-title {
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.modal-body h6 {
+    color: var(--primary-color);
+    margin-top: 15px;
+    font-weight: 600;
+}
+
+.modal-body p {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+/* Responsive Styles */
+@media (max-width: 991px) {
+    .register-form-container {
+        height: auto;
+        min-height: 100vh;
+        padding-top: 50px;
+        padding-bottom: 50px;
+    }
+
+    .register-form-wrapper {
+        margin: 0;
+    }
+
+    .social-login {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 576px) {
+    .register-form-container {
+        padding: 15px;
+    }
+
+    .register-form-wrapper {
+        padding: 20px;
+    }
+
+    .banner-content h1 {
+        font-size: 2.5rem;
+    }
+}

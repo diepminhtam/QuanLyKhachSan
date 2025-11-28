@@ -1,0 +1,366 @@
+﻿@model List<QuanLiKhachSan.ViewModels.Room.RoomCardViewModel>
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<!-- Hero Section -->
+<section id="hero" class="hero-section">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>Chào mừng đến với Luxury Hotel</h1>
+            <p>Trải nghiệm kỳ nghỉ đẳng cấp với dịch vụ 5 sao</p>
+        </div>
+
+        <!-- Search Form -->
+        <div class="search-container">
+            <form id="searchForm" asp-controller="Home" asp-action="Rooms" method="get">
+                <div class="row search-box">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="form-group">
+                            <label>Nhận phòng</label>
+                            <input type="date" class="form-control" id="checkin" name="checkin">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="form-group">
+                            <label>Trả phòng</label>
+                            <input type="date" class="form-control" id="checkout" name="checkout">
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <div class="form-group">
+                            <label>Người lớn</label>
+                            <select class="form-control" id="adults" name="adults">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <div class="form-group">
+                            <label>Trẻ em</label>
+                            <select class="form-control" id="children" name="children">
+                                <option value="0" selected>0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-search w-100">Tìm phòng</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="about-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="about-image">
+                    <img src="/images/hotel-exterior.jpg" alt="Luxury Hotel">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="about-content">
+                    <h2 class="section-title">Về chúng tôi</h2>
+                    <p class="section-subtitle">Sang trọng & tiện nghi</p>
+                    <div class="about-text">
+                        <p>Luxury Hotel mang đến không gian nghỉ dưỡng sang trọng bậc nhất, nơi bạn có thể tận hưởng sự riêng tư và dịch vụ cá nhân hóa. Với vị trí đắc địa, khách sạn là điểm đến lý tưởng cho cả doanh nhân và du khách.</p>
+                        <p>Chúng tôi tự hào về đội ngũ nhân viên chuyên nghiệp, luôn sẵn sàng đáp ứng mọi nhu cầu của quý khách.</p>
+                    </div>
+                    <div class="about-features">
+                        <div class="feature-item">
+                            <i class="fas fa-wifi"></i>
+                            <span>Wifi miễn phí</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-swimming-pool"></i>
+                            <span>Hồ bơi</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-spa"></i>
+                            <span>Spa</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-utensils"></i>
+                            <span>Nhà hàng</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Rooms Section -->
+<section id="featured-rooms" class="rooms-section">
+    <div class="container">
+        <h2 class="section-title text-center">Phòng nổi bật</h2>
+        <p class="section-subtitle text-center">Khám phá những lựa chọn tốt nhất của chúng tôi</p>
+
+        <div class="room-carousel">
+            <div class="row">
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var room in Model)
+                    {
+                        <div class="col-lg-3 col-md-6">
+                            <div class="room-card">
+                                <div class="room-img">
+                                    <a asp-controller="RoomDetails" asp-action="Index" asp-route-id="@room.Id">
+                                        <img src="@room.ImageUrl" alt="@room.Name">
+                                    </a>
+                                    <div class="room-price">
+                                        <span>@String.Format("{0:N0}", room.PricePerNight) VNĐ</span>
+                                        <small>/đêm</small>
+                                    </div>
+                                </div>
+                                <div class="room-info">
+                                    <h3><a asp-controller="RoomDetails" asp-action="Index" asp-route-id="@room.Id">@room.Name</a></h3>
+                                    <div class="room-rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= Math.Floor(room.AverageRating))
+                                            {
+                                                <i class="fas fa-star"></i>
+                                            }
+                                            else if (i - room.AverageRating < 1 && i - room.AverageRating > 0)
+                                            {
+                                                <i class="fas fa-star-half-alt"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="far fa-star"></i>
+                                            }
+                                        }
+                                        <span>(@room.AverageRating.ToString("0.0"))</span>
+                                    </div>
+                                    <p>@(room.Description != null && room.Description.Length > 100 ? room.Description.Substring(0, 100) + "..." : room.Description)</p>
+                                    <div class="room-features">
+                                        <span><i class="fas fa-users"></i> @room.Capacity người</span>
+                                        <span><i class="fas fa-bed"></i> @room.RoomType</span>
+                                    </div>
+                                    <a asp-controller="RoomDetails" asp-action="Index" asp-route-id="@room.Id" class="btn btn-outline-primary">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center">
+                        <p>Hiện không có phòng nào để hiển thị</p>
+                    </div>
+                }
+            </div>
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Rooms" class="btn btn-primary">Xem tất cả phòng</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="services-section">
+    <div class="container">
+        <h2 class="section-title text-center">Dịch vụ của chúng tôi</h2>
+        <p class="section-subtitle text-center">Trải nghiệm đẳng cấp</p>
+
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    <h3>Dịch vụ phòng 24/7</h3>
+                    <p>Sẵn sàng phục vụ mọi nhu cầu của quý khách mọi lúc, mọi nơi</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h3>Nhà hàng & Bar</h3>
+                    <p>Thưởng thức ẩm thực đa dạng từ các đầu bếp hàng đầu</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fas fa-spa"></i>
+                    </div>
+                    <h3>Spa & Massage</h3>
+                    <p>Thư giãn và làm mới cơ thể với các liệu pháp spa đẳng cấp</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fas fa-swimming-pool"></i>
+                    </div>
+                    <h3>Hồ bơi & Gym</h3>
+                    <p>Giữ gìn sức khỏe và thư giãn tại hồ bơi vô cực và phòng gym hiện đại</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section id="testimonials" class="testimonials-section">
+    <div class="container">
+        <h2 class="section-title text-center">Khách hàng nói gì về chúng tôi</h2>
+        <p class="section-subtitle text-center">Trải nghiệm thực tế từ khách hàng</p>
+
+        <div class="testimonial-carousel">
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <p>"Một trải nghiệm tuyệt vời! Dịch vụ chuyên nghiệp và phòng ốc sang trọng. Tôi sẽ quay lại trong kỳ nghỉ tiếp theo."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="/images/testimonials/user1.jpg" alt="User">
+                            <div class="author-info">
+                                <h4>Nguyễn Văn A</h4>
+                                <div class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <p>"Khách sạn có vị trí tuyệt vời, nhân viên thân thiện và hỗ trợ nhiệt tình. Phòng sạch sẽ và thoải mái."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="/images/testimonials/user2.jpg" alt="User">
+                            <div class="author-info">
+                                <h4>Trần Thị B</h4>
+                                <div class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <p>"Bữa sáng phong phú, nhân viên thân thiện và phòng rộng rãi. Đây là lựa chọn hoàn hảo cho chuyến công tác của tôi."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="/images/testimonials/user3.jpg" alt="User">
+                            <div class="author-info">
+                                <h4>Lê Văn C</h4>
+                                <div class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact & Map Section -->
+<section id="contact" class="contact-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="contact-info">
+                    <h2 class="section-title">Liên hệ với chúng tôi</h2>
+                    <p class="section-subtitle">Chúng tôi luôn sẵn sàng hỗ trợ bạn</p>
+                    <ul class="contact-list">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <h4>Địa chỉ</h4>
+                                <p>123 Đường ABC, Quận 1, TP. Hồ Chí Minh</p>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone-alt"></i>
+                            <div>
+                                <h4>Điện thoại</h4>
+                                <p>+84 123 456 789</p>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h4>Email</h4>
+                                <p>info@luxuryhotel.com</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="map-container">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.3960070386117!2d106.69886111471925!3d10.775267692322647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f49499e8cc3%3A0xb98b56018d844143!2sLandmark%2081!5e0!3m2!1svi!2s!4v1645960512080!5m2!1svi!2s"
+                            style="border:0; width:100%; height:400px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section id="newsletter" class="newsletter-section">
+    <div class="container">
+        <div class="newsletter-container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h3>Đăng ký nhận khuyến mãi</h3>
+                    <p>Nhận thông tin về các ưu đãi đặc biệt và tin tức mới nhất từ chúng tôi</p>
+                </div>
+                <div class="col-lg-6">
+                    <form id="newsletterForm" class="newsletter-form">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Email của bạn" required>
+                            <button class="btn btn-subscribe" type="submit">Đăng ký</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/home.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,698 @@
+﻿@model QuanLiKhachSan.ViewModels.Account.ProfileViewModel
+@{
+    ViewData["Title"] = "Thông tin tài khoản";
+}
+
+<div class="profile-container">
+    <div class="container py-5">
+        <!-- Profile Header -->
+        <div class="profile-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center mb-3 mb-md-0">
+                    <div class="profile-avatar-container">
+                        @if (!string.IsNullOrEmpty(Model.AvatarUrl) && Model.AvatarUrl != "/images/avatars/default.jpg")
+                        {
+                            <img src="@Model.AvatarUrl" alt="Avatar" class="profile-avatar" />
+                        }
+                        else
+                        {
+                            <div class="profile-avatar-placeholder">
+                                <span>@(Model.FirstName?.FirstOrDefault())@(Model.LastName?.FirstOrDefault())</span>
+                            </div>
+                        }
+                        <div class="profile-avatar-edit">
+                            <label for="avatar-upload">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="avatar-upload" class="d-none" accept="image/*" />
+                        </div>
+                    </div>
+                <div class="col-md-9">
+                    <div class="profile-header-info">
+                        <h2 class="profile-name">@Model.FirstName @Model.LastName</h2>
+                        <p class="profile-email"><i class="fas fa-envelope me-2"></i> @Model.Email</p>
+                        <p class="profile-member-since"><i class="fas fa-clock me-2"></i> Thành viên từ @Model.CreatedAt.ToString("MM/yyyy")</p>
+                        <div class="profile-stats">
+                            <div class="profile-stat-item">
+                                <div class="stat-value">@Model.BookingsCount</div>
+                                <div class="stat-label">Đặt phòng</div>
+                            </div>
+                            <div class="profile-stat-item">
+                                <div class="stat-value">@Model.ReviewsCount</div>
+                                <div class="stat-label">Đánh giá</div>
+                            </div>
+                            <div class="profile-stat-item">
+                                <div class="stat-value">@Model.LoyaltyPoints</div>
+                                <div class="stat-label">Điểm thưởng</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Navigation & Content -->
+        <div class="row">
+            <div class="col-md-3 mb-4 mb-md-0">
+                <div class="profile-nav">
+                    <ul class="nav flex-column" id="profile-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="personal-info-tab" data-bs-toggle="tab" href="#personal-info" role="tab">
+                                <i class="fas fa-user me-2"></i> Thông tin cá nhân
+                            </a>
+                        </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" asp-controller="Bookings" asp-action="Index">
+                                    <i class="fas fa-history me-2"></i> Lịch sử đặt phòng
+                                </a>
+                            </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="reviews-tab" data-bs-toggle="tab" href="#reviews" role="tab">
+                                <i class="fas fa-star me-2"></i> Đánh giá của tôi
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="favorites-tab" data-bs-toggle="tab" href="#favorites" role="tab">
+                                <i class="fas fa-heart me-2"></i> Phòng yêu thích
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="loyalty-tab" data-bs-toggle="tab" href="#loyalty" role="tab">
+                                <i class="fas fa-award me-2"></i> Điểm thưởng
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="security-tab" data-bs-toggle="tab" href="#security" role="tab">
+                                <i class="fas fa-shield-alt me-2"></i> Bảo mật
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="tab-content profile-content">
+                    <!-- Personal Info Tab -->
+                    <div class="tab-pane fade show active" id="personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
+                        <div class="profile-card">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="card-title mb-0">Thông tin cá nhân</h3>
+                                <button class="btn btn-sm btn-outline-primary" id="edit-profile-btn">
+                                    <i class="fas fa-pencil-alt"></i> Chỉnh sửa
+                                </button>
+                            </div>
+
+                            <form id="profile-form" class="needs-validation" novalidate>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="form-label">Tên</label>
+                                        <input type="text" class="form-control" id="firstName" value="@Model.FirstName" disabled required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="form-label">Họ</label>
+                                        <input type="text" class="form-control" id="lastName" value="@Model.LastName" disabled required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" value="@Model.Email" disabled required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">Số điện thoại</label>
+                                        <input type="tel" class="form-control" id="phone" value="@Model.PhoneNumber" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="birthdate" class="form-label">Ngày sinh</label>
+                                        <input type="date" class="form-control" id="birthdate" value="@(Model.Birthdate?.ToString("yyyy-MM-dd"))" disabled>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="gender" class="form-label">Giới tính</label>
+                                        <select class="form-select" id="gender" disabled>
+                                            <option value="">-- Chọn --</option>
+                                            <option value="male" selected="@(Model.Gender == "male")">Nam</option>
+                                            <option value="female" selected="@(Model.Gender == "female")">Nữ</option>
+                                            <option value="other" selected="@(Model.Gender == "other")">Khác</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Địa chỉ</label>
+                                    <input type="text" class="form-control" id="address" value="@Model.Address" disabled>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="city" class="form-label">Thành phố</label>
+                                        <input type="text" class="form-control" id="city" value="@Model.City" disabled>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="state" class="form-label">Tỉnh/Thành</label>
+                                        <input type="text" class="form-control" id="state" value="@Model.State" disabled>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="zipCode" class="form-label">Mã bưu chính</label>
+                                        <input type="text" class="form-control" id="zipCode" value="@Model.ZipCode" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end mt-4 profile-action-buttons" style="display: none !important;">
+                                    <button type="button" class="btn btn-outline-secondary me-2" id="cancel-edit-btn">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Bookings History Tab -->
+                    <div class="tab-pane fade" id="bookings" role="tabpanel" aria-labelledby="bookings-tab">
+                        <div class="profile-card">
+                            <h3 class="card-title mb-4">Lịch sử đặt phòng</h3>
+
+                            <div class="booking-filters mb-4">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <select class="form-select" id="booking-status-filter">
+                                            <option value="all">Tất cả trạng thái</option>
+                                            <option value="confirmed">Đã xác nhận</option>
+                                            <option value="pending">Chờ xác nhận</option>
+                                            <option value="completed">Đã hoàn thành</option>
+                                            <option value="cancelled">Đã hủy</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <input type="date" class="form-control" id="booking-date-from" placeholder="Từ ngày">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="date" class="form-control" id="booking-date-to" placeholder="Đến ngày">
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (Model.Bookings != null && Model.Bookings.Any())
+                            {
+                                <div class="booking-list">
+                                    @foreach (var booking in Model.Bookings)
+                                    {
+                                        <div class="booking-item @booking.Status.ToLower()">
+                                            <div class="booking-header">
+                                                <div>
+                                                    <h5>@booking.RoomName</h5>
+                                                    <span class="booking-dates">
+                                                        <i class="fas fa-calendar me-2"></i> @booking.CheckInDate.ToString("dd/MM/yyyy") - @booking.CheckOutDate.ToString("dd/MM/yyyy")
+                                                    </span>
+                                                </div>
+                                                <div class="booking-status">
+                                                    <span class="status-badge @booking.Status.ToLower()">@booking.Status</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="booking-details">
+                                                <div class="row">
+                                                    <div class="col-md-3 mb-3 mb-md-0">
+                                                        <img src="@booking.RoomImageUrl" alt="@booking.RoomName" class="booking-room-image">
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <div class="booking-info-grid">
+                                                            <div class="booking-info-item">
+                                                                <span class="label"><i class="fas fa-receipt me-1"></i> Mã đặt phòng:</span>
+                                                                <span class="value">@booking.BookingNumber</span>
+                                                            </div>
+                                                            <div class="booking-info-item">
+                                                                <span class="label"><i class="fas fa-user me-1"></i> Số người:</span>
+                                                                <span class="value">@booking.GuestsCount</span>
+                                                            </div>
+                                                            <div class="booking-info-item">
+                                                                <span class="label"><i class="fas fa-money-bill me-1"></i> Tổng tiền:</span>
+                                                                <span class="value">@booking.TotalPrice.ToString("N0") VNĐ</span>
+                                                            </div>
+                                                            <div class="booking-info-item">
+                                                                <span class="label"><i class="fas fa-clock me-1"></i> Ngày đặt:</span>
+                                                                <span class="value">@booking.BookingDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="booking-actions mt-3">
+                                                            <a href="#" class="btn btn-sm btn-outline-primary me-2"><i class="fas fa-eye me-1"></i> Chi tiết</a>
+                                                            @if (booking.Status == "Pending" || booking.Status == "Confirmed")
+                                                            {
+                                                                <button class="btn btn-sm btn-outline-danger me-2 cancel-booking-btn" data-id="@booking.Id"><i class="fas fa-times me-1"></i> Hủy đặt phòng</button>
+                                                            }
+                                                            @if (booking.Status == "Completed" && !booking.HasReview)
+                                                            {
+                                                                <button class="btn btn-sm btn-outline-warning add-review-btn" data-id="@booking.Id" data-room="@booking.RoomName"><i class="fas fa-star me-1"></i> Viết đánh giá</button>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-calendar-times empty-icon"></i>
+                                    <p>Bạn chưa có lịch sử đặt phòng nào</p>
+                                    <a asp-controller="Home" asp-action="Rooms" class="btn btn-primary mt-3">Khám phá phòng ngay</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Reviews Tab -->
+                    <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                        <div class="profile-card">
+                            <h3 class="card-title mb-4">Đánh giá của tôi</h3>
+
+                            @if (Model.Reviews != null && Model.Reviews.Any())
+                            {
+                                <div class="reviews-list">
+                                    @foreach (var review in Model.Reviews)
+                                    {
+                                        <div class="review-item">
+                                            <div class="review-header">
+                                                <div>
+                                                    <h5>@review.RoomName</h5>
+                                                    <div class="review-rating">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            if (i <= review.Rating)
+                                                            {
+                                                                <i class="fas fa-star"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="far fa-star"></i>
+                                                            }
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div class="review-date">
+                                                    <span><i class="fas fa-calendar-alt me-1"></i> @review.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                                </div>
+                                            </div>
+                                            <div class="review-content">
+                                                <p>@review.Comment</p>
+                                            </div>
+                                            <div class="review-actions">
+                                                <button class="btn btn-sm btn-outline-primary me-2 edit-review-btn" data-id="@review.Id"><i class="fas fa-edit me-1"></i> Chỉnh sửa</button>
+                                                <button class="btn btn-sm btn-outline-danger delete-review-btn" data-id="@review.Id"><i class="fas fa-trash me-1"></i> Xóa</button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-star empty-icon"></i>
+                                    <p>Bạn chưa có đánh giá nào</p>
+                                    <p class="text-muted">Hãy đặt phòng và trải nghiệm để có thể đánh giá</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Favorites Tab -->
+                    <div class="tab-pane fade" id="favorites" role="tabpanel" aria-labelledby="favorites-tab">
+                        <div class="profile-card">
+                            <h3 class="card-title mb-4">Phòng yêu thích</h3>
+
+                            @if (Model.FavoriteRooms != null && Model.FavoriteRooms.Any())
+                            {
+                                <div class="favorites-list">
+                                    <div class="row">
+                                        @foreach (var room in Model.FavoriteRooms)
+                                        {
+                                            <div class="col-md-6 mb-4">
+                                                <div class="favorite-room-item">
+                                                    <div class="favorite-room-img">
+                                                        <img src="@room.ImageUrl" alt="@room.Name">
+                                                        <button class="remove-favorite-btn" data-id="@room.Id">
+                                                            <i class="fas fa-heart"></i>
+                                                        </button>
+                                                        <div class="favorite-room-price">
+                                                            <span>@room.Price.ToString("N0") VNĐ</span>
+                                                            <small>/đêm</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="favorite-room-info">
+                                                        <h5>@room.Name</h5>
+                                                        <div class="room-rating mb-2">
+                                                            @for (int i = 1; i <= 5; i++)
+                                                            {
+                                                                if (i <= Math.Floor(room.Rating))
+                                                                {
+                                                                    <i class="fas fa-star"></i>
+                                                                }
+                                                                else if (i - room.Rating < 1 && i - room.Rating > 0)
+                                                                {
+                                                                    <i class="fas fa-star-half-alt"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="far fa-star"></i>
+                                                                }
+                                                            }
+                                                            <span>(@room.Rating)</span>
+                                                        </div>
+                                                        <p class="room-features">
+                                                            <span><i class="fas fa-users"></i> @room.Capacity người</span>
+                                                            <span><i class="fas fa-bed"></i> @room.RoomType</span>
+                                                        </p>
+                                                        <a asp-controller="Rooms" asp-action="Details" asp-route-id="@room.Id" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-heart empty-icon"></i>
+                                    <p>Bạn chưa có phòng yêu thích nào</p>
+                                    <a asp-controller="Home" asp-action="Rooms" class="btn btn-primary mt-3">Khám phá phòng ngay</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Loyalty Points Tab -->
+                    <div class="tab-pane fade" id="loyalty" role="tabpanel" aria-labelledby="loyalty-tab">
+                        <div class="profile-card">
+                            <h3 class="card-title mb-4">Điểm thưởng</h3>
+
+                            <div class="loyalty-overview">
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="loyalty-points-card">
+                                            <h4>Điểm thưởng hiện tại</h4>
+                                            <div class="points-display">
+                                                <span class="points-value">@Model.LoyaltyPoints</span>
+                                                <span class="points-label">điểm</span>
+                                            </div>
+                                            <div class="loyalty-tier">
+                                                <span class="tier-label">Hạng thành viên:</span>
+                                                <span class="tier-value @Model.LoyaltyTier.ToLower()">@Model.LoyaltyTier</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <div class="next-tier-card">
+                                            <h5>Nâng hạng thành viên</h5>
+                                            <div class="tier-progress-container">
+                                                <div class="tier-progress">
+                                                    <div class="progress">
+                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: @Model.NextTierProgress%" aria-valuenow="@Model.NextTierProgress" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <div class="tier-markers">
+                                                        <span class="tier-marker silver">Bạc</span>
+                                                        <span class="tier-marker gold">Vàng</span>
+                                                        <span class="tier-marker platinum">Bạch kim</span>
+                                                    </div>
+                                                </div>
+                                                <p class="next-tier-info">
+                                                    Bạn cần thêm <strong>@Model.PointsToNextTier điểm</strong> để đạt hạng <strong>@Model.NextTier</strong>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="loyalty-benefits mb-4">
+                                    <h5>Đặc quyền thành viên</h5>
+                                    <div class="benefits-list">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <div class="benefit-item">
+                                                    <i class="fas fa-percentage"></i>
+                                                    <span>Giảm giá 5% cho mỗi đặt phòng</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <div class="benefit-item">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span>Trả phòng muộn (tùy tình trạng)</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <div class="benefit-item">
+                                                    <i class="fas fa-glass-cheers"></i>
+                                                    <span>Đồ uống chào mừng miễn phí</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="loyalty-history">
+                                    <h5>Lịch sử điểm thưởng</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ngày</th>
+                                                    <th>Hoạt động</th>
+                                                    <th>Điểm</th>
+                                                    <th>Trạng thái</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var point in Model.LoyaltyPointsHistory)
+                                                {
+                                                    <tr>
+                                                        <td>@point.Date.ToString("dd/MM/yyyy")</td>
+                                                        <td>@point.Description</td>
+                                                        <td class="@(point.Points > 0 ? "text-success" : "text-danger")">
+                                                            @(point.Points > 0 ? "+" : "")@point.Points
+                                                        </td>
+                                                        <td>
+                                                            <span class="status-badge @point.Status.ToLower()">@point.Status</span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Tab -->
+                    <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
+                        <div class="profile-card">
+                            <h3 class="card-title mb-4">Bảo mật tài khoản</h3>
+
+                            <div class="change-password-section mb-5">
+                                <h5>Đổi mật khẩu</h5>
+                                <form id="change-password-form" class="needs-validation" novalidate>
+                                    <div class="mb-3 password-container">
+                                        <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+                                        <input type="password" class="form-control" id="currentPassword" required>
+                                        <button type="button" class="password-toggle"><i class="far fa-eye"></i></button>
+                                    </div>
+                                    <div class="mb-3 password-container">
+                                        <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                                        <input type="password" class="form-control" id="newPassword" required>
+                                        <button type="button" class="password-toggle"><i class="far fa-eye"></i></button>
+                                        <div class="password-strength mt-2">
+                                            <div class="progress">
+                                                <div id="password-strength-meter" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                            <small class="form-text" id="password-strength-text">Mật khẩu yếu</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 password-container">
+                                        <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                                        <input type="password" class="form-control" id="confirmPassword" required>
+                                        <button type="button" class="password-toggle"><i class="far fa-eye"></i></button>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Đổi mật khẩu</button>
+                                </form>
+                            </div>
+
+                            <div class="login-activity-section mb-5">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Hoạt động đăng nhập gần đây</h5>
+                                    <button class="btn btn-sm btn-outline-danger">Đăng xuất tất cả thiết bị</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Thiết bị</th>
+                                                <th>Vị trí</th>
+                                                <th>IP</th>
+                                                <th>Thời gian</th>
+                                                <th>Trạng thái</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var activity in Model.LoginActivities)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            @if (activity.Device.Contains("Windows"))
+                                                            {
+                                                                <i class="fab fa-windows me-2"></i>
+                                                            }
+                                                            else if (activity.Device.Contains("Mac"))
+                                                            {
+                                                                <i class="fab fa-apple me-2"></i>
+                                                            }
+                                                            else if (activity.Device.Contains("Android"))
+                                                            {
+                                                                <i class="fab fa-android me-2"></i>
+                                                            }
+                                                            else if (activity.Device.Contains("iPhone"))
+                                                            {
+                                                                <i class="fab fa-apple me-2"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="fas fa-desktop me-2"></i>
+                                                            }
+                                                            @activity.Device
+                                                        </div>
+                                                    </td>
+                                                    <td>@activity.Location</td>
+                                                    <td>@activity.IpAddress</td>
+                                                    <td>@activity.Time.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    <td>
+                                                        @if (activity.Status == "Current")
+                                                        {
+                                                            <span class="status-badge current">Hiện tại</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="status-badge @activity.Status.ToLower()">@activity.Status</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="account-settings-section">
+                                <h5>Cài đặt tài khoản</h5>
+                                <div class="account-settings-list">
+                                    <div class="account-setting-item">
+                                        <div>
+                                            <h6>Xác thực hai yếu tố</h6>
+                                            <p class="text-muted">Tăng cường bảo mật cho tài khoản của bạn</p>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="two-factor-switch" @(Model.TwoFactorEnabled ? "checked" : "")>
+                                        </div>
+                                    </div>
+                                    <div class="account-setting-item">
+                                        <div>
+                                            <h6>Thông báo đăng nhập</h6>
+                                            <p class="text-muted">Nhận email thông báo khi có đăng nhập mới</p>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="login-notify-switch" checked>
+                                        </div>
+                                    </div>
+                                    <div class="account-setting-item">
+                                        <div>
+                                            <h6>Vô hiệu hóa tài khoản</h6>
+                                            <p class="text-muted">Tạm thời vô hiệu hóa tài khoản của bạn</p>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger" id="disable-account-btn">Vô hiệu hóa</button>
+                                    </div>
+                                    <div class="account-setting-item border-danger">
+                                        <div>
+                                            <h6 class="text-danger">Xóa tài khoản</h6>
+                                            <p class="text-muted">Xóa vĩnh viễn tài khoản và dữ liệu của bạn</p>
+                                        </div>
+                                        <button class="btn btn-sm btn-danger" id="delete-account-btn">Xóa tài khoản</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Review Modal -->
+<div class="modal fade" id="add-review-modal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReviewModalLabel">Đánh giá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="review-form">
+                    <input type="hidden" id="booking-id">
+                    <div class="mb-3">
+                        <label class="form-label">Phòng</label>
+                        <input type="text" class="form-control" id="review-room-name" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Đánh giá</label>
+                        <div class="rating-input">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                            <input type="hidden" id="rating-value" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="review-comment" class="form-label">Nhận xét</label>
+                        <textarea class="form-control" id="review-comment" rows="4" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="submit-review">Gửi đánh giá</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="confirm-modal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Xác nhận</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirm-action">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/profile.js" asp-append-version="true"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

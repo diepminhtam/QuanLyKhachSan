@@ -1,0 +1,333 @@
+﻿@model List<QuanLiKhachSan.ViewModels.ServiceViewModel>
+
+@{
+    ViewData["Title"] = "Dịch vụ khách sạn";
+}
+
+<div class="services-page">
+    <!-- Hero Section -->
+    <section class="services-hero bg-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Dịch vụ đẳng cấp 5 sao</h1>
+                    <p class="lead mb-4">Trải nghiệm những dịch vụ tuyệt vời nhất với tiêu chuẩn quốc tế tại khách sạn chúng tôi</p>
+                    <div class="hero-stats row">
+                        <div class="col-auto">
+                            <div class="stat-item">
+                                <h3 class="stat-number">24/7</h3>
+                                <p class="stat-label">Hỗ trợ khách hàng</p>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat-item">
+                                <h3 class="stat-number">50+</h3>
+                                <p class="stat-label">Dịch vụ đa dạng</p>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat-item">
+                                <h3 class="stat-number">100%</h3>
+                                <p class="stat-label">Hài lòng</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <i class="fas fa-concierge-bell hero-icon" style="font-size: 8rem;"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Grid -->
+    <section class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Dịch vụ nổi bật</h2>
+            <p class="text-muted">Khám phá các dịch vụ đa dạng để có trải nghiệm trọn vẹn</p>
+        </div>
+        <div class="row">
+            @foreach (var service in Model)
+            {
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card service-card h-100">
+                        <div class="service-image-container">
+                            <img src="@service.ImageUrl" class="card-img-top service-image" alt="@service.Name">
+                            <div class="service-badge @(service.IsFree ? "free-badge" : "paid-badge")">@service.PriceDisplay</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="service-icon mb-3">
+                                <i class="@service.Icon"></i>
+                            </div>
+                            <h5 class="card-title service-title">@service.Name</h5>
+                            <p class="card-text service-description">@service.Description</p>
+                            <div class="service-features mb-3">
+                                @foreach (var feature in service.Features.Take(3))
+                                {
+                                    <span class="feature-badge">@feature</span>
+                                }
+                                @if (service.Features.Count > 3)
+                                {
+                                    <span class="feature-badge">+@(service.Features.Count - 3) khác</span>
+                                }
+                            </div>
+                            <div class="service-meta">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>@service.Duration
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <button class="btn btn-primary btn-sm w-100 book-service-btn" data-id="@service.Id" data-name="@service.Name">
+                                <i class="fas fa-calendar-plus me-1"></i>Đặt ngay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="bg-light py-5">
+        <div class="container text-center">
+            <h3 class="mb-3">Sẵn sàng trải nghiệm dịch vụ?</h3>
+            <p class="text-muted mb-4">Liên hệ với chúng tôi để được tư vấn và đặt dịch vụ ngay hôm nay</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="tel:19001234" class="btn btn-primary">
+                    <i class="fas fa-phone me-2"></i>Gọi ngay: 1900 1234
+                </a>
+                <a href="mailto:info@hotel.com" class="btn btn-outline-primary">
+                    <i class="fas fa-envelope me-2"></i>Email: info@hotel.com
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Đặt dịch vụ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="serviceBookingForm">
+                    <input type="hidden" id="serviceId">
+                    <div class="mb-3">
+                        <label class="form-label">Dịch vụ</label>
+                        <input type="text" class="form-control" id="serviceName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ngày sử dụng</label>
+                        <input type="date" class="form-control" id="serviceDate" required min="@DateTime.Today.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giờ</label>
+                        <input type="time" class="form-control" id="serviceTime" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số lượng người</label>
+                        <input type="number" class="form-control" id="serviceQuantity" value="1" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú đặc biệt</label>
+                        <textarea class="form-control" id="serviceNotes" rows="3" placeholder="Yêu cầu đặc biệt..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirmBooking">
+                    <i class="fas fa-paper-plane me-1"></i>Gửi yêu cầu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .services-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .hero-icon {
+            opacity: 0.8;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .service-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+            .service-card:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            }
+
+        .service-image-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .service-image {
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover .service-image {
+            transform: scale(1.1);
+        }
+
+        .service-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .free-badge {
+            background: #28a745;
+            color: white;
+        }
+
+        .paid-badge {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .service-icon {
+            font-size: 2rem;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .service-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .service-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .feature-badge {
+            background: #e9ecef;
+            color: #495057;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+            .section-title::after {
+                content: '';
+                position: absolute;
+                bottom: -10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 50px;
+                height: 3px;
+                background: #667eea;
+                border-radius: 2px;
+            }
+
+        @@media (max-width: 768px) {
+            .hero-stats {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookingModal = new bootstrap.Modal(document.getElementById('bookingModal'));
+            const bookServiceBtns = document.querySelectorAll('.book-service-btn');
+
+            bookServiceBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const serviceId = this.getAttribute('data-id');
+                    const serviceName = this.getAttribute('data-name');
+
+                    document.getElementById('serviceId').value = serviceId;
+                    document.getElementById('serviceName').value = serviceName;
+
+                    // Set default date to tomorrow
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    document.getElementById('serviceDate').value = tomorrow.toISOString().split('T')[0];
+
+                    // Set default time to 14:00
+                    document.getElementById('serviceTime').value = '14:00';
+
+                    bookingModal.show();
+                });
+            });
+
+            document.getElementById('confirmBooking').addEventListener('click', function() {
+                const serviceName = document.getElementById('serviceName').value;
+                const serviceDate = document.getElementById('serviceDate').value;
+                const serviceTime = document.getElementById('serviceTime').value;
+
+                if (!serviceDate || !serviceTime) {
+                    alert('Vui lòng chọn ngày và giờ sử dụng dịch vụ.');
+                    return;
+                }
+
+                // Hiển thị thông báo thành công
+                alert(`Đã gửi yêu cầu đặt dịch vụ "${serviceName}"!\n\nNgày: ${serviceDate}\nGiờ: ${serviceTime}\n\nChúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để xác nhận.`);
+                bookingModal.hide();
+
+                // Reset form
+                document.getElementById('serviceBookingForm').reset();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,345 @@
+﻿@model QuanLiKhachSan.ViewModels.Booking.BookingConfirmationViewModel
+@{
+    ViewData["Title"] = "Xác nhận đặt phòng";
+}
+
+<!-- Confirmation Banner -->
+<div class="confirmation-banner">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="banner-content">
+            <h1>Đặt phòng thành công!</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Bookings" asp-action="Create">Đặt phòng</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Xác nhận</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="confirmation-container">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="confirmation-card">
+                    <div class="confirmation-header text-center mb-4">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h2>Cảm ơn bạn đã đặt phòng!</h2>
+                        <p class="text-muted">Đặt phòng của bạn đã được tiếp nhận và đang chờ xác nhận</p>
+                    </div>
+
+                    <div class="confirmation-details">
+                        <div class="detail-section">
+                            <h4 class="section-title">Thông tin đặt phòng</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label>Mã đặt phòng:</label>
+                                        <span class="value">@Model.BookingNumber</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Trạng thái:</label>
+                                        <span class="value status-@Model.Status?.ToLower().Replace(" ", "")">
+                                            @Model.Status
+                                        </span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Ngày đặt:</label>
+                                        <span class="value">@Model.BookingDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label>Phòng:</label>
+                                        <span class="value">@Model.RoomName</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Khách hàng:</label>
+                                        <span class="value">@Model.CustomerName</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4 class="section-title">Thông tin lưu trú</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label>Nhận phòng:</label>
+                                        <span class="value">@Model.CheckInDate.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label>Trả phòng:</label>
+                                        <span class="value">@Model.CheckOutDate.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label>Số đêm:</label>
+                                        <span class="value">@((Model.CheckOutDate - Model.CheckInDate).Days) đêm</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <label>Số khách:</label>
+                                        <span class="value">@Model.GuestCount người</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4 class="section-title">Thông tin giá</h4>
+                            <div class="price-breakdown">
+                                <div class="price-item">
+                                    <span class="label">Tổng tiền:</span>
+                                    <span class="value">@Model.TotalPrice.ToString("N0") VNĐ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confirmation-actions mt-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <a asp-controller="Bookings" asp-action="Index" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-history me-2"></i>Xem lịch sử đặt phòng
+                                </a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-primary w-100">
+                                    <i class="fas fa-home me-2"></i>Về trang chủ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confirmation-note mt-4">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Lưu ý quan trọng:</h6>
+                            <ul class="mb-0">
+                                <li>Bạn sẽ nhận được email xác nhận trong vòng 24 giờ</li>
+                                <li>Vui lòng đến đúng giờ nhận phòng (14:00)</li>
+                                <li>Mang theo CMND/CCCD khi nhận phòng</li>
+                                <li>Liên hệ hotline 0123 456 789 nếu có thắc mắc</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .confirmation-banner {
+            position: relative;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/confirmation-banner.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            color: #fff;
+        }
+
+            .confirmation-banner .overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.4);
+            }
+
+            .confirmation-banner .banner-content {
+                position: relative;
+                z-index: 1;
+                text-align: center;
+                width: 100%;
+            }
+
+                .confirmation-banner .banner-content h1 {
+                    font-size: 2.5rem;
+                    margin-bottom: 1rem;
+                    font-weight: 700;
+                }
+
+        .confirmation-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .confirmation-header h2 {
+            color: #28a745;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .confirmation-header p {
+            font-size: 1.1rem;
+        }
+
+        .detail-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .detail-section:last-of-type {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+
+            .detail-item label {
+                font-weight: 500;
+                color: #666;
+                flex: 1;
+            }
+
+            .detail-item .value {
+                font-weight: 600;
+                color: #333;
+                flex: 1;
+                text-align: right;
+            }
+
+        .status-chờxácnhận,
+        .status-pending {
+            color: #ffc107;
+            font-weight: 600;
+            background: #fff3cd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .status-đãxácnhận,
+        .status-confirmed {
+            color: #28a745;
+            font-weight: 600;
+            background: #d4edda;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .price-breakdown {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+            .price-item .label {
+                color: #495057;
+            }
+
+            .price-item .value {
+                color: #28a745;
+            }
+
+        .confirmation-actions .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+            .confirmation-actions .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+        .confirmation-note .alert {
+            border-radius: 8px;
+            border-left: 4px solid #17a2b8;
+        }
+
+            .confirmation-note .alert h6 {
+                color: #0c5460;
+                font-weight: 600;
+            }
+
+            .confirmation-note .alert ul {
+                padding-left: 1rem;
+            }
+
+            .confirmation-note .alert li {
+                margin-bottom: 5px;
+                color: #0c5460;
+            }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .confirmation-banner {
+                height: 200px;
+            }
+
+                .confirmation-banner .banner-content h1 {
+                    font-size: 2rem;
+                }
+
+            .confirmation-card {
+                padding: 20px;
+                margin: 0 10px;
+            }
+
+            .detail-item {
+                flex-direction: column;
+                text-align: left;
+            }
+
+                .detail-item .value {
+                    text-align: left;
+                    margin-top: 4px;
+                }
+
+            .success-icon {
+                font-size: 60px;
+            }
+        }
+    </style>
+}

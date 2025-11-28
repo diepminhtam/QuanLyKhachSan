@@ -1,0 +1,351 @@
+﻿/* Admin Users Styles */
+:root {
+    --primary-color: #3a6ea5;
+    --secondary-color: #004e89;
+    --accent-color: #ff6b35;
+    --light-color: #f9f7f7;
+    --dark-color: #112d4e;
+    --success-color: #1cc88a;
+    --warning-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --info-color: #36b9cc;
+}
+
+.admin-users {
+    padding: 1.5rem;
+    background-color: #f8f9fc;
+}
+
+/* Status Cards */
+.status-card {
+    border: none;
+    border-radius: 0.35rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    transition: transform 0.2s ease;
+}
+
+    .status-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .status-card.active-users {
+        border-left: 4px solid var(--success-color);
+    }
+
+    .status-card.new-users {
+        border-left: 4px solid var(--info-color);
+    }
+
+    .status-card.vip-users {
+        border-left: 4px solid var(--warning-color);
+    }
+
+    .status-card.inactive-users {
+        border-left: 4px solid var(--danger-color);
+    }
+
+.status-title {
+    text-transform: uppercase;
+    color: #6c757d;
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.status-value {
+    color: #5a5c69;
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin-bottom: 0;
+}
+
+.status-icon {
+    font-size: 2rem;
+    opacity: 0.3;
+}
+
+.status-card.active-users .status-icon {
+    color: var(--success-color);
+}
+
+.status-card.new-users .status-icon {
+    color: var(--info-color);
+}
+
+.status-card.vip-users .status-icon {
+    color: var(--warning-color);
+}
+
+.status-card.inactive-users .status-icon {
+    color: var(--danger-color);
+}
+
+/* User Avatar */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Table Styles */
+.table {
+    margin-bottom: 0;
+}
+
+    .table thead th {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: #6c757d;
+        border-top: none;
+        vertical-align: middle;
+        padding: 0.75rem 1rem;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 0.75rem 1rem;
+    }
+
+.table-light {
+    background-color: #f8f9fc;
+}
+
+/* Action Button */
+.action-btn {
+    color: #6c757d;
+    background: transparent;
+    border: none;
+    padding: 0.25rem 0.5rem;
+}
+
+    .action-btn:hover {
+        color: var(--primary-color);
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+/* Pagination */
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+    .pagination-info span {
+        font-weight: 600;
+        color: #5a5c69;
+    }
+
+.pagination .page-link {
+    color: #5a5c69;
+    padding: 0.5rem 0.75rem;
+    margin: 0 0.25rem;
+    border: none;
+    font-size: 0.875rem;
+}
+
+.pagination .page-item.active .page-link {
+    color: white;
+    background-color: var(--primary-color);
+    border-radius: 0.25rem;
+}
+
+.pagination .page-item:not(.active) .page-link:hover {
+    background-color: #eaecf4;
+    border-radius: 0.25rem;
+}
+
+/* Items per page select */
+.items-per-page .form-select {
+    min-width: 110px;
+}
+
+/* Bulk Actions Bar */
+.bulk-actions-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #3a3b45;
+    color: white;
+    padding: 0.75rem 1rem;
+    z-index: 1030;
+    box-shadow: 0 -0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    transition: transform 0.3s ease;
+}
+
+    .bulk-actions-bar .selected-count {
+        font-weight: 600;
+        color: white;
+    }
+
+.bulk-actions button {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+}
+
+    .bulk-actions button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: white;
+    }
+
+#clearSelection {
+    color: rgba(255, 255, 255, 0.75);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+    #clearSelection:hover {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+/* User Detail Modal */
+.user-profile-header {
+    display: flex;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+    .user-profile-header .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-right: 1.5rem;
+    }
+
+    .user-profile-header .user-info {
+        flex: 1;
+    }
+
+        .user-profile-header .user-info h4 {
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+    .user-profile-header .user-status {
+        margin-bottom: 0.5rem;
+    }
+
+    .user-profile-header .user-id {
+        color: #6c757d;
+        margin-bottom: 0;
+        font-size: 0.875rem;
+    }
+
+/* Activity Timeline */
+.activity-timeline {
+    list-style: none;
+    padding: 0;
+    position: relative;
+    margin: 0;
+}
+
+    .activity-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 20px;
+        width: 2px;
+        background-color: #e3e6f0;
+    }
+
+    .activity-timeline li {
+        position: relative;
+        padding-left: 45px;
+        padding-bottom: 20px;
+    }
+
+        .activity-timeline li:last-child {
+            padding-bottom: 0;
+        }
+
+    .activity-timeline .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    .activity-timeline .activity-content h6 {
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+
+    .activity-timeline .activity-content p {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-bottom: 0;
+    }
+
+/* Form Styles */
+.toggle-password {
+    cursor: pointer;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .admin-users {
+        padding: 1rem;
+    }
+
+    .status-value {
+        font-size: 1.25rem;
+    }
+
+    .status-icon {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .page-actions {
+        margin-top: 1rem;
+        align-self: flex-end;
+    }
+
+    .pagination-info {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .user-profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+        .user-profile-header .user-avatar {
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+}

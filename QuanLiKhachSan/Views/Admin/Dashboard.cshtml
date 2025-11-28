@@ -1,0 +1,713 @@
+﻿@model QuanLiKhachSan.ViewModels.Admin.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-dashboard">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <h1 class="h3 mb-0">Dashboard</h1>
+            <div class="date-range-picker">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                    <input type="text" class="form-control" id="daterange" value="01/01/2023 - 31/12/2023">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card metric-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="metric-title">Doanh thu</h6>
+                            <h3 class="metric-value">@Model.TotalRevenue.ToString("N0") VNĐ</h3>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 12.5% <span class="small">so với tháng trước</span>
+                            </div>
+                        </div>
+                        <div class="metric-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card metric-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="metric-title">Đặt phòng</h6>
+                            <h3 class="metric-value">@Model.TotalBookings</h3>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 8.3% <span class="small">so với tháng trước</span>
+                            </div>
+                        </div>
+                        <div class="metric-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card metric-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="metric-title">Công suất phòng</h6>
+                            <h3 class="metric-value">@Model.RoomOccupancyRate.ToString("F1")%</h3>
+                            <div class="metric-change negative">
+                                <i class="fas fa-arrow-down"></i> 2.1% <span class="small">so với tháng trước</span>
+                            </div>
+                        </div>
+                        <div class="metric-icon">
+                            <i class="fas fa-bed"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card metric-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="metric-title">Khách hàng mới</h6>
+                            <h3 class="metric-value">@Model.TotalCustomers</h3>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 5.7% <span class="small">so với tháng trước</span>
+                            </div>
+                        </div>
+                        <div class="metric-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-xl-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Doanh thu theo tháng</h5>
+                    <div class="card-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="revenueDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                2023
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="revenueDropdown">
+                                <li><a class="dropdown-item" href="#">2023</a></li>
+                                <li><a class="dropdown-item" href="#">2022</a></li>
+                                <li><a class="dropdown-item" href="#">2021</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Loại phòng được đặt</h5>
+                    <div class="card-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="roomTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Tháng này
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="roomTypeDropdown">
+                                <li><a class="dropdown-item" href="#">Tháng này</a></li>
+                                <li><a class="dropdown-item" href="#">Quý này</a></li>
+                                <li><a class="dropdown-item" href="#">Năm nay</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="roomTypeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings & Availability -->
+    <div class="row mb-4">
+        <div class="col-xl-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Đặt phòng gần đây</h5>
+                    <a href="/Admin/Bookings" class="btn btn-sm btn-primary">Xem tất cả</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã đặt</th>
+                                    <th>Khách hàng</th>
+                                    <th>Phòng</th>
+                                    <th>Nhận phòng</th>
+                                    <th>Trả phòng</th>
+                                    <th>Trạng thái</th>
+                                    <th>Tổng tiền</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>B001-2023</td>
+                                    <td>Nguyễn Văn A</td>
+                                    <td>Deluxe Hướng Biển</td>
+                                    <td>20/11/2023</td>
+                                    <td>22/11/2023</td>
+                                    <td><span class="badge bg-warning text-dark">Chờ xác nhận</span></td>
+                                    <td>6.000.000 VNĐ</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-check me-2"></i>Xác nhận</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>B002-2023</td>
+                                    <td>Trần Thị B</td>
+                                    <td>Suite Gia Đình</td>
+                                    <td>22/11/2023</td>
+                                    <td>25/11/2023</td>
+                                    <td><span class="badge bg-primary">Đã xác nhận</span></td>
+                                    <td>17.500.000 VNĐ</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-check-double me-2"></i>Hoàn thành</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>B003-2023</td>
+                                    <td>Lê Văn C</td>
+                                    <td>Standard Twin</td>
+                                    <td>18/11/2023</td>
+                                    <td>19/11/2023</td>
+                                    <td><span class="badge bg-success">Hoàn thành</span></td>
+                                    <td>3.600.000 VNĐ</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>B004-2023</td>
+                                    <td>Hoàng Thị D</td>
+                                    <td>Executive Business</td>
+                                    <td>25/11/2023</td>
+                                    <td>27/11/2023</td>
+                                    <td><span class="badge bg-primary">Đã xác nhận</span></td>
+                                    <td>5.400.000 VNĐ</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-check-double me-2"></i>Hoàn thành</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>B005-2023</td>
+                                    <td>Vũ Minh E</td>
+                                    <td>Phòng Tổng Thống</td>
+                                    <td>30/11/2023</td>
+                                    <td>02/12/2023</td>
+                                    <td><span class="badge bg-danger">Đã hủy</span></td>
+                                    <td>16.000.000 VNĐ</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Tình trạng phòng</h5>
+                    <a href="/Admin/Rooms" class="btn btn-sm btn-primary">Quản lý phòng</a>
+                </div>
+                <div class="card-body">
+                    <div class="room-status-chart mb-4">
+                        <canvas id="roomStatusChart" height="200"></canvas>
+                    </div>
+                    <div class="room-status-summary">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="status-item">
+                                    <div class="status-icon available">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="status-details">
+                                        <h4>32</h4>
+                                        <p>Phòng trống</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="status-item">
+                                    <div class="status-icon occupied">
+                                        <i class="fas fa-bed"></i>
+                                    </div>
+                                    <div class="status-details">
+                                        <h4>18</h4>
+                                        <p>Phòng đã đặt</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="status-item">
+                                    <div class="status-icon cleaning">
+                                        <i class="fas fa-broom"></i>
+                                    </div>
+                                    <div class="status-details">
+                                        <h4>5</h4>
+                                        <p>Đang dọn dẹp</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="status-item">
+                                    <div class="status-icon maintenance">
+                                        <i class="fas fa-tools"></i>
+                                    </div>
+                                    <div class="status-details">
+                                        <h4>2</h4>
+                                        <p>Bảo trì</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="row">
+        <div class="col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Đánh giá gần đây</h5>
+                    <a href="/Admin/Reviews" class="btn btn-sm btn-primary">Xem tất cả</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="reviews-list">
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar">
+                                        <span>NT</span>
+                                    </div>
+                                    <div>
+                                        <h6>Nguyễn Thị Thanh</h6>
+                                        <div class="review-date">18/11/2023</div>
+                                    </div>
+                                </div>
+                                <div class="review-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="review-room">Deluxe Hướng Biển</div>
+                            <div class="review-content">
+                                <p>Phòng rộng rãi, sạch sẽ và có view biển tuyệt đẹp. Nhân viên phục vụ rất nhiệt tình và chu đáo.</p>
+                            </div>
+                        </div>
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar">
+                                        <span>ĐM</span>
+                                    </div>
+                                    <div>
+                                        <h6>Đặng Minh</h6>
+                                        <div class="review-date">15/11/2023</div>
+                                    </div>
+                                </div>
+                                <div class="review-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="review-room">Standard Twin</div>
+                            <div class="review-content">
+                                <p>Phòng tốt, sạch sẽ. Điểm trừ là cách âm không tốt lắm, hơi nghe tiếng ồn từ hành lang.</p>
+                            </div>
+                        </div>
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar">
+                                        <span>LH</span>
+                                    </div>
+                                    <div>
+                                        <h6>Lê Hoàng</h6>
+                                        <div class="review-date">14/11/2023</div>
+                                    </div>
+                                </div>
+                                <div class="review-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="review-room">Suite Gia Đình</div>
+                            <div class="review-content">
+                                <p>Phòng rộng nhưng hơi cũ, cần nâng cấp một số nội thất. Bữa sáng ngon và phong phú.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Khách hàng hàng đầu</h5>
+                    <a href="/Admin/Customers" class="btn btn-sm btn-primary">Xem tất cả</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Khách hàng</th>
+                                    <th>Đặt phòng</th>
+                                    <th>Doanh thu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="customer-avatar me-2">
+                                                <span>PT</span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Phạm Tuấn</h6>
+                                                <small class="text-muted">phamtuan@mail.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>8</td>
+                                    <td>64.500.000 VNĐ</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="customer-avatar me-2">
+                                                <span>NH</span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Nguyễn Hương</h6>
+                                                <small class="text-muted">huongnguyen@mail.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>6</td>
+                                    <td>52.800.000 VNĐ</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="customer-avatar me-2">
+                                                <span>TL</span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Trần Linh</h6>
+                                                <small class="text-muted">trlinh@mail.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>5</td>
+                                    <td>48.200.000 VNĐ</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="customer-avatar me-2">
+                                                <span>ĐT</span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Đỗ Thành</h6>
+                                                <small class="text-muted">dothanh@mail.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>4</td>
+                                    <td>39.600.000 VNĐ</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="customer-avatar me-2">
+                                                <span>VH</span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Vũ Hà</h6>
+                                                <small class="text-muted">vuha@mail.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>4</td>
+                                    <td>32.000.000 VNĐ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Thông báo gần đây</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="notifications-list">
+                        <a href="#" class="notification-item unread">
+                            <div class="notification-icon bg-primary">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Đặt phòng mới</div>
+                                <div class="notification-text">Nguyễn Văn A đã đặt Phòng Deluxe Hướng Biển</div>
+                                <div class="notification-time">2 phút trước</div>
+                            </div>
+                        </a>
+                        <a href="#" class="notification-item">
+                            <div class="notification-icon bg-danger">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Hủy đặt phòng</div>
+                                <div class="notification-text">Vũ Minh E đã hủy đặt phòng #B005-2023</div>
+                                <div class="notification-time">1 giờ trước</div>
+                            </div>
+                        </a>
+                        <a href="#" class="notification-item unread">
+                            <div class="notification-icon bg-warning">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Đánh giá mới</div>
+                                <div class="notification-text">Nguyễn Thị Thanh đã đánh giá 5 sao cho Phòng Deluxe</div>
+                                <div class="notification-time">3 giờ trước</div>
+                            </div>
+                        </a>
+                        <a href="#" class="notification-item">
+                            <div class="notification-icon bg-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Thanh toán thành công</div>
+                                <div class="notification-text">Thanh toán #P123 đã được xác nhận</div>
+                                <div class="notification-time">5 giờ trước</div>
+                            </div>
+                        </a>
+                        <a href="#" class="notification-item">
+                            <div class="notification-icon bg-info">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Người dùng mới</div>
+                                <div class="notification-text">Lê Hoàng đã đăng ký tài khoản</div>
+                                <div class="notification-time">1 ngày trước</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="/Admin/Notifications" class="btn btn-sm btn-outline-primary">Xem tất cả thông báo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize date range picker
+            $('#daterange').daterangepicker({
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+                    datasets: [{
+                        label: 'Doanh thu (triệu VNĐ)',
+                        data: [380, 420, 510, 490, 530, 600, 650, 700, 580, 550, 590, 620],
+                        backgroundColor: 'rgba(58, 110, 165, 0.7)',
+                        borderColor: 'rgba(58, 110, 165, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' tr';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Room Types Pie Chart
+            const roomTypeCtx = document.getElementById('roomTypeChart').getContext('2d');
+            const roomTypeChart = new Chart(roomTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Deluxe', 'Standard', 'Suite', 'Family', 'Executive'],
+                    datasets: [{
+                        data: [35, 25, 15, 15, 10],
+                        backgroundColor: [
+                            'rgba(58, 110, 165, 0.8)',
+                            'rgba(28, 200, 138, 0.8)',
+                            'rgba(246, 194, 62, 0.8)',
+                            'rgba(231, 74, 59, 0.8)',
+                            'rgba(78, 115, 223, 0.8)'
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20
+                            }
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%'
+                }
+            });
+
+            // Room Status Chart
+            const roomStatusCtx = document.getElementById('roomStatusChart').getContext('2d');
+            const roomStatusChart = new Chart(roomStatusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Trống', 'Đã đặt', 'Đang dọn dẹp', 'Bảo trì'],
+                    datasets: [{
+                        data: [32, 18, 5, 2],
+                        backgroundColor: [
+                            'rgba(28, 200, 138, 0.8)',
+                            'rgba(246, 194, 62, 0.8)',
+                            'rgba(54, 185, 204, 0.8)',
+                            'rgba(231, 74, 59, 0.8)'
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
+}

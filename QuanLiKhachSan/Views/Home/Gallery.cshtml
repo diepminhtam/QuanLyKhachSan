@@ -1,0 +1,425 @@
+﻿@{
+    ViewData["Title"] = "Thư viện ảnh";
+}
+
+<div class="container gallery-page">
+    <!-- Header Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 text-primary mb-3">Thư Viện Ảnh Khách Sạn</h1>
+            <p class="lead text-muted">Khám phá không gian sang trọng và tiện nghi đẳng cấp của chúng tôi</p>
+            <div class="border-bottom mx-auto" style="width: 100px; height: 3px; background: linear-gradient(to right, #007bff, #6c757d);"></div>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <div class="btn-group" role="group" aria-label="Bộ lọc danh mục ảnh">
+                <button type="button" class="btn btn-outline-primary active" data-filter="all">Tất cả</button>
+                <button type="button" class="btn btn-outline-primary" data-filter="room">Phòng nghỉ</button>
+                <button type="button" class="btn btn-outline-primary" data-filter="restaurant">Nhà hàng</button>
+                <button type="button" class="btn btn-outline-primary" data-filter="pool">Hồ bơi</button>
+                <button type="button" class="btn btn-outline-primary" data-filter="spa">Spa & Wellness</button>
+                <button type="button" class="btn btn-outline-primary" data-filter="view">View & Cảnh quan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div class="row gallery-grid">
+        <!-- Room Images -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="room">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Phòng Deluxe với giường king size và nội thất sang trọng"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&h=600&fit=crop"
+                     data-bs-title="Phòng Deluxe">
+                <div class="card-body">
+                    <h5 class="card-title">Phòng Deluxe</h5>
+                    <p class="card-text text-muted">Phòng sang trọng với view thành phố tuyệt đẹp, trang bị đầy đủ tiện nghi</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="room">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Executive Suite với không gian rộng rãi"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&h=600&fit=crop"
+                     data-bs-title="Executive Suite">
+                <div class="card-body">
+                    <h5 class="card-title">Executive Suite</h5>
+                    <p class="card-text text-muted">Suite cao cấp với phòng khách riêng biệt và view toàn cảnh</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="room">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Phòng Superior với thiết kế hiện đại"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&h=600&fit=crop"
+                     data-bs-title="Phòng Superior">
+                <div class="card-body">
+                    <h5 class="card-title">Phòng Superior</h5>
+                    <p class="card-text text-muted">Phòng tiêu chuẩn cao cấp với đầy đủ tiện nghi cần thiết</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Restaurant Images -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="restaurant">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Nhà hàng chính với không gian ẩm thực đa dạng"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop"
+                     data-bs-title="Nhà hàng chính">
+                <div class="card-body">
+                    <h5 class="card-title">Nhà hàng chính</h5>
+                    <p class="card-text text-muted">Không gian ẩm thực đa dạng với các món ăn quốc tế</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="restaurant">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Rooftop Bar với view thành phố về đêm"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=800&h=600&fit=crop"
+                     data-bs-title="Rooftop Bar">
+                <div class="card-body">
+                    <h5 class="card-title">Rooftop Bar</h5>
+                    <p class="card-text text-muted">Quầy bar tầng thượng với view 360° thành phố</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pool Images -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="pool">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Hồ bơi vô cực với view toàn cảnh"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=800&h=600&fit=crop"
+                     data-bs-title="Hồ bơi Infinity">
+                <div class="card-body">
+                    <h5 class="card-title">Hồ bơi Infinity</h5>
+                    <p class="card-text text-muted">Hồ bơi vô cực với view toàn cảnh thành phố</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="pool">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Hồ bơi trong nhà với khu thư giãn"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop"
+                     data-bs-title="Hồ bơi trong nhà">
+                <div class="card-body">
+                    <h5 class="card-title">Hồ bơi trong nhà</h5>
+                    <p class="card-text text-muted">Hồ bơi 4 mùa với khu vực thư giãn tiện nghi</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spa Images -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="spa">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Khu vực massage và thư giãn tại spa"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=600&fit=crop"
+                     data-bs-title="Spa & Wellness">
+                <div class="card-body">
+                    <h5 class="card-title">Spa & Wellness</h5>
+                    <p class="card-text text-muted">Không gian thư giãn và trị liệu đẳng cấp</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="spa">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Phòng xông hơi khô tại spa"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&h=600&fit=crop"
+                     data-bs-title="Phòng xông hơi">
+                <div class="card-body">
+                    <h5 class="card-title">Phòng xông hơi</h5>
+                    <p class="card-text text-muted">Hệ thống xông hơi khô và ướt tiêu chuẩn 5 sao</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- View & Landscape Images -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="view">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="View thiên nhiên từ phòng nghỉ"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop"
+                     data-bs-title="View thiên nhiên">
+                <div class="card-body">
+                    <h5 class="card-title">View thiên nhiên</h5>
+                    <p class="card-text text-muted">Tầm nhìn tuyệt đẹp ra khung cảnh thiên nhiên</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="view">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="Cảnh quan sân vườn khách sạn"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop"
+                     data-bs-title="Sân vườn khách sạn">
+                <div class="card-body">
+                    <h5 class="card-title">Sân vườn khách sạn</h5>
+                    <p class="card-text text-muted">Khuôn viên xanh mát với thiết kế cảnh quan độc đáo</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="view">
+            <div class="card h-100 shadow-sm">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop"
+                     class="card-img-top gallery-image"
+                     alt="View thành phố về đêm từ khách sạn"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-bs-image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"
+                     data-bs-title="View thành phố về đêm">
+                <div class="card-body">
+                    <h5 class="card-title">View thành phố về đêm</h5>
+                    <p class="card-text text-muted">Khung cảnh thành phố lung linh khi về đêm</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row mt-5 pt-5">
+        <div class="col-12">
+            <div class="bg-light rounded p-5">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-4">
+                        <h3 class="text-primary display-4">50+</h3>
+                        <p class="text-muted">Phòng nghỉ</p>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <h3 class="text-primary display-4">3</h3>
+                        <p class="text-muted">Nhà hàng & Bar</p>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <h3 class="text-primary display-4">2</h3>
+                        <p class="text-muted">Hồ bơi</p>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <h3 class="text-primary display-4">1</h3>
+                        <p class="text-muted">Trung tâm Spa & Wellness</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Image Title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid rounded" alt="">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <a href="@Url.Action("Rooms", "Home")" class="btn btn-primary">
+                    <i class="fas fa-bed me-2"></i>Đặt phòng ngay
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .gallery-page {
+            padding: 2rem 0;
+        }
+
+        .gallery-image {
+            height: 250px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+            .gallery-image:hover {
+                transform: scale(1.05);
+            }
+
+        .card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+            }
+
+        .btn-group .btn {
+            border-radius: 20px;
+            margin: 0 5px;
+            font-weight: 500;
+        }
+
+        .gallery-item {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+            .gallery-item.hidden {
+                display: none;
+            }
+
+        .card-title {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9fa;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Filter functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('[data-filter]');
+            const galleryItems = document.querySelectorAll('.gallery-item');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+
+                    // Update active button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Filter items
+                    galleryItems.forEach(item => {
+                        if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                            item.style.display = 'block';
+                            setTimeout(() => {
+                                item.style.opacity = '1';
+                            }, 50);
+                        } else {
+                            item.style.opacity = '0';
+                            setTimeout(() => {
+                                item.style.display = 'none';
+                            }, 300);
+                        }
+                    });
+                });
+            });
+
+            // Modal functionality
+            const imageModal = document.getElementById('imageModal');
+            if (imageModal) {
+                imageModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const imageSrc = button.getAttribute('data-bs-image');
+                    const imageTitle = button.getAttribute('data-bs-title');
+
+                    const modalTitle = imageModal.querySelector('.modal-title');
+                    const modalImage = imageModal.querySelector('#modalImage');
+
+                    modalTitle.textContent = imageTitle;
+                    modalImage.src = imageSrc;
+                    modalImage.alt = imageTitle;
+                });
+            }
+
+            // Lazy loading images
+            const lazyImages = document.querySelectorAll('.gallery-image');
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.src;
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+
+            lazyImages.forEach(img => imageObserver.observe(img));
+        });
+    </script>
+}

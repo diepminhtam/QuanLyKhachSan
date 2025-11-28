@@ -1,0 +1,372 @@
+﻿@model QuanLiKhachSan.ViewModels.Room.RoomListViewModel
+@{
+    ViewData["Title"] = "Danh sách phòng";
+}
+
+<!-- Room List Header -->
+<div class="room-list-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Danh sách phòng</h1>
+                <nav aria-label="breadcrumb" class="d-flex justify-content-center">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/" aria-label="Trang chủ">Trang chủ</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Danh sách phòng</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Phần còn lại của trang giữ nguyên -->
+<div class="room-list-section">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Filters Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="room-filters">
+                    <h3>Tìm kiếm phòng</h3>
+                    
+                    <form id="filterForm" method="get" asp-action="Rooms" asp-controller="Home" autocomplete="off">
+                        <input type="hidden" name="page" value="1" />
+                        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+                        
+                        <!-- Check-in/Check-out Date -->
+                        <div class="filter-group">
+                            <h5><i class="fas fa-calendar-alt me-2"></i>Thời gian lưu trú</h5>
+                            <div class="form-group mb-3">
+                                <label for="checkin">Nhận phòng</label>
+                                <input type="date" class="form-control" name="checkin" id="checkin" 
+                                       value="@Model.CheckInDate?.ToString("yyyy-MM-dd")" 
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                                       aria-describedby="checkin-help">
+                                <small id="checkin-help" class="form-text text-muted">Chọn ngày nhận phòng</small>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="checkout">Trả phòng</label>
+                                <input type="date" class="form-control" name="checkout" id="checkout" 
+                                       value="@Model.CheckOutDate?.ToString("yyyy-MM-dd")" 
+                                       min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+                                       aria-describedby="checkout-help">
+                                <small id="checkout-help" class="form-text text-muted">Chọn ngày trả phòng</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Guests -->
+                        <div class="filter-group">
+                            <h5><i class="fas fa-users me-2"></i>Số lượng khách</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-group mb-3">
+                                        <label for="adults">Người lớn</label>
+                                        <select class="form-control" name="adults" id="adults" aria-describedby="adults-help">
+                                            @for (int i = 1; i <= 6; i++)
+                                            {
+                                                <option value="@i" selected="@(Model.Adults == i ? "selected" : null)">@i</option>
+                                            }
+                                        </select>
+                                        <small id="adults-help" class="form-text text-muted">Từ 18 tuổi trở lên</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group mb-3">
+                                        <label for="children">Trẻ em</label>
+                                        <select class="form-control" name="children" id="children" aria-describedby="children-help">
+                                            @for (int i = 0; i <= 4; i++)
+                                            {
+                                                <option value="@i" selected=@(Model.Children == i ? "selected" : null)>@i</option>
+                                            }
+                                        </select>
+                                        <small id="children-help" class="form-text text-muted">Dưới 18 tuổi</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Room Type -->
+                        <div class="filter-group">
+                            <h5><i class="fas fa-bed me-2"></i>Loại phòng</h5>
+                            <div class="form-group mb-3">
+                                <select class="form-control" name="roomType" id="roomTypeSelect" aria-describedby="roomtype-help">
+                                    <option value="">Tất cả loại phòng</option>
+                                    @foreach (var type in Model.RoomTypes)
+                                    {
+                                        <option value="@type" selected=@(Model.RoomType == type ? "selected" : null)>@type</option>
+                                    }
+                                </select>
+                                <small id="roomtype-help" class="form-text text-muted">Chọn loại phòng phù hợp</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Price Range -->
+                        <div class="filter-group">
+                            <h5><i class="fas fa-tag me-2"></i>Khoảng giá</h5>
+                            <div class="price-slider-container mb-3">
+                                <input type="hidden" name="minPrice" id="minPrice" value="@(Model.MinPrice ?? Model.LowestPrice)">
+                                <input type="hidden" name="maxPrice" id="maxPrice" value="@(Model.MaxPrice ?? Model.HighestPrice)">
+                                <div id="priceSlider" 
+                                     data-min="@Model.LowestPrice" 
+                                     data-max="@Model.HighestPrice"
+                                     aria-label="Khoảng giá phòng"></div>
+                                <div class="price-range">
+                                    <span id="priceMin">@String.Format("{0:N0}", Model.MinPrice ?? Model.LowestPrice) VNĐ</span>
+                                    <span id="priceMax">@String.Format("{0:N0}", Model.MaxPrice ?? Model.HighestPrice) VNĐ</span>
+                                </div>
+                                <small class="form-text text-muted">Giá phòng mỗi đêm</small>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3" aria-describedby="filter-help">
+                            <i class="fas fa-search me-2"></i>Tìm kiếm phòng
+                        </button>
+                        <small id="filter-help" class="form-text text-muted d-block text-center mb-3">Nhấn để áp dụng bộ lọc</small>
+                        
+                        <div class="text-center">
+                            <a href="@Url.Action("Rooms", "Home")" class="clear-filters" aria-label="Xóa tất cả bộ lọc">
+                                Xóa tất cả bộ lọc
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Room List -->
+            <div class="col-lg-9">
+                <!-- Sorting Options -->
+                <div class="room-sorting mb-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <p class="mb-0">
+                                Hiển thị <strong>@Model.Rooms.Count</strong> của <strong>@Model.TotalRooms</strong> phòng
+                                @if (!string.IsNullOrEmpty(Model.RoomType))
+                                {
+                                    <span class="text-muted">• Loại phòng: <strong>@Model.RoomType</strong></span>
+                                }
+                            </p>
+                        </div>
+                        <div class="sorting-options">
+                            <label for="sortOptions" class="visually-hidden">Sắp xếp theo</label>
+                            <select id="sortOptions" class="form-select" aria-label="Sắp xếp kết quả">
+                                <option value="recommended" selected="@(Model.SortBy == "recommended" ? "selected" : null)">
+                                    <i class="fas fa-star"></i> Đề xuất
+                                </option>
+                                <option value="price-low" selected="@(Model.SortBy == "price-low" ? "selected" : null)">
+                                    <i class="fas fa-arrow-up"></i> Giá: Thấp → Cao
+                                </option>
+                                <option value="price-high" selected="@(Model.SortBy == "price-high" ? "selected" : null)">
+                                    <i class="fas fa-arrow-down"></i> Giá: Cao → Thấp
+                                </option>
+                                <option value="rating" selected="@(Model.SortBy == "rating" ? "selected" : null)">
+                                    <i class="fas fa-star"></i> Xếp hạng cao nhất
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Room Cards -->
+                <div class="room-list" role="list" aria-label="Danh sách phòng">
+                    @if (Model.Rooms.Any())
+                    {
+                        foreach (var room in Model.Rooms)
+                        {
+                            <article class="room-card-horizontal" role="listitem" aria-labelledby="room-@room.Id-title">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <div class="room-img">
+                                            <a href="@Url.Action("Index", "RoomDetails", new { id = room.Id })" aria-label="Xem chi tiết @room.Name">
+                                                <img src="@room.ImageUrl" alt="Hình ảnh phòng @room.Name" class="img-fluid" loading="lazy">
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 position-relative">
+                                        <div class="room-info p-3 d-flex flex-column h-100">
+                                            <div class="room-price-box position-absolute top-0 end-0 m-3" style="z-index:2; min-width:140px; background:#ff6f3c; color:#fff; border-radius:12px; padding:10px 18px 6px 18px; text-align:right; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                                                <span class="price fw-bold fs-5" aria-label="Giá @String.Format("{0:N0}", room.PricePerNight) VNĐ mỗi đêm">@String.Format("{0:N0}", room.PricePerNight) VNĐ</span><br />
+                                                <span class="per-night" style="font-size:0.95em; color:#fff9;">/ đêm</span>
+                                            </div>
+                                            <div class="mb-2 pe-5">
+                                                <h3 class="room-title mb-1" id="room-@room.Id-title">
+                                                    <a href="@Url.Action("Index", "RoomDetails", new { id = room.Id })" aria-describedby="room-@room.Id-desc">@room.Name</a>
+                                                </h3>
+                                                <div class="room-type mb-1">
+                                                    @room.RoomType
+                                                    @if (room.RoomType == "Presidential" || room.RoomType == "Suite")
+                                                    {
+                                                        <span class="badge bg-warning text-dark ms-2" title="Phòng cao cấp">
+                                                            <i class="fas fa-crown"></i> VIP
+                                                        </span>
+                                                    }
+                                                </div>
+                                                <div class="rating mb-2" aria-label="Đánh giá @room.AverageRating.ToString("0.0") trên 5 sao">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        if (i <= Math.Floor(room.AverageRating))
+                                                        {
+                                                            <i class="fas fa-star" aria-hidden="true"></i>
+                                                        }
+                                                        else if (i - room.AverageRating < 1 && i - room.AverageRating > 0)
+                                                        {
+                                                            <i class="fas fa-star-half-alt" aria-hidden="true"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="far fa-star" aria-hidden="true"></i>
+                                                        }
+                                                    }
+                                                    <span class="ms-1">@room.AverageRating.ToString("0.0")</span>
+                                                    <span class="reviews-count">(@room.ReviewsCount đánh giá)</span>
+                                                </div>
+                                            </div>
+                                            <div class="room-description mb-2 pe-5" id="room-@room.Id-desc">
+                                                @(room.Description?.Length > 150 ? $"{room.Description.Substring(0, 150)}..." : room.Description)
+                                            </div>
+                                            <div class="room-features mb-2 pe-5">
+                                                <div class="d-flex flex-wrap">
+                                                    <span class="feature-item" aria-label="Sức chứa @room.Capacity người" title="Sức chứa tối đa">
+                                                        <i class="fas fa-users" aria-hidden="true"></i> @room.Capacity người
+                                                    </span>
+                                                    @foreach (var amenity in room.Amenities.Take(3))
+                                                    {
+                                                        <span class="feature-item" aria-label="Tiện nghi: @amenity" title="@amenity">
+                                                            <i class="fas @(amenity == "WiFi" ? "fa-wifi" : amenity == "TV" ? "fa-tv" : amenity == "Điều hòa" ? "fa-snowflake" : amenity == "Minibar" ? "fa-glass-martini" : amenity == "Két sắt" ? "fa-lock" : "fa-check")" aria-hidden="true"></i>
+                                                            @amenity
+                                                        </span>
+                                                    }
+                                                    @if (room.Amenities.Count > 3)
+                                                    {
+                                                        <span class="feature-item more-features" role="button" tabindex="0" aria-label="Xem thêm @(room.Amenities.Count - 3) tiện nghi khác" title="Xem thêm @(room.Amenities.Count - 3) tiện nghi khác">
+                                                            +@(room.Amenities.Count - 3) tiện nghi khác
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="room-actions mt-auto d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 pe-5">
+                                                <a href="@Url.Action("Index", "RoomDetails", new { id = room.Id })" class="btn btn-outline-primary flex-fill" aria-label="Xem chi tiết phòng @room.Name">
+                                                    <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
+                                                    Chi tiết phòng
+                                                </a>
+                                                <a href="@Url.Action("Create", "Bookings", new { roomId = room.Id, checkin = Model.CheckInDate?.ToString("yyyy-MM-dd"), checkout = Model.CheckOutDate?.ToString("yyyy-MM-dd"), guests = Model.Adults + Model.Children })" class="btn btn-primary flex-fill fw-bold shadow-sm" aria-label="Đặt phòng @room.Name ngay">
+                                                    <i class="fas fa-calendar-check me-1" aria-hidden="true"></i>
+                                                    Đặt ngay
+                                                </a>
+                                                @if (!room.IsAvailable)
+                                                {
+                                                    <span class="badge bg-danger ms-2" title="Phòng đã hết chỗ">
+                                                        <i class="fas fa-times-circle"></i> Hết phòng
+                                                    </span>
+                                                }
+                                                @if (room.IsAvailable)
+                                                {
+                                                    <span class="badge bg-success ms-2" title="Phòng còn trống">
+                                                        <i class="fas fa-check-circle"></i> Còn phòng
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                        
+                        <!-- Pagination -->
+                        @if (Model.TotalPages > 1)
+                        {
+                            <nav aria-label="Điều hướng trang" class="room-pagination mt-4">
+                                <ul class="pagination justify-content-center">
+                                    @if (Model.CurrentPage > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" 
+                                               href="@Url.Action("Rooms", new { 
+                                                   page = Model.CurrentPage - 1, 
+                                                   sortBy = Model.SortBy, 
+                                                   checkin = Model.CheckInDate?.ToString("yyyy-MM-dd"), 
+                                                   checkout = Model.CheckOutDate?.ToString("yyyy-MM-dd"), 
+                                                   adults = Model.Adults, 
+                                                   children = Model.Children, 
+                                                   roomType = Model.RoomType, 
+                                                   minPrice = Model.MinPrice, 
+                                                   maxPrice = Model.MaxPrice 
+                                               })"
+                                               aria-label="Trang trước">
+                                                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    
+                                    @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                                    {
+                                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                            <a class="page-link" 
+                                               href="@Url.Action("Rooms", new { 
+                                                   page = i, 
+                                                   sortBy = Model.SortBy, 
+                                                   checkin = Model.CheckInDate?.ToString("yyyy-MM-dd"), 
+                                                   checkout = Model.CheckOutDate?.ToString("yyyy-MM-dd"), 
+                                                   adults = Model.Adults, 
+                                                   children = Model.Children, 
+                                                   roomType = Model.RoomType, 
+                                                   minPrice = Model.MinPrice, 
+                                                   maxPrice = Model.MaxPrice 
+                                               })"
+                                               aria-label="@(i == Model.CurrentPage ? $"Trang {i} (hiện tại)" : $"Trang {i}")"
+                                               @(i == Model.CurrentPage ? "aria-current=\"page\"" : "")>
+                                                @i
+                                            </a>
+                                        </li>
+                                    }
+                                    
+                                    @if (Model.CurrentPage < Model.TotalPages)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" 
+                                               href="@Url.Action("Rooms", new { 
+                                                   page = Model.CurrentPage + 1, 
+                                                   sortBy = Model.SortBy, 
+                                                   checkin = Model.CheckInDate?.ToString("yyyy-MM-dd"), 
+                                                   checkout = Model.CheckOutDate?.ToString("yyyy-MM-dd"), 
+                                                   adults = Model.Adults, 
+                                                   children = Model.Children, 
+                                                   roomType = Model.RoomType, 
+                                                   minPrice = Model.MinPrice, 
+                                                   maxPrice = Model.MaxPrice 
+                                               })"
+                                               aria-label="Trang tiếp theo">
+                                                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-rooms-found text-center py-5" role="status" aria-live="polite">
+                            <i class="fas fa-bed fa-4x mb-3 text-muted" aria-hidden="true"></i>
+                            <h3>Không tìm thấy phòng nào</h3>
+                            <p class="text-muted mb-4">Không có phòng nào phù hợp với tiêu chí tìm kiếm của bạn. Hãy thử điều chỉnh bộ lọc hoặc thay đổi ngày lưu trú.</p>
+                            <a href="@Url.Action("Rooms", "Home")" class="btn btn-primary" aria-label="Xóa bộ lọc và xem tất cả phòng">
+                                <i class="fas fa-refresh me-2" aria-hidden="true"></i>
+                                Xem tất cả phòng
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.js"></script>
+    <script src="~/js/rooms-list.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.css">
+    <link rel="stylesheet" href="~/css/rooms-list.css" asp-append-version="true" />
+}

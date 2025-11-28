@@ -1,0 +1,547 @@
+﻿@model QuanLiKhachSan.ViewModels.Admin.BookingsViewModel
+@{
+    ViewData["Title"] = "Quản lý đặt phòng";
+    Layout = "_AdminLayout";
+}
+
+@functions {
+    private string GetInitials(string fullName)
+    {
+        if (string.IsNullOrEmpty(fullName)) return "NN";
+        var names = fullName.Split(' ');
+        if (names.Length >= 2)
+            return $"{names[0][0]}{names[^1][0]}".ToUpper();
+        return fullName.Length >= 2 ? fullName[..2].ToUpper() : fullName.ToUpper();
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "chờ xác nhận" or "pending" => "bg-warning text-dark",
+            "đã xác nhận" or "confirmed" => "bg-primary",
+            "hoàn thành" or "completed" => "bg-success",
+            "đã hủy" or "cancelled" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPaymentStatusBadgeClass(string paymentStatus)
+    {
+        return paymentStatus?.ToLower() switch
+        {
+            "đã thanh toán" or "paid" => "bg-success",
+            "chờ thanh toán" or "pending" => "bg-warning text-dark",
+            "thất bại" or "failed" => "bg-danger",
+            "hoàn tiền" or "refunded" => "bg-info",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+<div class="admin-bookings">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <h1 class="h3 mb-0">Quản lý đặt phòng</h1>
+            <div class="date-range-picker">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                    <input type="text" class="form-control" id="daterange" placeholder="Chọn khoảng thời gian">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Status Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card status-card h-100 pending">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="status-title">Chờ xác nhận</h6>
+                            <h3 class="status-value">24</h3>
+                        </div>
+                        <div class="status-icon">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="view-all-link" data-status="pending">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card status-card h-100 confirmed">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="status-title">Đã xác nhận</h6>
+                            <h3 class="status-value">42</h3>
+                        </div>
+                        <div class="status-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="view-all-link" data-status="confirmed">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card status-card h-100 completed">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="status-title">Hoàn thành</h6>
+                            <h3 class="status-value">156</h3>
+                        </div>
+                        <div class="status-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="view-all-link" data-status="completed">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card status-card h-100 cancelled">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="status-title">Đã hủy</h6>
+                            <h3 class="status-value">18</h3>
+                        </div>
+                        <div class="status-icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="view-all-link" data-status="cancelled">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="bookingSearchForm" class="booking-search-form">
+                <div class="row g-3">
+                    <div class="col-lg-2 col-md-4">
+                        <input type="text" class="form-control" placeholder="Mã đặt phòng" name="bookingId">
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <input type="text" class="form-control" placeholder="Tên khách hàng" name="customerName">
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <select class="form-select" name="status">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="pending">Chờ xác nhận</option>
+                            <option value="confirmed">Đã xác nhận</option>
+                            <option value="completed">Hoàn thành</option>
+                            <option value="cancelled">Đã hủy</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <input type="date" class="form-control" placeholder="Từ ngày" name="startDate">
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <input type="date" class="form-control" placeholder="Đến ngày" name="endDate">
+                    </div>
+                    <div class="col-lg-1 col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Danh sách đặt phòng</h5>
+                <div class="d-flex">
+                    <div class="dropdown me-2">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download me-1"></i> Xuất
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-2"></i>Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-2"></i>PDF</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-2"></i>CSV</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <tbody>
+                        @if (Model.Bookings != null && Model.Bookings.Any())
+                        {
+                            foreach (var booking in Model.Bookings)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox">
+                                        </div>
+                                    </td>
+                                    <td><a href="#" class="booking-link">@booking.BookingNumber</a></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                <span>@GetInitials(booking.CustomerName)</span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">@booking.CustomerName</h6>
+                                                <small class="text-muted">@booking.CustomerEmail</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@booking.RoomName</td>
+                                    <td>@booking.CheckInDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@booking.CheckOutDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@booking.GuestCount</td>
+                                    <td>@booking.TotalPrice.ToString("N0") VNĐ</td>
+                                    <td>
+                                        <span class="badge @GetStatusBadgeClass(booking.Status)">
+                                            @booking.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetPaymentStatusBadgeClass(booking.PaymentStatus)">
+                                            @booking.PaymentStatus
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                                <li><a class="dropdown-item confirm-action" href="#"><i class="fas fa-check me-2"></i>Xác nhận</a></li>
+                                                <li><a class="dropdown-item cancel-action" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="11" class="text-center py-4">
+                                    <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">Không có đơn đặt phòng nào</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                            <td><span class="badge bg-success">Đã thanh toán</span></td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i>In hóa đơn</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox">
+                                </div>
+                            </td>
+                            <td><a href="#" class="booking-link">B004-2023</a></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle me-2">
+                                        <span>HD</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Hoàng Thị D</h6>
+                                        <small class="text-muted">hoangthid@mail.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Executive Business</td>
+                            <td>25/11/2023</td>
+                            <td>27/11/2023</td>
+                            <td>1</td>
+                            <td>5.400.000 VNĐ</td>
+                            <td><span class="badge bg-primary">Đã xác nhận</span></td>
+                            <td><span class="badge bg-warning text-dark">Chờ thanh toán</span></td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                        <li><a class="dropdown-item complete-action" href="#"><i class="fas fa-check-double me-2"></i>Hoàn thành</a></li>
+                                        <li><a class="dropdown-item cancel-action" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox">
+                                </div>
+                            </td>
+                            <td><a href="#" class="booking-link">B005-2023</a></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle me-2">
+                                        <span>VM</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Vũ Minh E</h6>
+                                        <small class="text-muted">vuminhe@mail.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Phòng Tổng Thống</td>
+                            <td>30/11/2023</td>
+                            <td>02/12/2023</td>
+                            <td>2</td>
+                            <td>16.000.000 VNĐ</td>
+                            <td><span class="badge bg-danger">Đã hủy</span></td>
+                            <td><span class="badge bg-secondary">Hoàn tiền</span></td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="pagination-info">
+                    Hiển thị <span>1</span> đến <span>5</span> của <span>240</span> mục
+                </div>
+                <ul class="pagination mb-0">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <div class="items-per-page">
+                    <select class="form-select form-select-sm">
+                        <option value="10">10 / trang</option>
+                        <option value="25">25 / trang</option>
+                        <option value="50">50 / trang</option>
+                        <option value="100">100 / trang</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Fixed Bar (appears when items are selected) -->
+    <div class="bulk-actions-bar" style="display: none;">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <span class="selected-count">5</span> mục đã chọn
+                </div>
+                <div class="bulk-actions">
+                    <button class="btn btn-sm btn-outline-primary me-2" id="bulkConfirm">
+                        <i class="fas fa-check me-1"></i> Xác nhận
+                    </button>
+                    <button class="btn btn-sm btn-outline-success me-2" id="bulkComplete">
+                        <i class="fas fa-check-double me-1"></i> Hoàn thành
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger me-2" id="bulkCancel">
+                        <i class="fas fa-times me-1"></i> Hủy
+                    </button>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary ms-auto" id="clearSelection">
+                    <i class="fas fa-times me-1"></i> Bỏ chọn
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Xác nhận thao tác</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmationMessage">Bạn có chắc chắn muốn thực hiện thao tác này?</p>
+                <div class="alert alert-warning d-none" id="warningMessage">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span>Cảnh báo: Thao tác này không thể hoàn tác.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirmAction">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize date range picker
+            $('#daterange').daterangepicker({
+                opens: 'left',
+                locale: {
+                    format: 'DD/MM/YYYY'
+                },
+                ranges: {
+                   'Hôm nay': [moment(), moment()],
+                   'Hôm qua': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                   '7 ngày trước': [moment().subtract(6, 'days'), moment()],
+                   '30 ngày trước': [moment().subtract(29, 'days'), moment()],
+                   'Tháng này': [moment().startOf('month'), moment().endOf('month')],
+                   'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            });
+
+            // Select all checkboxes
+            $('#selectAll').change(function() {
+                $('tbody .form-check-input').prop('checked', this.checked);
+                updateBulkActionsBar();
+            });
+
+            // Individual checkbox change
+            $('tbody .form-check-input').change(function() {
+                updateBulkActionsBar();
+            });
+
+            // Function to update bulk actions bar
+            function updateBulkActionsBar() {
+                const selectedCount = $('tbody .form-check-input:checked').length;
+                if (selectedCount > 0) {
+                    $('.selected-count').text(selectedCount);
+                    $('.bulk-actions-bar').fadeIn();
+                } else {
+                    $('.bulk-actions-bar').fadeOut();
+                }
+            }
+
+            // Clear selection
+            $('#clearSelection').click(function() {
+                $('tbody .form-check-input').prop('checked', false);
+                $('#selectAll').prop('checked', false);
+                updateBulkActionsBar();
+            });
+
+            // Initialize action buttons
+            $('.confirm-action, .complete-action, .cancel-action').click(function(e) {
+                e.preventDefault();
+                let action = '';
+                let btnClass = '';
+
+                if ($(this).hasClass('confirm-action')) {
+                    action = 'xác nhận';
+                    btnClass = 'btn-primary';
+                    $('#warningMessage').addClass('d-none');
+                } else if ($(this).hasClass('complete-action')) {
+                    action = 'hoàn thành';
+                    btnClass = 'btn-success';
+                    $('#warningMessage').addClass('d-none');
+                } else if ($(this).hasClass('cancel-action')) {
+                    action = 'hủy';
+                    btnClass = 'btn-danger';
+                    $('#warningMessage').removeClass('d-none');
+                }
+
+                $('#confirmationMessage').text(`Bạn có chắc chắn muốn ${action} đơn đặt phòng này?`);
+                $('#confirmAction').removeClass('btn-primary btn-success btn-danger').addClass(btnClass);
+
+                $('#confirmationModal').modal('show');
+            });
+
+            // Bulk actions
+            $('#bulkConfirm, #bulkComplete, #bulkCancel').click(function() {
+                let action = '';
+                let btnClass = '';
+
+                if ($(this).attr('id') === 'bulkConfirm') {
+                    action = 'xác nhận';
+                    btnClass = 'btn-primary';
+                    $('#warningMessage').addClass('d-none');
+                } else if ($(this).attr('id') === 'bulkComplete') {
+                    action = 'hoàn thành';
+                    btnClass = 'btn-success';
+                    $('#warningMessage').addClass('d-none');
+                } else if ($(this).attr('id') === 'bulkCancel') {
+                    action = 'hủy';
+                    btnClass = 'btn-danger';
+                    $('#warningMessage').removeClass('d-none');
+                }
+
+                const selectedCount = $('tbody .form-check-input:checked').length;
+                $('#confirmationMessage').text(`Bạn có chắc chắn muốn ${action} ${selectedCount} đơn đặt phòng đã chọn?`);
+                $('#confirmAction').removeClass('btn-primary btn-success btn-danger').addClass(btnClass);
+
+                $('#confirmationModal').modal('show');
+            });
+
+            // Filter by status
+            $('.view-all-link').click(function(e) {
+                e.preventDefault();
+                const status = $(this).data('status');
+                $('select[name="status"]').val(status);
+                // Submit form or trigger search
+                $('#bookingSearchForm').submit();
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="~/css/admin-bookings.css" asp-append-version="true" />
+}

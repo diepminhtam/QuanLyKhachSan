@@ -1,0 +1,30 @@
+﻿public class AdminController : Controller
+{
+    private readonly IReviewService _reviewService;
+
+    public AdminController(IReviewService reviewService)
+    {
+        _reviewService = reviewService;
+    }
+
+    public async Task<IActionResult>
+    Reviews()
+    {
+    var reviews = await _reviewService.GetAllReviewsAsync();
+    var viewModel = reviews.Select(r => new ReviewViewModel
+    {
+    Id = r.Id,
+    CustomerName = r.Customer.FullName,
+    CustomerEmail = r.Customer.Email,
+    RoomName = r.Room.Name,
+    RoomType = r.Room.RoomType,
+    Rating = r.Rating,
+    Title = r.Title,
+    Comment = r.Comment,
+    Status = r.Status,
+    CreatedDate = r.CreatedDate
+    }).ToList();
+
+    return View(viewModel);
+    }
+    }
