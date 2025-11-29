@@ -188,3 +188,4 @@ D:\QuanLiKhachSan\QuanLiKhachSan\bin\Debug\net6.0\System.Net.WebSockets.WebSocke
 D:\QuanLiKhachSan\QuanLiKhachSan\bin\Debug\net6.0\System.Text.Encodings.Web.dll
 D:\QuanLiKhachSan\QuanLiKhachSan\bin\Debug\net6.0\System.Threading.Channels.dll
 D:\QuanLiKhachSan\QuanLiKhachSan\bin\Debug\net6.0\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll
+D:\QuanLiKhachSan\QuanLiKhachSan\obj\Debug\net6.0\QuanLiKhachSan.sourcelink.json
