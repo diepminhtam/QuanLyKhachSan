@@ -1,0 +1,48 @@
+@model QuanLiKhachSan.ViewModels.Account.ProfileViewModel
+@{
+    ViewData["Title"] = "Hồ sơ";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-profile">
+    <div class="page-header mb-4 d-flex justify-content-between align-items-center">
+        <h1 class="h3 mb-0">Hồ sơ quản trị</h1>
+        <a href="/Admin/Profile/Edit" class="btn btn-primary btn-sm">Chỉnh sửa hồ sơ</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <div class="avatar-circle mx-auto mb-3" style="width:96px;height:96px;font-size:32px;">A</div>
+                            <h5 class="card-title">@((Model?.FirstName ?? "") + " " + (Model?.LastName ?? "")).Trim() != "" ? ((Model?.FirstName ?? "") + " " + (Model?.LastName ?? "")).Trim() : "Admin"</h5>
+                            <p class="text-muted">Quản trị viên</p>
+                            <p class="small text-muted">@Model?.Email</p>
+                        </div>
+                    </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Thông tin liên hệ</h5>
+                    <dl class="row">
+                        <dt class="col-sm-3">Email</dt>
+                        <dd class="col-sm-9">@Model?.Email</dd>
+
+                        <dt class="col-sm-3">Số điện thoại</dt>
+                        <dd class="col-sm-9">@Model?.PhoneNumber ?? "—"</dd>
+
+                        <dt class="col-sm-3">Địa chỉ</dt>
+                        <dd class="col-sm-9">@Model?.Address ?? "—"</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // profile-related JS (if needed)
+    </script>
+}
