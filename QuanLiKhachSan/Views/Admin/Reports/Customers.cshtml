@@ -1,0 +1,71 @@
+@{
+    ViewData["Title"] = "Báo cáo - Khách hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-reports container-fluid">
+    <link rel="stylesheet" href="~/css/admin-reports.css" asp-append-version="true" />
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0">Báo cáo khách hàng</h1>
+            <small class="text-muted">Danh sách khách hàng hàng đầu theo doanh thu (demo).</small>
+        </div>
+    </div>
+
+    <div class="row gx-4 gy-3">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-3">Top khách hàng theo doanh thu</h5>
+                    <div id="topCustomers">Đang tải...</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-3">Biểu đồ khách hàng</h5>
+                    <canvas id="customersChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function(){
+            async function load(){
+                try{
+                    const res = await fetch('/Admin/Reports/Data');
+                    const j = await res.json();
+                    const top = j.topCustomers || [];
+                    const container = document.getElementById('topCustomers');
+                    container.innerHTML = '';
+                    if(!top.length){ container.textContent = 'Không có dữ liệu khách hàng.'; }
+                    else {
+                        const ul = document.createElement('div'); ul.className='list-group';
+                        top.forEach(c => {
+                            const item = document.createElement('div');
+                            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                            item.innerHTML = `<div><div class="fw-semibold">${c.Name}</div><small class="text-muted">${c.Bookings || c.Count || 0} đặt — ${new Intl.NumberFormat('vi-VN').format(c.Total||0)} VNĐ</small></div><div class="text-end"><a href='/Admin/Users/Details/${c.UserId || ""}' class='btn btn-sm btn-outline-secondary'>Xem</a></div>`;
+                            ul.appendChild(item);
+                        });
+                        container.appendChild(ul);
+                    }
+
+                    // customers chart (bar) top 6
+                    const labels = top.map(t=>t.Name).slice(0,6);
+                    const data = top.map(t=>t.Total||0).slice(0,6);
+                    const ctx = document.getElementById('customersChart')?.getContext('2d');
+                    if(ctx){ if(window._custChart) window._custChart.destroy(); window._custChart = new Chart(ctx, { type:'bar', data:{ labels, datasets:[{ label:'Doanh thu', data, backgroundColor:'#36B9CC' }] }, options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback: v => new Intl.NumberFormat('vi-VN').format(v) } } } } }); }
+
+                }catch(e){ document.getElementById('topCustomers').textContent = 'Không thể tải dữ liệu.' }
+            }
+            document.addEventListener('DOMContentLoaded', load);
+        })();
+    </script>
+
+<!-- Styles loaded inline in the view to avoid nested Razor sections -->
+}

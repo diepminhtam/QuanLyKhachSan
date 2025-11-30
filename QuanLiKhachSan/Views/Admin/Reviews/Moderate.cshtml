@@ -1,0 +1,92 @@
+@model List<QuanLiKhachSan.ViewModels.Admin.ReviewViewModel>
+@{
+    ViewData["Title"] = "Quản lý đánh giá";
+    Layout = "_AdminLayout";
+}
+
+<link rel="stylesheet" href="~/css/admin-ui.css" />
+
+<div class="admin-reviews container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0">Quản lý đánh giá</h1>
+            <small class="text-muted">Danh sách đánh giá cần xét duyệt và quản trị.</small>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Khách hàng</th>
+                            <th>Phòng</th>
+                            <th>Tiêu đề</th>
+                            <th>Nội dung</th>
+                            <th>Điểm</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var r in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <strong>@r.CustomerName</strong>
+                                            <small class="text-muted">@r.CustomerEmail</small>
+                                        </div>
+                                    </td>
+                                    <td>@r.RoomName<br /><small class="text-muted">@r.RoomType</small></td>
+                                    <td>@r.Title</td>
+                                    <td>@r.Comment</td>
+                                    <td>@r.Rating</td>
+                                    <td>
+                                        <span class="badge @(r.Status=="Approved"?"bg-success":(r.Status=="Rejected"?"bg-danger":"bg-warning text-dark"))">@r.Status</span>
+                                    </td>
+                                    <td>@r.CreatedDate.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-success approve-review" data-id="@r.Id">Phê duyệt</button>
+                                            <button class="btn btn-sm btn-danger reject-review" data-id="@r.Id">Từ chối</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">Không có đánh giá nào.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+            function toast(m){ alert(m); }
+            document.addEventListener('click', function(e){
+                var el = e.target;
+                if(el.closest('.approve-review')){
+                    var id = el.closest('.approve-review').getAttribute('data-id');
+                    fetch('/Admin/Reviews/Approve/' + id, { method: 'POST' }).then(r=>r.json()).then(j=>{ if(j.success){ toast(j.message); location.reload(); } else toast(j.message||'Lỗi'); }).catch(()=>toast('Lỗi mạng'));
+                }
+                if(el.closest('.reject-review')){
+                    var id = el.closest('.reject-review').getAttribute('data-id');
+                    fetch('/Admin/Reviews/Reject/' + id, { method: 'POST' }).then(r=>r.json()).then(j=>{ if(j.success){ toast(j.message); location.reload(); } else toast(j.message||'Lỗi'); }).catch(()=>toast('Lỗi mạng'));
+                }
+            });
+        })();
+    </script>
+}

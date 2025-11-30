@@ -2,6 +2,7 @@
     ViewData["Title"] = "Cài đặt";
     Layout = "_AdminLayout";
 }
+<link rel="stylesheet" href="~/css/admin-ui.css" />
 
 <div class="admin-settings container-fluid">
     <div class="d-flex align-items-center justify-content-between mb-4">
@@ -11,18 +12,21 @@
         </div>
     </div>
 
-    <div class="card mb-4">
+    <div class="admin-card mb-4">
         <div class="card-body">
-            <form id="settingsForm">
-                <div class="mb-3">
-                    <label class="form-label">Tiêu đề trang</label>
-                    <input name="siteTitle" id="siteTitle" class="form-control" />
+            <form id="settingsForm" class="admin-form">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tiêu đề trang</label>
+                        <input name="siteTitle" id="siteTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email hỗ trợ</label>
+                        <input name="supportEmail" id="supportEmail" type="email" class="form-control" />
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Email hỗ trợ</label>
-                    <input name="supportEmail" id="supportEmail" type="email" class="form-control" />
-                </div>
-                <div class="text-end">
+                <div class="text-end mt-2">
+                    <button type="button" id="btnLoadSettings" class="btn btn-outline-secondary">Tải</button>
                     <button type="submit" class="btn btn-primary">Lưu</button>
                 </div>
             </form>
@@ -33,15 +37,16 @@
 @section Scripts {
     <script>
         (function(){
-            function toast(m){ alert(m); }
+            function toast(m){ try{ if(window.toastr) toastr.success(m); else alert(m); }catch(e){alert(m);} }
             function load(){
                 fetch('/Admin/Settings/Load').then(r=>r.json()).then(j=>{ if(j.success && j.settings){ try{ var s = j.settings; document.getElementById('siteTitle').value = s.SiteTitle || ''; document.getElementById('supportEmail').value = s.SupportEmail || ''; }catch(e){} } });
             }
             document.getElementById('settingsForm')?.addEventListener('submit', function(e){
                 e.preventDefault();
                 var fd = new FormData(this);
-                fetch('/Admin/Settings/Save', { method: 'POST', body: fd }).then(r=>r.json()).then(j=>{ if(j.success) toast(j.message); else toast(j.message||'Lỗi'); });
+                fetch('/Admin/Settings/Save', { method: 'POST', body: fd, headers: { 'X-Requested-With':'XMLHttpRequest' } }).then(r=>r.json()).then(j=>{ if(j.success) toast(j.message||'Đã lưu'); else toast(j.message||'Lỗi'); });
             });
+            document.getElementById('btnLoadSettings')?.addEventListener('click', function(){ load(); });
             document.addEventListener('DOMContentLoaded', load);
         })();
     </script>

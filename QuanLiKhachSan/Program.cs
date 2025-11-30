@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using QuanLiKhachSan.Data;
 using QuanLiKhachSan.Models;
-using QuanLiKhachSan.Services.Implementations;
 using QuanLiKhachSan.Services.Interfaces;
+using QuanLiKhachSan.Services.Implementations;
 
 namespace QuanLiKhachSan
 {
@@ -13,53 +13,32 @@ namespace QuanLiKhachSan
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add DbContext
+            // DbContext
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                ?? throw new InvalidOperationException("Connection string not found.");
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            // Add Identity với cấu hình đầy đủ
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-            {
-                options.SignIn.RequireConfirmedAccount = false;
+            // Identity
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
-                // Cấu hình password
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequiredLength = 6;
-
-                // Cấu hình user
-                options.User.RequireUniqueEmail = true;
-            })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
-
-            // Cấu hình Application Cookie
             builder.Services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = "/Account/Login";
-                options.LogoutPath = "/Account/Logout";
                 options.AccessDeniedPath = "/Account/AccessDenied";
             });
 
-            // Add services to the container.
-            builder.Services.AddScoped<QuanLiKhachSan.Filters.ViewModelLoggingFilter>();
-            builder.Services.AddControllersWithViews(options =>
-            {
-                // Register filter as a service so it can log view model types for debugging
-                options.Filters.AddService<QuanLiKhachSan.Filters.ViewModelLoggingFilter>();
-            });
-
-            // Đăng ký các services
+            // Services
             builder.Services.AddScoped<IRoomService, RoomService>();
-            builder.Services.AddScoped<IReviewService, ReviewService>(); 
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+
+            builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -70,34 +49,28 @@ namespace QuanLiKhachSan
             app.UseStaticFiles();
 
             app.UseRouting();
-
-            // QUAN TRỌNG: Thêm UseAuthentication() trước UseAuthorization()
             app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            // Seed Database
+            // SEED DATABASE
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+
                 try
                 {
-                    await SeedData.InitializeAsync(services);
-
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogInformation("Database seeding completed successfully.");
+                    await SeedData.InitializeAsync(
+                        services,
+                        builder.Configuration
+                    );
                 }
                 catch (Exception ex)
                 {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while seeding the database: {ErrorMessage}", ex.Message);
-
-                    Console.WriteLine($"Seed error: {ex.Message}");
-                    Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                    Console.WriteLine("Seed error: " + ex.Message);
                 }
             }
 

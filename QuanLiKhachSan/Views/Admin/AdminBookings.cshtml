@@ -182,7 +182,7 @@
                             <th class="text-end">Tổng</th>
                             <th>Trạng thái</th>
                             <th>Thanh toán</th>
-                            <th></th>
+                            <th style="width:160px" class="text-end">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -211,17 +211,15 @@
                                     <td>@booking.CheckOutDate.ToString("dd/MM/yyyy")</td>
                                     <td>@booking.GuestCount</td>
                                     <td class="text-end">@booking.TotalPrice.ToString("N0") VNĐ</td>
-                                    <td><span class="badge @GetStatusBadgeClass(booking.Status)">@booking.Status</span></td>
-                                    <td><span class="badge @GetPaymentStatusBadgeClass(booking.PaymentStatus)">@booking.PaymentStatus</span></td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                                <li><a class="dropdown-item confirm-action" href="#" data-id="@booking.Id"><i class="fas fa-check me-2"></i>Xác nhận</a></li>
-                                                <li><a class="dropdown-item cancel-action" href="#" data-id="@booking.Id"><i class="fas fa-times me-2"></i>Hủy</a></li>
-                                            </ul>
-                                        </div>
+                                    <td><span class="badge @GetStatusBadgeClass(booking.Status ?? "")">@booking.Status</span></td>
+                                    <td><span class="badge @GetPaymentStatusBadgeClass(booking.PaymentStatus ?? "")">@booking.PaymentStatus</span></td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-secondary booking-action-btn me-1" href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })" title="Chi tiết" aria-label="Chi tiết" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-eye"></i></a>
+                                        @if (!(booking.Status?.ToLower() == "đã xác nhận" || booking.Status?.ToLower() == "confirmed"))
+                                        {
+                                            <button type="button" class="btn btn-sm btn-success booking-action-btn confirm-action me-1" data-id="@booking.Id" title="Xác nhận" aria-label="Xác nhận đơn" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-check"></i></button>
+                                        }
+                                        <button type="button" class="btn btn-sm btn-danger booking-action-btn cancel-action" data-id="@booking.Id" title="Hủy" aria-label="Hủy đơn" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-times"></i></button>
                                     </td>
                                 </tr>
                             }
@@ -339,6 +337,12 @@
                         locale:{format:'DD/MM/YYYY'}, opens:'left'
                     });
                 }
+
+                // initialize bootstrap tooltips (if bootstrap loaded)
+                try{
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+                } catch(e){ /* ignore if bootstrap not present */ }
 
                 // select all
                 document.getElementById('selectAll')?.addEventListener('change', function(){

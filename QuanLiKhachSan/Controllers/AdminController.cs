@@ -285,23 +285,37 @@ namespace QuanLiKhachSan.Controllers
                 .Include(b => b.BookingStatus)
                 .ToListAsync();
 
+            // Map bookings to view model items
+            var items = bookings.Select(b => new BookingItemViewModel
+            {
+                Id = b.Id,
+                BookingNumber = $"BK{b.Id:D6}",
+                CustomerName = b.User?.FullName ?? "-",
+                CustomerEmail = b.User?.Email ?? "",
+                RoomName = b.Room?.Name ?? "-",
+                CheckInDate = b.CheckIn,
+                CheckOutDate = b.CheckOut,
+                GuestCount = b.Guests,
+                TotalPrice = b.TotalPrice,
+                Status = b.BookingStatus?.Name ?? "",
+                PaymentStatus = b.Payments != null && b.Payments.Any() ? "Đã thanh toán" : "Chưa thanh toán",
+                BookingDate = b.CreatedDate
+            }).ToList();
+
+            // Compute counts by status using status name keywords (robust to language)
+            int pending = bookings.Count(b => (b.BookingStatus == null) || (b.BookingStatus.Name != null && (b.BookingStatus.Name.ToLower().Contains("chờ") || b.BookingStatus.Name.ToLower().Contains("pending") || b.BookingStatus.Name.ToLower().Contains("wait"))));
+            int confirmed = bookings.Count(b => b.BookingStatus != null && (b.BookingStatus.Name.ToLower().Contains("xác nhận") || b.BookingStatus.Name.ToLower().Contains("confirmed") || b.BookingStatus.Name.ToLower().Contains("confirm")));
+            int completed = bookings.Count(b => b.BookingStatus != null && (b.BookingStatus.Name.ToLower().Contains("hoàn thành") || b.BookingStatus.Name.ToLower().Contains("completed") || b.BookingStatus.Name.ToLower().Contains("complete")));
+            int cancelled = bookings.Count(b => b.BookingStatus != null && (b.BookingStatus.Name.ToLower().Contains("hủy") || b.BookingStatus.Name.ToLower().Contains("cancelled") || b.BookingStatus.Name.ToLower().Contains("cancel")));
+
             var viewModel = new BookingsViewModel
             {
-                Bookings = bookings.Select(b => new BookingItemViewModel
-                {
-                    Id = b.Id,
-                    BookingNumber = $"BK{b.Id:D6}",
-                    CustomerName = b.User.FullName,
-                    CustomerEmail = b.User.Email, // THÊM EMAIL
-                    RoomName = b.Room.Name,
-                    CheckInDate = b.CheckIn,
-                    CheckOutDate = b.CheckOut,
-                    GuestCount = b.Guests, // SỬA THÀNH GuestCount
-                    TotalPrice = b.TotalPrice,
-                    Status = b.BookingStatus.Name,
-                    PaymentStatus = "Chưa thanh toán", // TẠM THỜI
-                    BookingDate = b.CreatedDate
-                }).ToList()
+                Bookings = items,
+                TotalBookings = items.Count,
+                PendingCount = pending,
+                ConfirmedCount = confirmed,
+                CompletedCount = completed,
+                CancelledCount = cancelled
             };
 
             return View("AdminBookings", viewModel);
@@ -452,16 +466,39 @@ namespace QuanLiKhachSan.Controllers
 
         // --- Reviews moderation endpoints (AJAX) ---
         [HttpPost("Reviews/Approve/{id}")]
-        public IActionResult ApproveReview(int id)
+        public async Task<IActionResult> ApproveReview(int id)
         {
-            // In this demo repo reviews are sample data. In a real app you'd update DB here.
-            return Json(new { success = true, message = $"Đã phê duyệt đánh giá #{id}" });
+            var review = await _context.Reviews.FirstOrDefaultAsync(r => r.Id == id);
+            if (review == null) return Json(new { success = false, message = "Không tìm thấy đánh giá" });
+            try
+            {
+                review.Status = "Active"; // approved
+                review.UpdatedDate = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = $"Đã phê duyệt đánh giá #{id}" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         [HttpPost("Reviews/Reject/{id}")]
-        public IActionResult RejectReview(int id)
+        public async Task<IActionResult> RejectReview(int id)
         {
-            return Json(new { success = true, message = $"Đã từ chối đánh giá #{id}" });
+            var review = await _context.Reviews.FirstOrDefaultAsync(r => r.Id == id);
+            if (review == null) return Json(new { success = false, message = "Không tìm thấy đánh giá" });
+            try
+            {
+                review.Status = "Inactive"; // rejected
+                review.UpdatedDate = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = $"Đã từ chối đánh giá #{id}" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         // --- Promotions (in-memory demo store) ---
@@ -517,7 +554,55 @@ namespace QuanLiKhachSan.Controllers
                 values.Add(found?.Total ?? 0m);
             }
 
-            return Json(new { totalRevenue, totalBookings, totalCustomers, labels, values });
+            // Room counts and occupancy
+            var rooms = await _context.Rooms.ToListAsync();
+            var now = DateTime.Now;
+            var occupiedRoomIds = await _context.Bookings
+                .Where(b => b.CheckIn <= now && b.CheckOut >= now)
+                .Select(b => b.RoomId)
+                .Distinct()
+                .ToListAsync();
+
+            var totalRooms = rooms.Count;
+            var occupiedCount = occupiedRoomIds.Distinct().Count();
+            var availableCount = rooms.Count(r => r.IsAvailable && !occupiedRoomIds.Contains(r.Id));
+            var maintenanceCount = rooms.Count(r => !r.IsAvailable);
+
+            // bookings by status
+            var bookingsByStatusRaw = await _context.Bookings
+                .Include(b => b.BookingStatus)
+                .GroupBy(b => b.BookingStatus != null ? b.BookingStatus.Name : "Unknown")
+                .Select(g => new { Status = g.Key ?? "Unknown", Count = g.Count() })
+                .ToListAsync();
+
+            var bookingsStatusLabels = bookingsByStatusRaw.Select(x => x.Status).ToList();
+            var bookingsStatusValues = bookingsByStatusRaw.Select(x => x.Count).ToList();
+
+            // top customers by revenue (top 10)
+            var topCustomersRaw = await _context.Bookings
+                .Where(b => b.UserId != null)
+                .GroupBy(b => b.UserId)
+                .Select(g => new { UserId = g.Key, Total = g.Sum(x => (decimal?)x.TotalPrice) ?? 0m, Count = g.Count() })
+                .OrderByDescending(x => x.Total)
+                .Take(10)
+                .ToListAsync();
+
+            var userIds = topCustomersRaw.Select(x => x.UserId).ToList();
+            var users = await _context.Users.Where(u => userIds.Contains(u.Id)).ToListAsync();
+
+            var topCustomers = topCustomersRaw.Select(x => new { UserId = x.UserId, Name = users.FirstOrDefault(u => u.Id == x.UserId)?.FullName ?? x.UserId, Total = x.Total, Count = x.Count }).ToList();
+
+            return Json(new
+            {
+                totalRevenue,
+                totalBookings,
+                totalCustomers,
+                labels,
+                values,
+                roomCounts = new { totalRooms, occupiedCount, availableCount, maintenanceCount },
+                bookingsByStatus = new { labels = bookingsStatusLabels, values = bookingsStatusValues },
+                topCustomers
+            });
         }
 
         // --- Settings save/load (JSON file under App_Data) ---
@@ -657,6 +742,30 @@ namespace QuanLiKhachSan.Controllers
             return View("AdminReports");
         }
 
+        [HttpGet("Reports/Revenue")]
+        public IActionResult ReportsRevenue()
+        {
+            return View("~/Views/Admin/Reports/Revenue.cshtml");
+        }
+
+        [HttpGet("Reports/Occupancy")]
+        public IActionResult ReportsOccupancy()
+        {
+            return View("~/Views/Admin/Reports/Occupancy.cshtml");
+        }
+
+        [HttpGet("Reports/Customers")]
+        public IActionResult ReportsCustomers()
+        {
+            return View("~/Views/Admin/Reports/Customers.cshtml");
+        }
+
+        [HttpGet("Settings")]
+        public IActionResult Settings()
+        {
+            return View("Settings");
+        }
+
         [HttpGet("AddRoom")]
         public IActionResult AddRoom()
         {
@@ -690,79 +799,55 @@ namespace QuanLiKhachSan.Controllers
             return View(model);
         }
 
-        public IActionResult Reviews()
+        public async Task<IActionResult> Reviews()
         {
-            // Tạo dữ liệu mẫu trực tiếp
-            var reviews = new List<ReviewViewModel>
+            var reviewsRaw = await _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Room)
+                .OrderByDescending(r => r.CreatedDate)
+                .ToListAsync();
+
+            var reviews = reviewsRaw.Select(r => new ReviewViewModel
             {
-                new ReviewViewModel
-                {
-                    Id = 1,
-                    CustomerName = "Nguyễn Văn A",
-                    CustomerEmail = "nguyena@email.com",
-                    RoomName = "Deluxe Room",
-                    RoomType = "Deluxe",
-                    Rating = 5,
-                    Title = "Trải nghiệm tuyệt vời!",
-                    Comment = "Phòng rất sạch sẽ, nhân viên thân thiện. Tôi rất hài lòng!",
-                    Status = "Approved",
-                    CreatedDate = DateTime.Now.AddDays(-2)
-                },
-                new ReviewViewModel
-                {
-                    Id = 2,
-                    CustomerName = "Trần Thị B",
-                    CustomerEmail = "tranb@email.com",
-                    RoomName = "Superior Room",
-                    RoomType = "Superior",
-                    Rating = 4,
-                    Title = "Tốt nhưng cần cải thiện",
-                    Comment = "Phòng đẹp nhưng wifi hơi chậm. Nhìn chung là tốt.",
-                    Status = "Pending",
-                    CreatedDate = DateTime.Now.AddDays(-1)
-                },
-                new ReviewViewModel
-                {
-                    Id = 3,
-                    CustomerName = "Lê Văn C",
-                    CustomerEmail = "lec@email.com",
-                    RoomName = "Executive Suite",
-                    RoomType = "Suite",
-                    Rating = 3,
-                    Title = "Bình thường",
-                    Comment = "Phòng ổn nhưng không có gì đặc biệt. Giá hơi cao.",
-                    Status = "Pending",
-                    CreatedDate = DateTime.Now
-                },
-                new ReviewViewModel
-                {
-                    Id = 4,
-                    CustomerName = "Phạm Thị D",
-                    CustomerEmail = "phamd@email.com",
-                    RoomName = "Family Room",
-                    RoomType = "Family",
-                    Rating = 5,
-                    Title = "Hoàn hảo cho gia đình",
-                    Comment = "Phòng rộng rãi, view đẹp. Dịch vụ rất tốt!",
-                    Status = "Approved",
-                    CreatedDate = DateTime.Now.AddDays(-3)
-                },
-                new ReviewViewModel
-                {
-                    Id = 5,
-                    CustomerName = "Hoàng Văn E",
-                    CustomerEmail = "hoange@email.com",
-                    RoomName = "Standard Room",
-                    RoomType = "Standard",
-                    Rating = 2,
-                    Title = "Không như mong đợi",
-                    Comment = "Phòng nhỏ, thiết bị cũ. Cần cải thiện nhiều.",
-                    Status = "Rejected",
-                    CreatedDate = DateTime.Now.AddDays(-5)
-                }
-            };
+                Id = r.Id,
+                CustomerName = r.User?.FullName ?? "-",
+                CustomerEmail = r.User?.Email ?? "",
+                RoomName = r.Room?.Name ?? "-",
+                RoomType = r.Room?.RoomType ?? "",
+                Rating = r.Rating,
+                Title = "", // no title in model
+                Comment = r.Comment,
+                Status = (r.Status ?? "").Equals("Active", StringComparison.OrdinalIgnoreCase) ? "Approved" : ((r.Status ?? "").Equals("Inactive", StringComparison.OrdinalIgnoreCase) ? "Rejected" : "Pending"),
+                CreatedDate = r.CreatedDate
+            }).ToList();
 
             return View(reviews);
+        }
+
+        [HttpGet("Reviews/Moderate")]
+        public async Task<IActionResult> ModerateReviews()
+        {
+            var reviewsRaw = await _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Room)
+                .OrderByDescending(r => r.CreatedDate)
+                .ToListAsync();
+
+            var reviews = reviewsRaw.Select(r => new ReviewViewModel
+            {
+                Id = r.Id,
+                CustomerName = r.User?.FullName ?? "-",
+                CustomerEmail = r.User?.Email ?? "",
+                RoomName = r.Room?.Name ?? "-",
+                RoomType = r.Room?.RoomType ?? "",
+                Rating = r.Rating,
+                Title = "",
+                Comment = r.Comment,
+                Status = (r.Status ?? "").Equals("Active", StringComparison.OrdinalIgnoreCase) ? "Approved" : ((r.Status ?? "").Equals("Inactive", StringComparison.OrdinalIgnoreCase) ? "Rejected" : "Pending"),
+                CreatedDate = r.CreatedDate
+            }).ToList();
+
+            return View("~/Views/Admin/Reviews/Moderate.cshtml", reviews);
         }
 
         [HttpPost("ConfirmBooking/{id}")]
@@ -986,8 +1071,8 @@ namespace QuanLiKhachSan.Controllers
                 GuestPhone = booking.User?.PhoneNumber ?? "",
                 RoomPrice = booking.TotalPrice,
                 TotalPrice = booking.TotalPrice,
-                PaymentStatus = booking.Payments.Any() ? "Đã thanh toán" : "Chưa thanh toán",
-                PaymentMethod = booking.Payments.FirstOrDefault()?.PaymentStatus.Name ?? "",
+                PaymentStatus = (booking.Payments != null && booking.Payments.Any()) ? "Đã thanh toán" : "Chưa thanh toán",
+                PaymentMethod = booking.Payments?.FirstOrDefault()?.PaymentStatus?.Name ?? "",
                 BookingActivities = new List<QuanLiKhachSan.ViewModels.Booking.BookingActivityViewModel>()
             };
 
@@ -1009,7 +1094,8 @@ namespace QuanLiKhachSan.Controllers
             }
 
             // Add payments as activities
-            foreach (var p in booking.Payments.OrderByDescending(p => p.PaymentDate))
+            var payments = booking.Payments?.OrderByDescending(p => p.PaymentDate) ?? Enumerable.Empty<QuanLiKhachSan.Models.Payment>();
+            foreach (var p in payments)
             {
                 vm.BookingActivities.Add(new QuanLiKhachSan.ViewModels.Booking.BookingActivityViewModel
                 {

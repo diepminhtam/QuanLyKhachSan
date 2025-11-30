@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Báo cáo - Công suất";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-reports container-fluid">
+    <link rel="stylesheet" href="~/css/admin-reports.css" asp-append-version="true" />
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0">Báo cáo công suất</h1>
+            <small class="text-muted">Tình trạng phòng và công suất sử dụng.</small>
+        </div>
+        <div>
+            <a class="btn btn-outline-secondary" href="/Admin/Reports">Quay lại</a>
+        </div>
+    </div>
+
+    <div class="row gx-4 gy-3 mb-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div style="width:140px">
+                            <canvas id="occupancyChart" height="180"></canvas>
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h5 class="mb-1">Công suất hiện tại</h5>
+                            <div class="d-flex align-items-baseline gap-2">
+                                <div class="display-6 fw-bold" id="occupancyPercent">—%</div>
+                                <small class="text-muted">tổng</small>
+                            </div>
+                            <p class="text-muted mb-0">Tỉ lệ phòng đang sử dụng trên tổng số phòng.</p>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="d-flex gap-2">
+                        <div class="flex-fill text-center">
+                            <small class="text-muted">Tổng phòng</small>
+                            <div class="h5 mt-1" id="totalRooms">—</div>
+                        </div>
+                        <div class="flex-fill text-center">
+                            <small class="text-muted">Đang sử dụng</small>
+                            <div class="h5 mt-1 text-success" id="occupiedCount">—</div>
+                        </div>
+                        <div class="flex-fill text-center">
+                            <small class="text-muted">Trống</small>
+                            <div class="h5 mt-1 text-info" id="availableCount">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Phân bố trạng thái phòng</h5>
+                        <div>
+                            <small class="text-muted">Cập nhật: <span id="occupancyUpdated">—</span></small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0" id="occupancyLegend"></ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <thead>
+                                        <tr><th>Phòng</th><th class="text-end">Số lượt đặt</th></tr>
+                                    </thead>
+                                    <tbody id="topRoomsTable">
+                                        <tr><td colspan="2" class="text-muted">Không có dữ liệu.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function(){
+            async function load(){
+                try{
+                    const res = await fetch('/Admin/Reports/Data');
+                    const j = await res.json();
+                    const rc = j.roomCounts || {};
+                    const total = Number(rc.totalRooms || 0);
+                    const occ = Number(rc.occupiedCount || 0);
+                    const avail = Number(rc.availableCount || 0);
+                    const maint = Number(rc.maintenanceCount || 0);
+
+                    document.getElementById('totalRooms').textContent = total || '-';
+                    document.getElementById('occupiedCount').textContent = occ || '-';
+                    document.getElementById('availableCount').textContent = avail || '-';
+                    document.getElementById('occupancyUpdated').textContent = new Date().toLocaleString();
+
+                    const labels = (j.bookingsByStatus && j.bookingsByStatus.labels && j.bookingsByStatus.labels.length) ? j.bookingsByStatus.labels : ['Đang sử dụng','Trống','Bảo trì'];
+                    const data = (j.bookingsByStatus && j.bookingsByStatus.values && j.bookingsByStatus.values.length) ? j.bookingsByStatus.values.map(Number) : [occ, avail, maint];
+                    const colors = ['#1CC88A','#36B9CC','#F6C23E','#E74A3B'];
+
+                    const ctx = document.getElementById('occupancyChart')?.getContext('2d');
+                    if(ctx){
+                        // destroy previous chart if exists
+                        if(window._occupancyChart) window._occupancyChart.destroy();
+                        window._occupancyChart = new Chart(ctx, {
+                            type: 'doughnut',
+                            data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, data.length) }] },
+                            options: {
+                                responsive: true,
+                                cutout: '65%',
+                                plugins: {
+                                    legend: { display: false }
+                                }
+                            },
+                            plugins: [{
+                                id: 'center-text',
+                                afterDraw: chart => {
+                                    const w = chart.width, h = chart.height;
+                                    const txt = total ? Math.round((occ/total)*100) + '%' : '-';
+                                    const ctx2 = chart.ctx;
+                                    ctx2.restore();
+                                    const fontSize = (h / 140).toFixed(2);
+                                    ctx2.font = `${Math.max(18, fontSize*24)}px sans-serif`;
+                                    ctx2.textBaseline = 'middle';
+                                    const textX = Math.round((chart.chartArea.left + chart.chartArea.right) / 2);
+                                    const textY = Math.round((chart.chartArea.top + chart.chartArea.bottom) / 2);
+                                    ctx2.fillStyle = '#111827';
+                                    ctx2.fillText(txt, textX, textY);
+                                    ctx2.save();
+                                }
+                            }]
+                        });
+                    }
+
+                    // legend
+                    const legend = document.getElementById('occupancyLegend');
+                    legend.innerHTML = '';
+                    labels.forEach((l, i) => {
+                        const val = data[i] || 0;
+                        const li = document.createElement('li');
+                        li.className = 'mb-2 d-flex align-items-center gap-2';
+                        li.innerHTML = `<span style="width:12px;height:12px;background:${colors[i%colors.length]};display:inline-block;border-radius:3px;"></span><div class="flex-grow-1">${l}</div><div class="text-muted">${val}</div>`;
+                        legend.appendChild(li);
+                    });
+
+                    // top rooms table
+                    const topRooms = j.topRooms || [];
+                    const tbl = document.getElementById('topRoomsTable');
+                    tbl.innerHTML = '';
+                    if(topRooms.length){
+                        topRooms.slice(0,6).forEach(r => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `<td>${r.roomName || r.name}</td><td class="text-end">${r.bookings || r.count || 0}</td>`;
+                            tbl.appendChild(tr);
+                        });
+                    } else {
+                        tbl.innerHTML = '<tr><td colspan="2" class="text-muted">Không có dữ liệu.</td></tr>';
+                    }
+
+                    // occupancy percent
+                    const percent = total ? Math.round((occ/total)*100) : 0;
+                    document.getElementById('occupancyPercent').textContent = total ? percent + '%' : '-';
+
+                }catch(e){ console.error(e); }
+            }
+            document.addEventListener('DOMContentLoaded', load);
+        })();
+    </script>
+}
+
+<!-- Styles loaded inline in the view to avoid nested Razor sections -->

@@ -1,0 +1,137 @@
+/* Shared admin UI styles */
+:root {
+  --admin-bg: #f8f9fc;
+  --card-bg: #fff;
+  --muted: #6c757d;
+  --accent: #405bff;
+  --success: #1cc88a;
+  --danger: #e74a3b;
+}
+
+.admin-card {
+  background: var(--card-bg);
+  border-radius: 0.6rem;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+}
+.admin-card .card-body {
+  padding: 1.25rem;
+}
+
+.admin-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.admin-toolbar .btn {
+  min-width: 44px;
+}
+
+.admin-form .form-label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.admin-table thead th {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.admin-table tbody td {
+  vertical-align: middle;
+}
+
+/* small metrics */
+.admin-metrics {
+  display: flex;
+  gap: 0.75rem;
+}
+.admin-metrics .metric {
+  background: linear-gradient(
+    180deg,
+    rgba(64, 91, 255, 0.04),
+    rgba(64, 91, 255, 0.01)
+  );
+  padding: 0.85rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+.admin-metrics .metric .value {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+/* promotion card */
+.promo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.promo-code {
+  font-family: monospace;
+  font-weight: 700;
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+}
+
+/* review moderation */
+.review-item {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+.review-item .meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* settings form */
+.settings-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* responsive tweaks */
+@media (max-width: 768px) {
+  .admin-metrics {
+    flex-direction: column;
+  }
+}
+
+/* User detail specific styles */
+.user-avatar {
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+.admin-user-details .activity-timeline li {
+  position: relative;
+  padding-left: 0;
+}
+.activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.activity-content h6 {
+  margin-bottom: 0.25rem;
+}
+.activity-timeline .activity-icon {
+  margin-right: 0.75rem;
+}
+.admin-user-details .list-group-item {
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+.admin-user-details .admin-card .card-body {
+  padding: 1rem;
+}
+
+/* Small metric card */
+.admin-card.text-center .value {
+  font-size: 1.05rem;
+  color: var(--accent);
+}

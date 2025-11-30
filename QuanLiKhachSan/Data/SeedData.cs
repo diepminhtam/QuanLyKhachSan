@@ -1,4 +1,4 @@
-﻿using QuanLiKhachSan.Models; 
+﻿using QuanLiKhachSan.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,7 +6,7 @@ namespace QuanLiKhachSan.Data
 {
     public class SeedData
     {
-        public static async Task InitializeAsync(IServiceProvider services)
+        public static async Task InitializeAsync(IServiceProvider services, IConfiguration configuration)
         {
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
@@ -15,94 +15,77 @@ namespace QuanLiKhachSan.Data
 
             try
             {
-                // Đảm bảo database được tạo
+                // Đảm bảo DB cập nhật
                 await context.Database.MigrateAsync();
 
-                // Seed Roles
+                // Seed các thành phần cơ bản
                 await SeedRolesAsync(roleManager, logger);
-
-                // Seed Admin User
                 await SeedAdminUserAsync(userManager, logger);
-
-                // Seed Status Data
                 await SeedBookingStatusesAsync(context, logger);
                 await SeedPaymentStatusesAsync(context, logger);
 
-                // Cập nhật dữ liệu Rooms thành tiếng Việt
-                await UpdateRoomsToVietnameseAsync(context, logger);
+                // Đọc biến FirstRun
+                bool firstRun = configuration.GetValue<bool>("FirstRun");
+
+                await UpdateRoomsToVietnameseAsync(context, logger, firstRun);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred while seeding the database: {ErrorMessage}", ex.Message);
+                logger.LogError(ex, "An error occurred while seeding the database.");
                 throw;
             }
         }
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager, ILogger logger)
         {
-            logger.LogInformation("Checking if Admin role exists...");
-
             if (!await roleManager.RoleExistsAsync("Admin"))
-            {
-                logger.LogInformation("Creating Admin role...");
-                var result = await roleManager.CreateAsync(new IdentityRole("Admin"));
-                // ... (Xử lý lỗi) ...
-            }
+                await roleManager.CreateAsync(new IdentityRole("Admin"));
 
-            // Tạo role Guest nếu cần
             if (!await roleManager.RoleExistsAsync("Guest"))
-            {
-                logger.LogInformation("Creating Guest role...");
-                var result = await roleManager.CreateAsync(new IdentityRole("Guest"));
-                // ... (Xử lý lỗi) ...
-            }
+                await roleManager.CreateAsync(new IdentityRole("Guest"));
         }
 
         private static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, ILogger logger)
         {
-            logger.LogInformation("Checking if admin user exists...");
-            var adminUser = await userManager.FindByEmailAsync("admin@hotel.com");
+            var admin = await userManager.FindByEmailAsync("admin@hotel.com");
 
-            if (adminUser == null)
+            if (admin == null)
             {
-                logger.LogInformation("Creating admin user...");
-                adminUser = new ApplicationUser
+                admin = new ApplicationUser
                 {
                     UserName = "admin@hotel.com",
                     Email = "admin@hotel.com",
-                    EmailConfirmed = true,
-                    FullName = "Administrator"
+                    FullName = "Administrator",
+                    EmailConfirmed = true
                 };
 
-                var createResult = await userManager.CreateAsync(adminUser, "Admin123!");
+                var result = await userManager.CreateAsync(admin, "Admin123!");
 
-                if (createResult.Succeeded)
-                {
-                    logger.LogInformation("Admin user created successfully.");
-                    var roleResult = await userManager.AddToRoleAsync(adminUser, "Admin");
-                    // ... (Xử lý lỗi) ...
-                }
-                // ... (Xử lý lỗi) ...
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(admin, "Admin");
             }
         }
 
-        // Tệp PDF gốc có một hàm SeedRoomsAsync, nhưng sau đó lại có
-        // UpdateRoomsToVietnameseAsync. Tôi sẽ dùng hàm Update vì nó là hàm cuối cùng.
-        private static async Task UpdateRoomsToVietnameseAsync(ApplicationDbContext context, ILogger logger)
+        private static async Task UpdateRoomsToVietnameseAsync(ApplicationDbContext context, ILogger logger, bool firstRun)
         {
-            logger.LogInformation("Updating rooms to Vietnamese data...");
-
-            // Xóa tất cả rooms hiện tại
-            var existingRooms = context.Rooms.ToList();
-            if (existingRooms.Any())
+            if (!firstRun)
             {
-                context.Rooms.RemoveRange(existingRooms);
-                await context.SaveChangesAsync();
-                logger.LogInformation("Removed {Count} existing rooms.", existingRooms.Count);
+                logger.LogInformation("FirstRun = false → Skip seeding Rooms.");
+                return;
             }
 
-            // Thêm rooms tiếng Việt
-            var vietnameseRooms = new List<Room>
+            logger.LogInformation("FirstRun = true → Seeding Rooms...");
+
+            // Xóa toàn bộ Rooms
+            var existing = context.Rooms.ToList();
+            if (existing.Any())
+            {
+                context.Rooms.RemoveRange(existing);
+                await context.SaveChangesAsync();
+            }
+
+            // Thêm Rooms mới
+            var rooms = new List<Room>
             {
                 new Room
                 {
@@ -161,26 +144,22 @@ namespace QuanLiKhachSan.Data
                 }
             };
 
-            context.Rooms.AddRange(vietnameseRooms);
+            context.Rooms.AddRange(rooms);
             await context.SaveChangesAsync();
-            logger.LogInformation("Added {Count} Vietnamese rooms successfully.", vietnameseRooms.Count);
+            logger.LogInformation("Seeding Rooms completed.");
         }
 
         private static async Task SeedBookingStatusesAsync(ApplicationDbContext context, ILogger logger)
         {
             if (!context.BookingStatuses.Any())
             {
-                logger.LogInformation("Seeding booking statuses...");
-                var statuses = new List<BookingStatus>
-                {
-                    new BookingStatus { Name = "Chờ xác nhận", Description = "Đơn đặt phòng đang chờ xác nhận", IsActive = true },
-                    new BookingStatus { Name = "Đã xác nhận", Description = "Đơn đặt phòng đã được xác nhận và thanh toán", IsActive = true },
-                    new BookingStatus { Name = "Hoàn thành", Description = "Khách đã check-out", IsActive = true },
-                    new BookingStatus { Name = "Đã hủy", Description = "Đơn đặt phòng đã bị hủy", IsActive = true }
-                };
-                context.BookingStatuses.AddRange(statuses);
+                context.BookingStatuses.AddRange(
+                    new BookingStatus { Name = "Chờ xác nhận", IsActive = true },
+                    new BookingStatus { Name = "Đã xác nhận", IsActive = true },
+                    new BookingStatus { Name = "Hoàn thành", IsActive = true },
+                    new BookingStatus { Name = "Đã hủy", IsActive = true }
+                );
                 await context.SaveChangesAsync();
-                logger.LogInformation("Booking statuses seeded successfully.");
             }
         }
 
@@ -188,17 +167,13 @@ namespace QuanLiKhachSan.Data
         {
             if (!context.PaymentStatuses.Any())
             {
-                logger.LogInformation("Seeding payment statuses...");
-                var statuses = new List<PaymentStatus>
-                {
-                    new PaymentStatus { Name = "Đang xử lý", Description = "Thanh toán đang được xử lý", IsActive = true },
-                    new PaymentStatus { Name = "Thành công", Description = "Thanh toán thành công", IsActive = true },
-                    new PaymentStatus { Name = "Thất bại", Description = "Thanh toán thất bại", IsActive = true },
-                    new PaymentStatus { Name = "Đã hoàn tiền", Description = "Đã hoàn tiền", IsActive = true }
-                };
-                context.PaymentStatuses.AddRange(statuses);
+                context.PaymentStatuses.AddRange(
+                    new PaymentStatus { Name = "Đang xử lý", IsActive = true },
+                    new PaymentStatus { Name = "Thành công", IsActive = true },
+                    new PaymentStatus { Name = "Thất bại", IsActive = true },
+                    new PaymentStatus { Name = "Đã hoàn tiền", IsActive = true }
+                );
                 await context.SaveChangesAsync();
-                logger.LogInformation("Payment statuses seeded successfully.");
             }
         }
     }

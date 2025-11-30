@@ -1,0 +1,63 @@
+/* Admin Reports Styles - Occupancy */
+:root {
+  --report-card-bg: #ffffff;
+  --muted: #6c757d;
+  --title-color: #1f2937;
+  --accent: #3a6ea5;
+}
+
+.admin-reports h1,
+.admin-reports h5 {
+  color: var(--title-color);
+}
+
+.admin-reports .card {
+  border-radius: 0.6rem;
+}
+.admin-reports .card .card-body {
+  padding: 1.25rem;
+}
+
+/* Occupancy chart container */
+#occupancyChart {
+  max-width: 100%;
+}
+
+/* Metric displays */
+.admin-reports .display-6 {
+  color: var(--accent);
+}
+
+/* Legend list */
+#occupancyLegend li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#occupancyLegend li div {
+  flex: 1;
+  margin-left: 0.6rem;
+}
+
+/* Top rooms table */
+#topRoomsTable td {
+  padding: 0.45rem 0.5rem;
+}
+
+/* Make the small cards more prominent */
+.admin-reports .h5 {
+  font-weight: 600;
+}
+
+/* Responsive tweaks */
+@media (max-width: 992px) {
+  .admin-reports .display-6 {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .admin-reports .d-flex.align-items-center > div:first-child {
+    margin-bottom: 0.75rem;
+  }
+}
