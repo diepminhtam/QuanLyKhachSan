@@ -8,7 +8,17 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Chi tiết đặt phòng <small class="text-muted">#@Model.BookingNumber</small></h2>
         <div>
-            <button id="confirmBtn" class="btn btn-primary me-2">Xác nhận</button>
+            @{
+                // Hide the Confirm button if the booking is already confirmed
+                var status = Model?.Status ?? string.Empty;
+                bool isConfirmed = status.IndexOf("xác nhận", StringComparison.OrdinalIgnoreCase) >= 0 || status.IndexOf("confirm", StringComparison.OrdinalIgnoreCase) >= 0 || status.IndexOf("đã xác nhận", StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+
+            @if (!isConfirmed)
+            {
+                <button id="confirmBtn" class="btn btn-primary me-2">Xác nhận</button>
+            }
+
             <button id="cancelBtn" class="btn btn-danger">Hủy</button>
             <a class="btn btn-outline-secondary ms-2" href="@Url.Action("Bookings", "Admin")">Quay lại</a>
         </div>
