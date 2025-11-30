@@ -39,161 +39,138 @@
     }
 }
 
-<div class="admin-bookings">
-    <!-- Page Header -->
-    <div class="page-header mb-4">
-        <div class="d-flex align-items-center justify-content-between">
+<div class="admin-bookings container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
             <h1 class="h3 mb-0">Quản lý đặt phòng</h1>
-            <div class="date-range-picker">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                    <input type="text" class="form-control" id="daterange" placeholder="Chọn khoảng thời gian">
-                </div>
+            <small class="text-muted">Quản lý, lọc và xử lý các đơn đặt phòng.</small>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" id="refreshBtn" title="Làm mới danh sách"><i class="fas fa-sync-alt"></i></button>
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">Xuất</button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="@Url.Action("Export", "Admin", new { format = "excel" })">Excel</a></li>
+                    <li><a class="dropdown-item" href="@Url.Action("Export", "Admin", new { format = "pdf" })">PDF</a></li>
+                    <li><a class="dropdown-item" href="@Url.Action("Export", "Admin", new { format = "csv" })">CSV</a></li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- Booking Status Cards -->
+    <!-- Summary cards -->
     <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card status-card h-100 pending">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="status-title">Chờ xác nhận</h6>
-                            <h3 class="status-value">@Model.PendingCount</h3>
-                        </div>
-                        <div class="status-icon">
-                            <i class="fas fa-hourglass-half"></i>
-                        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Chờ xác nhận</small>
+                        <h4 class="mb-0">@Model.PendingCount</h4>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <a href="#" class="view-all-link" data-status="pending">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                    <i class="fas fa-hourglass-half fa-2x text-warning"></i>
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card status-card h-100 confirmed">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="status-title">Đã xác nhận</h6>
-                            <h3 class="status-value">@Model.ConfirmedCount</h3>
-                        </div>
-                        <div class="status-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Đã xác nhận</small>
+                        <h4 class="mb-0">@Model.ConfirmedCount</h4>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <a href="#" class="view-all-link" data-status="confirmed">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                    <i class="fas fa-calendar-check fa-2x text-primary"></i>
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card status-card h-100 completed">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="status-title">Hoàn thành</h6>
-                            <h3 class="status-value">@Model.CompletedCount</h3>
-                        </div>
-                        <div class="status-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Hoàn thành</small>
+                        <h4 class="mb-0">@Model.CompletedCount</h4>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <a href="#" class="view-all-link" data-status="completed">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                    <i class="fas fa-check-circle fa-2x text-success"></i>
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card status-card h-100 cancelled">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="status-title">Đã hủy</h6>
-                            <h3 class="status-value">@Model.CancelledCount</h3>
-                        </div>
-                        <div class="status-icon">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Đã hủy</small>
+                        <h4 class="mb-0">@Model.CancelledCount</h4>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <a href="#" class="view-all-link" data-status="cancelled">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                    <i class="fas fa-times-circle fa-2x text-danger"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Search & Filter Bar -->
+    <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
-            <form id="bookingSearchForm" class="booking-search-form">
-                <div class="row g-3">
-                    <div class="col-lg-2 col-md-4">
-                        <input type="text" class="form-control" placeholder="Mã đặt phòng" name="bookingId">
-                    </div>
-                    <div class="col-lg-3 col-md-4">
-                        <input type="text" class="form-control" placeholder="Tên khách hàng" name="customerName">
-                    </div>
-                    <div class="col-lg-2 col-md-4">
-                        <select class="form-select" name="status">
-                            <option value="">Tất cả trạng thái</option>
+            <form id="bookingSearchForm" method="get" class="row g-2 align-items-end">
+                <div class="col-lg-3">
+                    <label class="form-label">Mã đặt phòng</label>
+                    <input type="text" class="form-control" name="bookingId" value="@Context.Request.Query["bookingId"]" />
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label">Tên khách hàng</label>
+                    <input type="text" class="form-control" name="customerName" value="@Context.Request.Query["customerName"]" />
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" name="status">
+                        <option value="">Tất cả trạng thái</option>
+                        @if (Context.Request.Query["status"] == "pending") {
+                            <option value="pending" selected>Chờ xác nhận</option>
+                        } else {
                             <option value="pending">Chờ xác nhận</option>
+                        }
+
+                        @if (Context.Request.Query["status"] == "confirmed") {
+                            <option value="confirmed" selected>Đã xác nhận</option>
+                        } else {
                             <option value="confirmed">Đã xác nhận</option>
+                        }
+
+                        @if (Context.Request.Query["status"] == "completed") {
+                            <option value="completed" selected>Hoàn thành</option>
+                        } else {
                             <option value="completed">Hoàn thành</option>
+                        }
+
+                        @if (Context.Request.Query["status"] == "cancelled") {
+                            <option value="cancelled" selected>Đã hủy</option>
+                        } else {
                             <option value="cancelled">Đã hủy</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-4">
-                        <input type="date" class="form-control" placeholder="Từ ngày" name="startDate">
-                    </div>
-                    <div class="col-lg-2 col-md-4">
-                        <input type="date" class="form-control" placeholder="Đến ngày" name="endDate">
-                    </div>
-                    <div class="col-lg-1 col-md-4">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
+                        }
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label">Từ ngày</label>
+                    <input type="date" class="form-control" name="startDate" value="@Context.Request.Query["startDate"]" />
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label">Đến ngày</label>
+                    <input type="date" class="form-control" name="endDate" value="@Context.Request.Query["endDate"]" />
+                </div>
+
+                <input type="hidden" name="page" id="currentPage" value="@(Context.Request.Query["page"].ToString()==""?"1":Context.Request.Query["page"].ToString())" />
+
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Tìm kiếm</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Bookings Table -->
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Danh sách đặt phòng</h5>
-                <div class="d-flex">
-                    <div class="dropdown me-2">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-download me-1"></i> Xuất
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-2"></i>Excel</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-2"></i>PDF</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-2"></i>CSV</a></li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-sm btn-outline-secondary" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- Table -->
+    <div class="card mb-4">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
                             <th style="width:40px"><input id="selectAll" type="checkbox" /></th>
                             <th>Mã</th>
@@ -202,7 +179,7 @@
                             <th>Nhận</th>
                             <th>Trả</th>
                             <th>Khách</th>
-                            <th>Tổng</th>
+                            <th class="text-end">Tổng</th>
                             <th>Trạng thái</th>
                             <th>Thanh toán</th>
                             <th></th>
@@ -213,20 +190,18 @@
                         {
                             foreach (var booking in Model.Bookings)
                             {
-                                <tr>
+                                <tr data-id="@booking.Id">
                                     <td>
                                         <div class="form-check">
-                                            <input class="form-check-input booking-checkbox" type="checkbox" value="@booking.Id">
+                                            <input class="form-check-input booking-checkbox" type="checkbox" value="@booking.Id" />
                                         </div>
                                     </td>
                                     <td><a href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })" class="booking-link">@booking.BookingNumber</a></td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-2">
-                                                <span>@GetInitials(booking.CustomerName)</span>
-                                            </div>
+                                            <div class="avatar-circle me-2">@GetInitials(booking.CustomerName)</div>
                                             <div>
-                                                <h6 class="mb-0">@booking.CustomerName</h6>
+                                                <div class="fw-semibold">@booking.CustomerName</div>
                                                 <small class="text-muted">@booking.CustomerEmail</small>
                                             </div>
                                         </div>
@@ -235,18 +210,12 @@
                                     <td>@booking.CheckInDate.ToString("dd/MM/yyyy")</td>
                                     <td>@booking.CheckOutDate.ToString("dd/MM/yyyy")</td>
                                     <td>@booking.GuestCount</td>
-                                    <td>@booking.TotalPrice.ToString("N0") VNĐ</td>
-                                    <td>
-                                        <span class="badge @GetStatusBadgeClass(booking.Status) booking-status-badge">@booking.Status</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge @GetPaymentStatusBadgeClass(booking.PaymentStatus) booking-payment-badge">@booking.PaymentStatus</span>
-                                    </td>
+                                    <td class="text-end">@booking.TotalPrice.ToString("N0") VNĐ</td>
+                                    <td><span class="badge @GetStatusBadgeClass(booking.Status)">@booking.Status</span></td>
+                                    <td><span class="badge @GetPaymentStatusBadgeClass(booking.PaymentStatus)">@booking.PaymentStatus</span></td>
                                     <td>
                                         <div class="dropdown">
-                                            <button class="btn btn-sm action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
+                                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end">
                                                 <li><a class="dropdown-item" href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
                                                 <li><a class="dropdown-item confirm-action" href="#" data-id="@booking.Id"><i class="fas fa-check me-2"></i>Xác nhận</a></li>
@@ -262,124 +231,40 @@
                             <tr>
                                 <td colspan="11" class="text-center py-4">
                                     <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
-                                    <p class="text-muted">Không có đơn đặt phòng nào</p>
+                                    <div class="text-muted">Không có đơn đặt phòng nào.</div>
                                 </td>
                             </tr>
                         }
                     </tbody>
-                            <td><span class="badge bg-success">Đã thanh toán</span></td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                        <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i>In hóa đơn</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td><a href="#" class="booking-link">B004-2023</a></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-circle me-2">
-                                        <span>HD</span>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0">Hoàng Thị D</h6>
-                                        <small class="text-muted">hoangthid@mail.com</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Executive Business</td>
-                            <td>25/11/2023</td>
-                            <td>27/11/2023</td>
-                            <td>1</td>
-                            <td>5.400.000 VNĐ</td>
-                            <td><span class="badge bg-primary">Đã xác nhận</span></td>
-                            <td><span class="badge bg-warning text-dark">Chờ thanh toán</span></td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                        <li><a class="dropdown-item complete-action" href="#"><i class="fas fa-check-double me-2"></i>Hoàn thành</a></li>
-                                        <li><a class="dropdown-item cancel-action" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td><a href="#" class="booking-link">B005-2023</a></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-circle me-2">
-                                        <span>VM</span>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0">Vũ Minh E</h6>
-                                        <small class="text-muted">vuminhe@mail.com</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Phòng Tổng Thống</td>
-                            <td>30/11/2023</td>
-                            <td>02/12/2023</td>
-                            <td>2</td>
-                            <td>16.000.000 VNĐ</td>
-                            <td><span class="badge bg-danger">Đã hủy</span></td>
-                            <td><span class="badge bg-secondary">Hoàn tiền</span></td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
                 </table>
             </div>
         </div>
+
         <div class="card-footer">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="pagination-info">
-                    Hiển thị <span>1</span> đến <span>5</span> của <span>240</span> mục
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted">Hiển thị <strong>@(Model.Bookings?.Count() ?? 0)</strong> mục</span>
                 </div>
-                <ul class="pagination mb-0">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                            <i class="fas fa-angle-left"></i>
-                        </a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">
-                            <i class="fas fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-                <div class="items-per-page">
-                    <select class="form-select form-select-sm">
+
+                <div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item @(Context.Request.Query["page"]=="1" || string.IsNullOrEmpty(Context.Request.Query["page"]) ? "disabled":"")">
+                                <a class="page-link page-link-nav" href="#" data-page="@((Context.Request.Query["page"].ToString()==""?1:int.Parse(Context.Request.Query["page"].ToString()) - 1))"><i class="fas fa-angle-left"></i></a>
+                            </li>
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <li class="page-item @(Context.Request.Query["page"]==i.ToString()?"active":"")"><a class="page-link page-link-nav" href="#" data-page="@i">@i</a></li>
+                            }
+                            <li class="page-item">
+                                <a class="page-link page-link-nav" href="#" data-page="@((Context.Request.Query["page"].ToString()==""?1:int.Parse(Context.Request.Query["page"].ToString()) + 1))"><i class="fas fa-angle-right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <div>
+                    <select class="form-select form-select-sm" id="pageSizeSelect">
                         <option value="10">10 / trang</option>
                         <option value="25">25 / trang</option>
                         <option value="50">50 / trang</option>
@@ -390,228 +275,141 @@
         </div>
     </div>
 
-    <!-- Bulk Actions Fixed Bar (appears when items are selected) -->
-    <div class="bulk-actions-bar" style="display: none;">
-        <div class="container-fluid">
-            <div class="d-flex align-items-center">
-                <div class="me-3">
-                    <span class="selected-count">5</span> mục đã chọn
-                </div>
-                <div class="bulk-actions">
-                    <button class="btn btn-sm btn-outline-primary me-2" id="bulkConfirm">
-                        <i class="fas fa-check me-1"></i> Xác nhận
-                    </button>
-                    <button class="btn btn-sm btn-outline-success me-2" id="bulkComplete">
-                        <i class="fas fa-check-double me-1"></i> Hoàn thành
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger me-2" id="bulkCancel">
-                        <i class="fas fa-times me-1"></i> Hủy
-                    </button>
-                </div>
-                <button class="btn btn-sm btn-outline-secondary ms-auto" id="clearSelection">
-                    <i class="fas fa-times me-1"></i> Bỏ chọn
-                </button>
+    <!-- Bulk actions bar -->
+    <div class="bulk-actions-bar fixed-bottom bg-white border-top p-3 d-none">
+        <div class="d-flex align-items-center">
+            <div class="me-3"><span class="selected-count">0</span> mục đã chọn</div>
+            <div>
+                <button class="btn btn-outline-primary me-2" id="bulkConfirm">Xác nhận</button>
+                <button class="btn btn-outline-danger" id="bulkCancel">Hủy</button>
+            </div>
+            <div class="ms-auto">
+                <button class="btn btn-sm btn-secondary" id="clearSelection">Bỏ chọn</button>
             </div>
         </div>
     </div>
+
+    <!-- Confirmation modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmationMessage">Bạn có chắc chắn muốn thực hiện thao tác này?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button class="btn btn-primary" id="confirmAction">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<!-- Confirmation Modal -->
-<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmationModalLabel">Xác nhận thao tác</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmationMessage">Bạn có chắc chắn muốn thực hiện thao tác này?</p>
-                <div class="alert alert-warning d-none" id="warningMessage">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <span>Cảnh báo: Thao tác này không thể hoàn tác.</span>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="confirmAction">Xác nhận</button>
-            </div>
-        </div>
-    </div>
-</div>
+@* Anti-forgery token for AJAX POSTs *@
+@Html.AntiForgeryToken()
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Initialize date range picker
-            $('#daterange').daterangepicker({
-                opens: 'left',
-                locale: {
-                    format: 'DD/MM/YYYY'
-                },
-                ranges: {
-                   'Hôm nay': [moment(), moment()],
-                   'Hôm qua': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                   '7 ngày trước': [moment().subtract(6, 'days'), moment()],
-                   '30 ngày trước': [moment().subtract(29, 'days'), moment()],
-                   'Tháng này': [moment().startOf('month'), moment().endOf('month')],
-                   'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                }
-            });
+        (function(){
+            const getRequestToken = () => document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-            // Select all checkboxes
-            $('#selectAll').change(function() {
-                $('tbody .form-check-input').prop('checked', this.checked);
-                updateBulkActionsBar();
-            });
+            const buildHeaders = (extra) => Object.assign({
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': getRequestToken()
+            }, extra || {});
 
-            // Individual checkbox change
-            $('tbody .form-check-input').change(function() {
-                updateBulkActionsBar();
-            });
+            function toast(msg){ alert(msg); }
 
-            // Function to update bulk actions bar
-            function updateBulkActionsBar() {
-                const selectedCount = $('tbody .form-check-input:checked').length;
-                if (selectedCount > 0) {
-                    $('.selected-count').text(selectedCount);
-                    $('.bulk-actions-bar').fadeIn();
-                } else {
-                    $('.bulk-actions-bar').fadeOut();
-                }
+            function updateBulkBar(){
+                const cnt = document.querySelectorAll('.booking-checkbox:checked').length;
+                document.querySelector('.selected-count').textContent = cnt;
+                document.querySelector('.bulk-actions-bar').classList.toggle('d-none', cnt===0);
             }
 
-            // Clear selection
-            $('#clearSelection').click(function() {
-                $('tbody .form-check-input').prop('checked', false);
-                $('#selectAll').prop('checked', false);
-                updateBulkActionsBar();
-            });
-
-            // Initialize action buttons (per-row)
-            function getBadgeClassForStatus(status){
-                if(!status) return 'bg-secondary';
-                status = status.toLowerCase();
-                if(status.includes('chờ') || status.includes('pending')) return 'bg-warning text-dark';
-                if(status.includes('đã xác nhận') || status.includes('confirmed')) return 'bg-primary';
-                if(status.includes('hoàn thành') || status.includes('completed')) return 'bg-success';
-                if(status.includes('đã hủy') || status.includes('cancelled') || status.includes('hủy')) return 'bg-danger';
-                return 'bg-secondary';
-            }
-
-            function adjustCounts(oldStatus, newStatus){
-                function change(cardClass, delta){
-                    const el = $('.status-card.'+cardClass+' .status-value');
-                    if(!el.length) return;
-                    const v = parseInt(el.text()||'0') + delta;
-                    el.text(Math.max(0,v));
+            document.addEventListener('DOMContentLoaded', function(){
+                // daterange (optional) initialize if library available
+                if(window.jQuery && $.fn.daterangepicker){
+                    $('#daterange').daterangepicker({
+                        locale:{format:'DD/MM/YYYY'}, opens:'left'
+                    });
                 }
 
-                const map = (s)=>{ if(!s) return null; s=s.toLowerCase(); if(s.includes('chờ')) return 'pending'; if(s.includes('đã xác nhận')||s.includes('confirmed')) return 'confirmed'; if(s.includes('hoàn thành')||s.includes('completed')) return 'completed'; if(s.includes('đã hủy')||s.includes('hủy')) return 'cancelled'; return null; };
+                // select all
+                document.getElementById('selectAll')?.addEventListener('change', function(){
+                    document.querySelectorAll('tbody .booking-checkbox').forEach(cb => cb.checked = this.checked);
+                    updateBulkBar();
+                });
 
-                const o = map(oldStatus); const n = map(newStatus);
-                if(o && o!==n) change(o, -1);
-                if(n && o!==n) change(n, 1);
-            }
+                document.querySelectorAll('tbody').forEach(tb => tb.addEventListener('change', function(e){
+                    if(e.target && e.target.matches('.booking-checkbox')) updateBulkBar();
+                }));
 
-            function updateRowStatus(id, newStatus){
-                const cb = $(`.booking-checkbox[value="${id}"]`);
-                if(!cb.length) return;
-                const tr = cb.closest('tr');
-                const statusTd = tr.find('td').eq(8);
-                const oldStatus = statusTd.text().trim();
-                const badgeClass = getBadgeClassForStatus(newStatus);
-                statusTd.html(`<span class="badge ${badgeClass} booking-status-badge">${newStatus}</span>`);
-                // uncheck
-                cb.prop('checked', false);
-                updateBulkActionsBar();
-                adjustCounts(oldStatus, newStatus);
-            }
+                document.getElementById('clearSelection')?.addEventListener('click', function(){
+                    document.querySelectorAll('.booking-checkbox').forEach(cb=>cb.checked=false);
+                    document.getElementById('selectAll').checked = false;
+                    updateBulkBar();
+                });
 
-            $('.confirm-action').click(function(e) {
-                e.preventDefault();
-                const id = $(this).data('id');
-                if (!id) return;
-                if (!confirm('Xác nhận đơn đặt phòng này?')) return;
-                fetch('/Admin/ConfirmBooking/' + id, { method: 'POST' })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            if(data.bookingId && data.newStatus) updateRowStatus(data.bookingId, data.newStatus);
-                        } else alert(data.message || 'Lỗi');
-                    })
-                    .catch(err => alert('Lỗi: ' + err));
+                // confirm / cancel actions (delegated)
+                document.body.addEventListener('click', function(e){
+                    if(e.target.closest('.confirm-action')){
+                        e.preventDefault();
+                        const id = e.target.closest('[data-id]')?.getAttribute('data-id');
+                        if(!id) return; if(!confirm('Xác nhận đơn này?')) return;
+                        fetch('/Admin/ConfirmBooking/' + id, { method: 'POST', headers: buildHeaders() })
+                            .then(r => r.json()).then(j => { if(j.success){ toast(j.message); location.reload(); } else toast(j.message||'Lỗi'); })
+                            .catch(()=>toast('Lỗi mạng'));
+                    }
+                    if(e.target.closest('.cancel-action')){
+                        e.preventDefault();
+                        const id = e.target.closest('[data-id]')?.getAttribute('data-id');
+                        if(!id) return; if(!confirm('Hủy đơn này?')) return;
+                        fetch('/Admin/CancelBooking/' + id, { method: 'POST', headers: buildHeaders() })
+                            .then(r => r.json()).then(j => { if(j.success){ toast(j.message); location.reload(); } else toast(j.message||'Lỗi'); })
+                            .catch(()=>toast('Lỗi mạng'));
+                    }
+                });
+
+                // Bulk actions
+                document.getElementById('bulkConfirm')?.addEventListener('click', function(){
+                    const ids = Array.from(document.querySelectorAll('.booking-checkbox:checked')).map(i=>parseInt(i.value));
+                    if(!ids.length){ toast('Vui lòng chọn mục.'); return; }
+                    if(!confirm(`Xác nhận ${ids.length} đơn?`)) return;
+                    fetch('/Admin/BulkConfirm', { method: 'POST', headers: buildHeaders(), body: JSON.stringify(ids) })
+                        .then(r=>r.json()).then(j=>{ if(j.success){ toast(j.message); location.reload(); } else toast(j.message||'Lỗi'); })
+                        .catch(()=>toast('Lỗi mạng'));
+                });
+
+                document.getElementById('bulkCancel')?.addEventListener('click', function(){
+                    const ids = Array.from(document.querySelectorAll('.booking-checkbox:checked')).map(i=>parseInt(i.value));
+                    if(!ids.length){ toast('Vui lòng chọn mục.'); return; }
+                    if(!confirm(`Hủy ${ids.length} đơn?`)) return;
+                    fetch('/Admin/BulkCancel', { method: 'POST', headers: buildHeaders(), body: JSON.stringify(ids) })
+                        .then(r=>r.json()).then(j=>{ if(j.success){ toast(j.message); location.reload(); } else toast(j.message||'Lỗi'); })
+                        .catch(()=>toast('Lỗi mạng'));
+                });
+
+                // Refresh
+                document.getElementById('refreshBtn')?.addEventListener('click', function(){ location.reload(); });
+
+                // Pagination links: set hidden page and submit
+                document.querySelectorAll('.page-link-nav').forEach(function(a){
+                    a.addEventListener('click', function(e){
+                        e.preventDefault();
+                        const p = this.getAttribute('data-page') || '1';
+                        document.getElementById('currentPage').value = p;
+                        document.getElementById('bookingSearchForm').submit();
+                    });
+                });
+
             });
-
-            $('.cancel-action').click(function(e) {
-                e.preventDefault();
-                const id = $(this).data('id');
-                if (!id) return;
-                if (!confirm('Hủy đơn đặt phòng này?')) return;
-                fetch('/Admin/CancelBooking/' + id, { method: 'POST' })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            if(data.bookingId && data.newStatus) updateRowStatus(data.bookingId, data.newStatus);
-                        } else alert(data.message || 'Lỗi');
-                    })
-                    .catch(err => alert('Lỗi: ' + err));
-            });
-
-            // Bulk actions (confirm/cancel)
-            function getSelectedIds(){
-                return $('.booking-checkbox:checked').map(function(){ return parseInt(this.value); }).get();
-            }
-
-            $('#bulkConfirm').click(function(){
-                const ids = getSelectedIds();
-                if (!ids.length) { alert('Vui lòng chọn ít nhất một đơn.'); return; }
-                if (!confirm(`Xác nhận ${ids.length} đơn đã chọn?`)) return;
-                fetch('/Admin/BulkConfirm', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(ids)
-                }).then(r=>r.json())
-                .then(data=>{
-                    if(data.success){
-                        alert(data.message);
-                        if(Array.isArray(data.updatedIds) && data.newStatus){
-                            data.updatedIds.forEach(function(id){ updateRowStatus(id, data.newStatus); });
-                        }
-                    } else alert(data.message||'Lỗi');
-                })
-                .catch(err=>alert('Lỗi: '+err));
-            });
-
-            $('#bulkCancel').click(function(){
-                const ids = getSelectedIds();
-                if (!ids.length) { alert('Vui lòng chọn ít nhất một đơn.'); return; }
-                if (!confirm(`Hủy ${ids.length} đơn đã chọn?`)) return;
-                fetch('/Admin/BulkCancel', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(ids)
-                }).then(r=>r.json())
-                .then(data=>{
-                    if(data.success){
-                        alert(data.message);
-                        if(Array.isArray(data.updatedIds) && data.newStatus){
-                            data.updatedIds.forEach(function(id){ updateRowStatus(id, data.newStatus); });
-                        }
-                    } else alert(data.message||'Lỗi');
-                })
-                .catch(err=>alert('Lỗi: '+err));
-            });
-
-            // Filter by status
-            $('.view-all-link').click(function(e) {
-                e.preventDefault();
-                const status = $(this).data('status');
-                $('select[name="status"]').val(status);
-                // Submit form or trigger search
-                $('#bookingSearchForm').submit();
-            });
-        });
+        })();
     </script>
 }
 
