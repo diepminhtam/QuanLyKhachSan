@@ -14,7 +14,7 @@ namespace QuanLiKhachSan.Controllers
     public class AdminController : Controller
     {
             [HttpGet("Dashboard")]
-            public async Task<IActionResult> Dashboard()
+            public async Task<IActionResult> Dashboard(DateTime? start = null, DateTime? end = null, string? status = null, int? roomId = null, string? sort = null, int page = 1, int pageSize = 10)
         {
             try
             {
@@ -27,13 +27,42 @@ namespace QuanLiKhachSan.Controllers
                 var occupancyRate = totalRooms > 0 ? (double)occupiedRooms / totalRooms * 100 : 0;
                 var totalCustomers = await _context.Users.CountAsync();
 
-                // Recent Bookings (10) - include navigations to avoid null-ref / client evaluation
-                var recentBookings = await _context.Bookings
+                // normalize filter dates (use CreatedDate filter)
+                DateTime startDate = start ?? DateTime.UtcNow.AddMonths(-1);
+                DateTime endDate = (end ?? DateTime.UtcNow).Date.AddDays(1).AddTicks(-1);
+
+                // Recent Bookings with filters, sorting and paging
+                var bookingsQuery = _context.Bookings
                     .Include(b => b.User)
                     .Include(b => b.Room)
                     .Include(b => b.BookingStatus)
-                    .OrderByDescending(b => b.CreatedDate)
-                    .Take(10)
+                    .AsQueryable();
+
+                bookingsQuery = bookingsQuery.Where(b => b.CreatedDate >= startDate && b.CreatedDate <= endDate);
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    bookingsQuery = bookingsQuery.Where(b => b.BookingStatus != null && b.BookingStatus.Name == status);
+                }
+                if (roomId.HasValue)
+                {
+                    bookingsQuery = bookingsQuery.Where(b => b.RoomId == roomId.Value);
+                }
+
+                var totalRecent = await bookingsQuery.CountAsync();
+
+                // sorting
+                bookingsQuery = sort switch
+                {
+                    "price_asc" => bookingsQuery.OrderBy(b => b.TotalPrice),
+                    "price_desc" => bookingsQuery.OrderByDescending(b => b.TotalPrice),
+                    "checkin_asc" => bookingsQuery.OrderBy(b => b.CheckIn),
+                    "checkin_desc" => bookingsQuery.OrderByDescending(b => b.CheckIn),
+                    _ => bookingsQuery.OrderByDescending(b => b.CreatedDate),
+                };
+
+                var recentBookings = await bookingsQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .Select(b => new DashboardViewModel.RecentBookingDto
                     {
                         BookingNumber = $"BK{b.Id:D6}",
@@ -184,6 +213,51 @@ namespace QuanLiKhachSan.Controllers
                 RoomStatusCounts = roomStatusCounts,
                 Notifications = notifications
             };
+
+                // Additional charts: revenue by month (last 12 months)
+                var twelveMonthsAgo = DateTime.UtcNow.AddMonths(-11);
+                var revenueByMonth = await _context.Bookings
+                    .Where(b => b.CreatedDate >= new DateTime(twelveMonthsAgo.Year, twelveMonthsAgo.Month, 1))
+                    .GroupBy(b => new { b.CreatedDate.Year, b.CreatedDate.Month })
+                    .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Total = g.Sum(x => (decimal?)x.TotalPrice) ?? 0m })
+                    .ToListAsync();
+
+                var revenuePoints = new List<DashboardViewModel.RevenuePoint>();
+                for (int i = 11; i >= 0; i--)
+                {
+                    var dt = DateTime.UtcNow.AddMonths(-i);
+                    var found = revenueByMonth.FirstOrDefault(r => r.Year == dt.Year && r.Month == dt.Month);
+                    revenuePoints.Add(new DashboardViewModel.RevenuePoint { Label = dt.ToString("MMM yyyy"), Value = found?.Total ?? 0m });
+                }
+
+                dashboardVM.RevenueByMonth = revenuePoints;
+
+                // bookings by status
+                var bookingsByStatus = await _context.Bookings
+                    .Include(b => b.BookingStatus)
+                    .GroupBy(b => b.BookingStatus != null ? b.BookingStatus.Name : "Unknown")
+                    .Select(g => new { Status = g.Key, Count = g.Count() })
+                    .ToListAsync();
+                dashboardVM.BookingsByStatus = bookingsByStatus.Select(x => new KeyValuePair<string,int>(x.Status, x.Count)).ToList();
+
+                // top rooms
+                var topRooms = await _context.Bookings
+                    .Where(b => b.RoomId != 0)
+                    .GroupBy(b => new { b.RoomId, b.Room.Name })
+                    .Select(g => new { RoomId = g.Key.RoomId, RoomName = g.Key.Name, Count = g.Count(), Revenue = g.Sum(x => (decimal?)x.TotalPrice) ?? 0m })
+                    .OrderByDescending(x => x.Revenue)
+                    .Take(10)
+                    .ToListAsync();
+                dashboardVM.TopRooms = topRooms.Select(x => new DashboardViewModel.TopRoomDto { RoomId = x.RoomId, RoomName = x.RoomName, BookingCount = x.Count, Revenue = x.Revenue }).ToList();
+
+                // attach filters/paging metadata
+                dashboardVM.FilterStart = startDate;
+                dashboardVM.FilterEnd = endDate;
+                dashboardVM.FilterStatus = status;
+                dashboardVM.FilterRoomId = roomId;
+                dashboardVM.Page = page;
+                dashboardVM.PageSize = pageSize;
+                dashboardVM.TotalRecentBookings = totalRecent;
 
                 return View("Dashboard", dashboardVM);
             }

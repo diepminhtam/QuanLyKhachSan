@@ -14,6 +14,15 @@ namespace QuanLiKhachSan.ViewModels.Admin
         public RoomStatusCountsDto RoomStatusCounts { get; set; } = new();
         public List<NotificationDto> Notifications { get; set; } = new();
 
+        // Filters and paging
+        public DateTime? FilterStart { get; set; }
+        public DateTime? FilterEnd { get; set; }
+        public string? FilterStatus { get; set; }
+        public int? FilterRoomId { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public int TotalRecentBookings { get; set; }
+
         public class RecentBookingDto
         {
             public string BookingNumber { get; set; }
@@ -61,5 +70,23 @@ namespace QuanLiKhachSan.ViewModels.Admin
             public string TimeAgo { get; set; }
             public bool Unread { get; set; }
         }
+
+        public class RevenuePoint
+        {
+            public string Label { get; set; }
+            public decimal Value { get; set; }
+        }
+
+        public class TopRoomDto
+        {
+            public int RoomId { get; set; }
+            public string RoomName { get; set; }
+            public int BookingCount { get; set; }
+            public decimal Revenue { get; set; }
+        }
+
+        public List<RevenuePoint> RevenueByMonth { get; set; } = new();
+        public List<KeyValuePair<string,int>> BookingsByStatus { get; set; } = new();
+        public List<TopRoomDto> TopRooms { get; set; } = new();
     }
 }

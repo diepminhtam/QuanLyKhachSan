@@ -24,10 +24,37 @@
         <div class="d-flex align-items-center justify-content-between">
             <h1 class="h3 mb-0">Dashboard</h1>
             <div class="date-range-picker">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                    <input type="text" class="form-control" id="daterange" value="01/01/2023 - 31/12/2023">
-                </div>
+                <form method="get" class="d-flex gap-2" id="dashboardFilters">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                        <input type="text" name="start" id="start" class="form-control" value="@(Model.FilterStart?.ToString("dd/MM/yyyy") ?? "")" placeholder="Start" />
+                    </div>
+                    <div class="input-group">
+                        <input type="text" name="end" id="end" class="form-control" value="@(Model.FilterEnd?.ToString("dd/MM/yyyy") ?? "")" placeholder="End" />
+                    </div>
+                    <select name="status" class="form-select">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        @foreach(var s in Model.BookingsByStatus.Select(x => x.Key))
+                        {
+                            if (s == Model.FilterStatus)
+                            {
+                                <option value="@s" selected>@s</option>
+                            }
+                            else
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        }
+                    </select>
+                    <select name="sort" class="form-select">
+                        <option value="">Mặc định</option>
+                        <option value="price_desc">Giá (Lớn → Nhỏ)</option>
+                        <option value="price_asc">Giá (Nhỏ → Lớn)</option>
+                        <option value="checkin_desc">Nhận phòng (Mới → Cũ)</option>
+                        <option value="checkin_asc">Nhận phòng (Cũ → Mới)</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Áp dụng</button>
+                </form>
             </div>
         </div>
     </div>
@@ -212,6 +239,55 @@
                                 }
                             </tbody>
                         </table>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        @{ 
+                            var total = Model.TotalRecentBookings;
+                            var currentPage = Model.Page <= 0 ? 1 : Model.Page;
+                            var pageSize = Model.PageSize <= 0 ? 10 : Model.PageSize;
+                            var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+                            var sortValue = Context.Request.Query["sort"].ToString();
+                        }
+                        <div>
+                            <small class="text-muted">Hiển thị trang @currentPage trên @totalPages (Tổng @total đặt)</small>
+                        </div>
+                        <nav>
+                            <ul class="pagination mb-0">
+                                @if (currentPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Dashboard","Admin", new { start = Model.FilterStart?.ToString("dd/MM/yyyy"), end = Model.FilterEnd?.ToString("dd/MM/yyyy"), status = Model.FilterStatus, sort = sortValue, page = currentPage - 1, pageSize = pageSize })">Previous</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                                }
+
+                                @for (var p = 1; p <= totalPages; p++)
+                                {
+                                    if (p == currentPage)
+                                    {
+                                        <li class="page-item active"><span class="page-link">@p</span></li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item"><a class="page-link" href="@Url.Action("Dashboard","Admin", new { start = Model.FilterStart?.ToString("dd/MM/yyyy"), end = Model.FilterEnd?.ToString("dd/MM/yyyy"), status = Model.FilterStatus, sort = sortValue, page = p, pageSize = pageSize })">@p</a></li>
+                                    }
+                                }
+
+                                @if (currentPage < totalPages)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Dashboard","Admin", new { start = Model.FilterStart?.ToString("dd/MM/yyyy"), end = Model.FilterEnd?.ToString("dd/MM/yyyy"), status = Model.FilterStatus, sort = sortValue, page = currentPage + 1, pageSize = pageSize })">Next</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                                }
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -405,110 +481,54 @@
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize date range picker
-            $('#daterange').daterangepicker({
-                locale: {
-                    format: 'DD/MM/YYYY'
-                }
-            });
+            // Initialize date inputs (simple)
+            $('#start').datepicker({ dateFormat: 'dd/mm/yy' });
+            $('#end').datepicker({ dateFormat: 'dd/mm/yy' });
 
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            const revenueChart = new Chart(revenueCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
-                    datasets: [{
-                        label: 'Doanh thu (triệu VNĐ)',
-                        data: [380, 420, 510, 490, 530, 600, 650, 700, 580, 550, 590, 620],
-                        backgroundColor: 'rgba(58, 110, 165, 0.7)',
-                        borderColor: 'rgba(58, 110, 165, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString() + ' tr';
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+            // Prepare chart data from server model
+            const revenueLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueByMonth.Select(r => r.Label)));
+            const revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueByMonth.Select(r => r.Value)));
 
-            // Room Types Pie Chart
-            const roomTypeCtx = document.getElementById('roomTypeChart').getContext('2d');
-            const roomTypeChart = new Chart(roomTypeCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Deluxe', 'Standard', 'Suite', 'Family', 'Executive'],
-                    datasets: [{
-                        data: [35, 25, 15, 15, 10],
-                        backgroundColor: [
-                            'rgba(58, 110, 165, 0.8)',
-                            'rgba(28, 200, 138, 0.8)',
-                            'rgba(246, 194, 62, 0.8)',
-                            'rgba(231, 74, 59, 0.8)',
-                            'rgba(78, 115, 223, 0.8)'
-                        ],
-                        borderColor: '#ffffff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20
-                            }
-                        }
+            const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
+            if (revenueCtx) {
+                new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: revenueLabels,
+                        datasets: [{
+                            label: 'Doanh thu',
+                            data: revenueData,
+                            backgroundColor: 'rgba(58,110,165,0.85)'
+                        }]
                     },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%'
-                }
-            });
+                    options: {
+                        plugins: { legend: { display: false } },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() } } }
+                    }
+                });
+            }
 
-            // Room Status Chart
-            const roomStatusCtx = document.getElementById('roomStatusChart').getContext('2d');
-            const roomStatusChart = new Chart(roomStatusCtx, {
-                type: 'pie',
-                data: {
-                    labels: ['Trống', 'Đã đặt', 'Đang dọn dẹp', 'Bảo trì'],
-                    datasets: [{
-                        data: [32, 18, 5, 2],
-                        backgroundColor: [
-                            'rgba(28, 200, 138, 0.8)',
-                            'rgba(246, 194, 62, 0.8)',
-                            'rgba(54, 185, 204, 0.8)',
-                            'rgba(231, 74, 59, 0.8)'
-                        ],
-                        borderColor: '#ffffff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            // Bookings by status chart
+            const statusLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BookingsByStatus.Select(x => x.Key)));
+            const statusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BookingsByStatus.Select(x => x.Value)));
+            const roomStatusCtx = document.getElementById('roomStatusChart')?.getContext('2d');
+            if (roomStatusCtx) {
+                new Chart(roomStatusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: statusLabels.length ? statusLabels : ['Trống','Đã đặt','Đang dọn dẹp','Bảo trì'],
+                        datasets: [{
+                            data: statusData.length ? statusData : [Model.RoomStatusCounts.Available, Model.RoomStatusCounts.Occupied, Model.RoomStatusCounts.Cleaning, Model.RoomStatusCounts.Maintenance],
+                            backgroundColor: ['rgba(28,200,138,0.8)','rgba(246,194,62,0.8)','rgba(54,185,204,0.8)','rgba(231,74,59,0.8)']
+                        }]
                     },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Optionally: top rooms table already rendered server-side
         });
     </script>
 }
