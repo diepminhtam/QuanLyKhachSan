@@ -62,6 +62,9 @@ namespace QuanLiKhachSan.ViewModels.Booking
 
         public decimal TotalPrice { get; set; }
 
+        // Flag to indicate availability for the selected dates
+        public bool IsAvailable { get; set; } = true;
+
         // SỬA LẠI TÍNH TOÁN TỔNG GIÁ - ĐƠN GIẢN HÓA
         public decimal CalculatedTotalPrice => (RoomPrice * NumberOfNights) - Discount;
 

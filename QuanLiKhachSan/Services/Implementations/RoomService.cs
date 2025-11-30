@@ -47,6 +47,33 @@ namespace QuanLiKhachSan.Services.Implementations
             var allMatchingRooms = await query.ToListAsync();
             var totalRooms = allMatchingRooms.Count;
 
+            // Determine date range for availability check
+            DateTime? checkIn = searchModel.CheckInDate;
+            DateTime? checkOut = searchModel.CheckOutDate;
+
+            // Get cancelled status id to exclude cancelled bookings
+            var cancelledStatus = await _context.BookingStatuses.AsNoTracking().FirstOrDefaultAsync(bs => bs.Name == "Đã hủy");
+            var cancelledId = cancelledStatus?.Id ?? -1;
+
+            // Load bookings that overlap the requested range (or current date if no range provided)
+            List<Models.Booking> overlappingBookings = new();
+            if (checkIn.HasValue && checkOut.HasValue)
+            {
+                overlappingBookings = await _context.Bookings
+                    .AsNoTracking()
+                    .Where(b => b.BookingStatusId != cancelledId && b.CheckIn < checkOut.Value && b.CheckOut > checkIn.Value)
+                    .ToListAsync();
+            }
+            else
+            {
+                // If no date range provided, consider current occupancy
+                var now = DateTime.Now;
+                overlappingBookings = await _context.Bookings
+                    .AsNoTracking()
+                    .Where(b => b.BookingStatusId != cancelledId && b.CheckIn <= now && b.CheckOut >= now)
+                    .ToListAsync();
+            }
+
             var roomsForPage = allMatchingRooms
                 .Skip((searchModel.CurrentPage - 1) * searchModel.PageSize)
                 .Take(searchModel.PageSize)
@@ -59,8 +86,12 @@ namespace QuanLiKhachSan.Services.Implementations
                     RoomType = room.RoomType,
                     Capacity = room.Capacity,
                     PricePerNight = room.PricePerNight,
-                    // ĐÃ LOẠI BỎ: AverageRating và ReviewsCount
-                    Amenities = new List<string> { "WiFi", "TV", "Điều hòa" }
+                    AverageRating = room.AverageRating,
+                    ReviewsCount = room.Reviews?.Count ?? 0,
+                    Amenities = new List<string> { "WiFi", "TV", "Điều hòa" },
+                    IsAvailable = !(checkIn.HasValue && checkOut.HasValue)
+                        ? !overlappingBookings.Any(b => b.RoomId == room.Id)
+                        : !overlappingBookings.Any(b => b.RoomId == room.Id)
                 }).ToList();
 
             var viewModel = new RoomListViewModel

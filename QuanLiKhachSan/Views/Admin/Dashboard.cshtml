@@ -1,4 +1,17 @@
-﻿@model QuanLiKhachSan.ViewModels.Admin.DashboardViewModel
+﻿@functions {
+    public string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "chờ xác nhận" or "pending" => "bg-warning text-dark",
+            "đã xác nhận" or "confirmed" => "bg-primary",
+            "hoàn thành" or "completed" => "bg-success",
+            "đã hủy" or "cancelled" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
+@model QuanLiKhachSan.ViewModels.Admin.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
     Layout = "_AdminLayout";
@@ -170,107 +183,32 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>B001-2023</td>
-                                    <td>Nguyễn Văn A</td>
-                                    <td>Deluxe Hướng Biển</td>
-                                    <td>20/11/2023</td>
-                                    <td>22/11/2023</td>
-                                    <td><span class="badge bg-warning text-dark">Chờ xác nhận</span></td>
-                                    <td>6.000.000 VNĐ</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-check me-2"></i>Xác nhận</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>B002-2023</td>
-                                    <td>Trần Thị B</td>
-                                    <td>Suite Gia Đình</td>
-                                    <td>22/11/2023</td>
-                                    <td>25/11/2023</td>
-                                    <td><span class="badge bg-primary">Đã xác nhận</span></td>
-                                    <td>17.500.000 VNĐ</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-check-double me-2"></i>Hoàn thành</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>B003-2023</td>
-                                    <td>Lê Văn C</td>
-                                    <td>Standard Twin</td>
-                                    <td>18/11/2023</td>
-                                    <td>19/11/2023</td>
-                                    <td><span class="badge bg-success">Hoàn thành</span></td>
-                                    <td>3.600.000 VNĐ</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>B004-2023</td>
-                                    <td>Hoàng Thị D</td>
-                                    <td>Executive Business</td>
-                                    <td>25/11/2023</td>
-                                    <td>27/11/2023</td>
-                                    <td><span class="badge bg-primary">Đã xác nhận</span></td>
-                                    <td>5.400.000 VNĐ</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-check-double me-2"></i>Hoàn thành</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>B005-2023</td>
-                                    <td>Vũ Minh E</td>
-                                    <td>Phòng Tổng Thống</td>
-                                    <td>30/11/2023</td>
-                                    <td>02/12/2023</td>
-                                    <td><span class="badge bg-danger">Đã hủy</span></td>
-                                    <td>16.000.000 VNĐ</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
+                                @foreach (var booking in Model.RecentBookings.Take(10))
+                                {
+                                    <tr>
+                                        <td>@booking.BookingNumber</td>
+                                        <td>@booking.CustomerName</td>
+                                        <td>@booking.RoomName</td>
+                                        <td>@booking.CheckIn.ToString("dd/MM/yyyy")</td>
+                                        <td>@booking.CheckOut.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <span class="badge @GetStatusBadgeClass(booking.Status)">@booking.Status</span>
+                                        </td>
+                                        <td>@booking.TotalPrice.ToString("N0") VNĐ</td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-check-double me-2"></i>Hoàn thành</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -296,7 +234,7 @@
                                         <i class="fas fa-check-circle"></i>
                                     </div>
                                     <div class="status-details">
-                                        <h4>32</h4>
+                                        <h4>@Model.RoomStatusCounts.Available</h4>
                                         <p>Phòng trống</p>
                                     </div>
                                 </div>
@@ -307,7 +245,7 @@
                                         <i class="fas fa-bed"></i>
                                     </div>
                                     <div class="status-details">
-                                        <h4>18</h4>
+                                        <h4>@Model.RoomStatusCounts.Occupied</h4>
                                         <p>Phòng đã đặt</p>
                                     </div>
                                 </div>
@@ -318,7 +256,7 @@
                                         <i class="fas fa-broom"></i>
                                     </div>
                                     <div class="status-details">
-                                        <h4>5</h4>
+                                        <h4>@Model.RoomStatusCounts.Cleaning</h4>
                                         <p>Đang dọn dẹp</p>
                                     </div>
                                 </div>
@@ -329,7 +267,7 @@
                                         <i class="fas fa-tools"></i>
                                     </div>
                                     <div class="status-details">
-                                        <h4>2</h4>
+                                        <h4>@Model.RoomStatusCounts.Maintenance</h4>
                                         <p>Bảo trì</p>
                                     </div>
                                 </div>
@@ -351,78 +289,39 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="reviews-list">
-                        <div class="review-item">
-                            <div class="review-header">
-                                <div class="reviewer-info">
-                                    <div class="reviewer-avatar">
-                                        <span>NT</span>
+                        @foreach (var review in Model.RecentReviews.Take(10))
+                        {
+                            <div class="review-item">
+                                <div class="review-header">
+                                    <div class="reviewer-info">
+                                        <div class="reviewer-avatar">
+                                            <span>@review.Initials</span>
+                                        </div>
+                                        <div>
+                                            <h6>@review.CustomerName</h6>
+                                            <div class="review-date">@review.CreatedDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h6>Nguyễn Thị Thanh</h6>
-                                        <div class="review-date">18/11/2023</div>
-                                    </div>
-                                </div>
-                                <div class="review-rating">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                </div>
-                            </div>
-                            <div class="review-room">Deluxe Hướng Biển</div>
-                            <div class="review-content">
-                                <p>Phòng rộng rãi, sạch sẽ và có view biển tuyệt đẹp. Nhân viên phục vụ rất nhiệt tình và chu đáo.</p>
-                            </div>
-                        </div>
-                        <div class="review-item">
-                            <div class="review-header">
-                                <div class="reviewer-info">
-                                    <div class="reviewer-avatar">
-                                        <span>ĐM</span>
-                                    </div>
-                                    <div>
-                                        <h6>Đặng Minh</h6>
-                                        <div class="review-date">15/11/2023</div>
+                                    <div class="review-rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating)
+                                            {
+                                                <i class="fas fa-star"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="far fa-star"></i>
+                                            }
+                                        }
                                     </div>
                                 </div>
-                                <div class="review-rating">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="far fa-star"></i>
+                                <div class="review-room">@review.RoomName</div>
+                                <div class="review-content">
+                                    <p>@review.Comment</p>
                                 </div>
                             </div>
-                            <div class="review-room">Standard Twin</div>
-                            <div class="review-content">
-                                <p>Phòng tốt, sạch sẽ. Điểm trừ là cách âm không tốt lắm, hơi nghe tiếng ồn từ hành lang.</p>
-                            </div>
-                        </div>
-                        <div class="review-item">
-                            <div class="review-header">
-                                <div class="reviewer-info">
-                                    <div class="reviewer-avatar">
-                                        <span>LH</span>
-                                    </div>
-                                    <div>
-                                        <h6>Lê Hoàng</h6>
-                                        <div class="review-date">14/11/2023</div>
-                                    </div>
-                                </div>
-                                <div class="review-rating">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="far fa-star"></i>
-                                    <i class="far fa-star"></i>
-                                </div>
-                            </div>
-                            <div class="review-room">Suite Gia Đình</div>
-                            <div class="review-content">
-                                <p>Phòng rộng nhưng hơi cũ, cần nâng cấp một số nội thất. Bữa sáng ngon và phong phú.</p>
-                            </div>
-                        </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -445,81 +344,24 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="customer-avatar me-2">
-                                                <span>PT</span>
+                                @foreach (var customer in Model.TopCustomers.Take(10))
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="customer-avatar me-2">
+                                                    <span>@customer.Initials</span>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">@customer.CustomerName</h6>
+                                                    <small class="text-muted">@customer.Email</small>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h6 class="mb-0">Phạm Tuấn</h6>
-                                                <small class="text-muted">phamtuan@mail.com</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>8</td>
-                                    <td>64.500.000 VNĐ</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="customer-avatar me-2">
-                                                <span>NH</span>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0">Nguyễn Hương</h6>
-                                                <small class="text-muted">huongnguyen@mail.com</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>6</td>
-                                    <td>52.800.000 VNĐ</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="customer-avatar me-2">
-                                                <span>TL</span>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0">Trần Linh</h6>
-                                                <small class="text-muted">trlinh@mail.com</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>5</td>
-                                    <td>48.200.000 VNĐ</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="customer-avatar me-2">
-                                                <span>ĐT</span>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0">Đỗ Thành</h6>
-                                                <small class="text-muted">dothanh@mail.com</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>4</td>
-                                    <td>39.600.000 VNĐ</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="customer-avatar me-2">
-                                                <span>VH</span>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0">Vũ Hà</h6>
-                                                <small class="text-muted">vuha@mail.com</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>4</td>
-                                    <td>32.000.000 VNĐ</td>
-                                </tr>
+                                        </td>
+                                        <td>@customer.BookingCount</td>
+                                        <td>@customer.TotalRevenue.ToString("N0") VNĐ</td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -534,56 +376,19 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="notifications-list">
-                        <a href="#" class="notification-item unread">
-                            <div class="notification-icon bg-primary">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <div class="notification-content">
-                                <div class="notification-title">Đặt phòng mới</div>
-                                <div class="notification-text">Nguyễn Văn A đã đặt Phòng Deluxe Hướng Biển</div>
-                                <div class="notification-time">2 phút trước</div>
-                            </div>
-                        </a>
-                        <a href="#" class="notification-item">
-                            <div class="notification-icon bg-danger">
-                                <i class="fas fa-times-circle"></i>
-                            </div>
-                            <div class="notification-content">
-                                <div class="notification-title">Hủy đặt phòng</div>
-                                <div class="notification-text">Vũ Minh E đã hủy đặt phòng #B005-2023</div>
-                                <div class="notification-time">1 giờ trước</div>
-                            </div>
-                        </a>
-                        <a href="#" class="notification-item unread">
-                            <div class="notification-icon bg-warning">
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <div class="notification-content">
-                                <div class="notification-title">Đánh giá mới</div>
-                                <div class="notification-text">Nguyễn Thị Thanh đã đánh giá 5 sao cho Phòng Deluxe</div>
-                                <div class="notification-time">3 giờ trước</div>
-                            </div>
-                        </a>
-                        <a href="#" class="notification-item">
-                            <div class="notification-icon bg-success">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="notification-content">
-                                <div class="notification-title">Thanh toán thành công</div>
-                                <div class="notification-text">Thanh toán #P123 đã được xác nhận</div>
-                                <div class="notification-time">5 giờ trước</div>
-                            </div>
-                        </a>
-                        <a href="#" class="notification-item">
-                            <div class="notification-icon bg-info">
-                                <i class="fas fa-user-plus"></i>
-                            </div>
-                            <div class="notification-content">
-                                <div class="notification-title">Người dùng mới</div>
-                                <div class="notification-text">Lê Hoàng đã đăng ký tài khoản</div>
-                                <div class="notification-time">1 ngày trước</div>
-                            </div>
-                        </a>
+                        @foreach (var notification in Model.Notifications.Take(10))
+                        {
+                            <a href="#" class="notification-item @(notification.Unread ? "unread" : "")">
+                                <div class="notification-icon @notification.BgClass">
+                                    <i class="@notification.IconClass"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">@notification.Title</div>
+                                    <div class="notification-text">@notification.Text</div>
+                                    <div class="notification-time">@notification.TimeAgo</div>
+                                </div>
+                            </a>
+                        }
                     </div>
                     <div class="card-footer text-center">
                         <a href="/Admin/Notifications" class="btn btn-sm btn-outline-primary">Xem tất cả thông báo</a>

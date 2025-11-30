@@ -23,12 +23,157 @@ namespace QuanLiKhachSan.Controllers
             var occupancyRate = totalRooms > 0 ? (double)occupiedRooms / totalRooms * 100 : 0;
             var totalCustomers = _context.Users.Count();
 
+            // Recent Bookings (10)
+            var recentBookings = _context.Bookings
+                .OrderByDescending(b => b.CreatedDate)
+                .Take(10)
+                .Select(b => new DashboardViewModel.RecentBookingDto
+                {
+                    BookingNumber = $"BK{b.Id:D6}",
+                    CustomerName = b.User.FullName,
+                    RoomName = b.Room.Name,
+                    CheckIn = b.CheckIn,
+                    CheckOut = b.CheckOut,
+                    Status = b.BookingStatus.Name,
+                    TotalPrice = b.TotalPrice
+                })
+                .ToList();
+
+            // Recent Reviews (10) - lấy từ DB trước, xử lý Initials trên bộ nhớ
+            var recentReviewsRaw = _context.Reviews
+                .OrderByDescending(r => r.CreatedDate)
+                .Take(10)
+                .Select(r => new {
+                    CustomerName = r.User.FullName,
+                    CreatedDate = r.CreatedDate,
+                    Rating = r.Rating,
+                    RoomName = r.Room.Name,
+                    Comment = r.Comment
+                })
+                .ToList();
+
+            var recentReviews = recentReviewsRaw.Select(r => new DashboardViewModel.RecentReviewDto
+            {
+                CustomerName = r.CustomerName,
+                Initials = string.Join("", r.CustomerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x[0])).ToUpper(),
+                CreatedDate = r.CreatedDate,
+                Rating = r.Rating,
+                RoomName = r.RoomName,
+                Comment = r.Comment
+            }).ToList();
+
+            // Top Customers (10)
+            var topCustomers = _context.Users
+                .Select(u => new {
+                    u.FullName,
+                    u.Email,
+                    BookingCount = u.Bookings.Count(),
+                    TotalRevenue = u.Bookings.Sum(b => b.TotalPrice)
+                })
+                .OrderByDescending(x => x.TotalRevenue)
+                .ThenByDescending(x => x.BookingCount)
+                .Take(10)
+                .ToList()
+                .Select(x => new DashboardViewModel.TopCustomerDto
+                {
+                    CustomerName = x.FullName,
+                    Initials = string.Join("", x.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(n => n[0])).ToUpper(),
+                    Email = x.Email,
+                    BookingCount = x.BookingCount,
+                    TotalRevenue = x.TotalRevenue
+                })
+                .ToList();
+
+            // Room Status Counts
+            var now = DateTime.Now;
+            var rooms = _context.Rooms.ToList();
+            var occupiedRoomIds = _context.Bookings
+                .Where(b => b.CheckIn <= now && b.CheckOut >= now)
+                .Select(b => b.RoomId)
+                .ToHashSet();
+            var roomStatusCounts = new DashboardViewModel.RoomStatusCountsDto
+            {
+                Available = rooms.Count(r => r.IsAvailable && !occupiedRoomIds.Contains(r.Id)),
+                Occupied = rooms.Count(r => occupiedRoomIds.Contains(r.Id)),
+                Cleaning = 0, // Add logic if you track cleaning status
+                Maintenance = rooms.Count(r => !r.IsAvailable)
+            };
+
+            // Notifications (10, sample logic)
+            var notifications = new List<DashboardViewModel.NotificationDto>();
+            // Booking notifications
+            var latestBooking = recentBookings.FirstOrDefault();
+            if (latestBooking != null)
+            {
+                notifications.Add(new DashboardViewModel.NotificationDto
+                {
+                    IconClass = "fas fa-calendar-check",
+                    BgClass = "bg-primary",
+                    Title = "Đặt phòng mới",
+                    Text = $"{latestBooking.CustomerName} đã đặt {latestBooking.RoomName}",
+                    TimeAgo = "Vừa xong",
+                    Unread = true
+                });
+            }
+            // Review notifications
+            var latestReview = recentReviews.FirstOrDefault();
+            if (latestReview != null)
+            {
+                notifications.Add(new DashboardViewModel.NotificationDto
+                {
+                    IconClass = "fas fa-star",
+                    BgClass = "bg-warning",
+                    Title = "Đánh giá mới",
+                    Text = $"{latestReview.CustomerName} đã đánh giá {latestReview.Rating} sao cho {latestReview.RoomName}",
+                    TimeAgo = "1 giờ trước",
+                    Unread = true
+                });
+            }
+            // Payment notifications (sample)
+            var latestPayment = _context.Payments
+                .OrderByDescending(p => p.PaymentDate)
+                .Include(p => p.Booking)
+                .FirstOrDefault();
+            if (latestPayment != null)
+            {
+                notifications.Add(new DashboardViewModel.NotificationDto
+                {
+                    IconClass = "fas fa-check-circle",
+                    BgClass = "bg-success",
+                    Title = "Thanh toán thành công",
+                    Text = $"Thanh toán #{latestPayment.Id} đã được xác nhận",
+                    TimeAgo = "2 giờ trước",
+                    Unread = false
+                });
+            }
+            // User notifications (sample)
+            var latestUser = _context.Users
+                .OrderByDescending(u => u.Id)
+                .FirstOrDefault();
+            if (latestUser != null)
+            {
+                notifications.Add(new DashboardViewModel.NotificationDto
+                {
+                    IconClass = "fas fa-user-plus",
+                    BgClass = "bg-info",
+                    Title = "Người dùng mới",
+                    Text = $"{latestUser.FullName} đã đăng ký tài khoản",
+                    TimeAgo = "3 giờ trước",
+                    Unread = false
+                });
+            }
+
             var dashboardVM = new DashboardViewModel
             {
                 TotalRevenue = totalRevenue,
                 TotalBookings = totalBookings,
                 RoomOccupancyRate = occupancyRate,
-                TotalCustomers = totalCustomers
+                TotalCustomers = totalCustomers,
+                RecentBookings = recentBookings,
+                RecentReviews = recentReviews,
+                TopCustomers = topCustomers,
+                RoomStatusCounts = roomStatusCounts,
+                Notifications = notifications
             };
 
             return View("Dashboard", dashboardVM);

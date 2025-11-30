@@ -5,7 +5,7 @@ namespace QuanLiKhachSan.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
        public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 

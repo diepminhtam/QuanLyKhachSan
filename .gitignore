@@ -1,0 +1,46 @@
+.vs/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+# Rider
+.idea/
+/.idea
+
+# ASP.NET Scaffolding
+.project.lock.json
+
+# Visual Studio temporary files, build results, and
+# user-generated files
+*.cache
+*.db
+*.db-shm
+*.db-wal
+*.pdb
+*.log
+*.vsix
+
+# NuGet
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+
+# Dotnet publish output
+**/publish/
+
+# IIS Express
+/.vs/*
+
+# Local history for JetBrains IDEs
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Mac files
+.DS_Store
+
+# node
+node_modules/

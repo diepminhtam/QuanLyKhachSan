@@ -82,6 +82,9 @@ namespace QuanLiKhachSan.Controllers
                     Phone = user.PhoneNumber ?? ""
                 };
 
+                // Kiểm tra tính khả dụng của phòng cho khoảng ngày được chọn
+                model.IsAvailable = await IsRoomAvailableAsync(roomId, model.CheckInDate, model.CheckOutDate);
+
                 return View(model);
             }
             catch (Exception ex)
@@ -97,10 +100,29 @@ namespace QuanLiKhachSan.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BookingViewModel model)
         {
+            // Log raw form value and model binding for AcceptTerms to help debug binding issues
+            try
+            {
+                var raw = Request?.Form?["AcceptTerms"].ToString();
+                _logger.LogInformation("BookingsController.Create POST: Request.Form[AcceptTerms]={Raw}, model.AcceptTerms={ModelAccept}", raw, model.AcceptTerms);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to log AcceptTerms debug info");
+            }
+
             if (!ModelState.IsValid)
             {
                 _logger.LogWarning("ModelState không hợp lệ: {@Errors}",
                     ModelState.Values.SelectMany(v => v.Errors));
+                await ReloadRoomInfo(model);
+                return View(model);
+            }
+
+            // Server-side enforcement: người dùng phải đồng ý điều khoản
+            if (!model.AcceptTerms)
+            {
+                ModelState.AddModelError("AcceptTerms", "Bạn phải đồng ý với Điều khoản và Điều kiện");
                 await ReloadRoomInfo(model);
                 return View(model);
             }
@@ -134,6 +156,7 @@ namespace QuanLiKhachSan.Controllers
 
                 // 4. Kiểm tra phòng có trống không
                 var isRoomAvailable = await IsRoomAvailableAsync(model.RoomId, model.CheckInDate, model.CheckOutDate);
+                model.IsAvailable = isRoomAvailable;
                 if (!isRoomAvailable)
                 {
                     ModelState.AddModelError("", "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày khác.");
@@ -191,6 +214,9 @@ namespace QuanLiKhachSan.Controllers
 
                 _logger.LogInformation("Redirecting to Confirmation with ID: {BookingId}", booking.Id);
 
+                // Thông báo thành công cho người dùng
+                TempData["Success"] = "Đặt phòng thành công. Mã đơn: BK" + booking.Id.ToString("D6");
+
                 // 10. Chuyển hướng sang confirmation
                 return RedirectToAction("Confirmation", "Bookings", new { id = booking.Id });
             }
@@ -213,15 +239,26 @@ namespace QuanLiKhachSan.Controllers
         // Kiểm tra phòng có trống không
         private async Task<bool> IsRoomAvailableAsync(int roomId, DateTime checkIn, DateTime checkOut)
         {
-            var conflictingBookings = await _context.Bookings
-                .Where(b => b.RoomId == roomId &&
-                           b.BookingStatus.Name != "Đã hủy" && // Không tính các booking đã hủy
-                           ((checkIn >= b.CheckIn && checkIn < b.CheckOut) ||
-                            (checkOut > b.CheckIn && checkOut <= b.CheckOut) ||
-                            (checkIn <= b.CheckIn && checkOut >= b.CheckOut)))
-                .CountAsync();
+            // Lấy id của trạng thái 'Đã hủy' (nếu có)
+            var cancelledStatus = await _context.BookingStatuses
+                .AsNoTracking()
+                .FirstOrDefaultAsync(bs => bs.Name == "Đã hủy");
 
-            return conflictingBookings == 0;
+            var cancelledId = cancelledStatus?.Id;
+
+            // Logic kiểm tra overlap: hai khoảng chồng lên nhau khi
+            // (checkIn < existing.CheckOut) && (checkOut > existing.CheckIn)
+            var query = _context.Bookings.AsQueryable();
+            query = query.Where(b => b.RoomId == roomId);
+
+            if (cancelledId.HasValue)
+            {
+                query = query.Where(b => b.BookingStatusId != cancelledId.Value);
+            }
+
+            var hasConflict = await query.AnyAsync(b => checkIn < b.CheckOut && checkOut > b.CheckIn);
+
+            return !hasConflict;
         }
 
         private async Task ReloadRoomInfo(BookingViewModel model)

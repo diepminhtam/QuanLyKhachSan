@@ -263,3 +263,8 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Fix for invisible labels */
+.profile-content .form-label {
+    color: #495057; /* A standard dark grey color for text */
+}

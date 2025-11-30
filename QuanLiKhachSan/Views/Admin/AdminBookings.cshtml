@@ -61,7 +61,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h6 class="status-title">Chờ xác nhận</h6>
-                            <h3 class="status-value">24</h3>
+                            <h3 class="status-value">@Model.PendingCount</h3>
                         </div>
                         <div class="status-icon">
                             <i class="fas fa-hourglass-half"></i>
@@ -80,7 +80,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h6 class="status-title">Đã xác nhận</h6>
-                            <h3 class="status-value">42</h3>
+                            <h3 class="status-value">@Model.ConfirmedCount</h3>
                         </div>
                         <div class="status-icon">
                             <i class="fas fa-calendar-check"></i>
@@ -99,7 +99,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h6 class="status-title">Hoàn thành</h6>
-                            <h3 class="status-value">156</h3>
+                            <h3 class="status-value">@Model.CompletedCount</h3>
                         </div>
                         <div class="status-icon">
                             <i class="fas fa-check-circle"></i>
@@ -118,7 +118,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h6 class="status-title">Đã hủy</h6>
-                            <h3 class="status-value">18</h3>
+                            <h3 class="status-value">@Model.CancelledCount</h3>
                         </div>
                         <div class="status-icon">
                             <i class="fas fa-times-circle"></i>

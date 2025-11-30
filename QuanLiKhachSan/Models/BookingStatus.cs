@@ -7,6 +7,6 @@
         public string Description { get; set; }
         public bool IsActive { get; set; } = true;
 
-        public virtual ICollection<Booking> Bookings { get; set; }
+        public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }
