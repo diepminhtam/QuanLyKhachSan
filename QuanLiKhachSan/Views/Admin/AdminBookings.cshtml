@@ -193,6 +193,21 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width:40px"><input id="selectAll" type="checkbox" /></th>
+                            <th>Mã</th>
+                            <th>Khách</th>
+                            <th>Phòng</th>
+                            <th>Nhận</th>
+                            <th>Trả</th>
+                            <th>Khách</th>
+                            <th>Tổng</th>
+                            <th>Trạng thái</th>
+                            <th>Thanh toán</th>
+                            <th></th>
+                        </tr>
+                    </thead>
                     <tbody>
                         @if (Model.Bookings != null && Model.Bookings.Any())
                         {
@@ -201,10 +216,10 @@
                                 <tr>
                                     <td>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox">
+                                            <input class="form-check-input booking-checkbox" type="checkbox" value="@booking.Id">
                                         </div>
                                     </td>
-                                    <td><a href="#" class="booking-link">@booking.BookingNumber</a></td>
+                                    <td><a href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })" class="booking-link">@booking.BookingNumber</a></td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-circle me-2">
@@ -222,14 +237,10 @@
                                     <td>@booking.GuestCount</td>
                                     <td>@booking.TotalPrice.ToString("N0") VNĐ</td>
                                     <td>
-                                        <span class="badge @GetStatusBadgeClass(booking.Status)">
-                                            @booking.Status
-                                        </span>
+                                        <span class="badge @GetStatusBadgeClass(booking.Status) booking-status-badge">@booking.Status</span>
                                     </td>
                                     <td>
-                                        <span class="badge @GetPaymentStatusBadgeClass(booking.PaymentStatus)">
-                                            @booking.PaymentStatus
-                                        </span>
+                                        <span class="badge @GetPaymentStatusBadgeClass(booking.PaymentStatus) booking-payment-badge">@booking.PaymentStatus</span>
                                     </td>
                                     <td>
                                         <div class="dropdown">
@@ -237,9 +248,9 @@
                                                 <i class="fas fa-ellipsis-v"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                                <li><a class="dropdown-item confirm-action" href="#"><i class="fas fa-check me-2"></i>Xác nhận</a></li>
-                                                <li><a class="dropdown-item cancel-action" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
+                                                <li><a class="dropdown-item" href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
+                                                <li><a class="dropdown-item confirm-action" href="#" data-id="@booking.Id"><i class="fas fa-check me-2"></i>Xác nhận</a></li>
+                                                <li><a class="dropdown-item cancel-action" href="#" data-id="@booking.Id"><i class="fas fa-times me-2"></i>Hủy</a></li>
                                             </ul>
                                         </div>
                                     </td>
@@ -477,56 +488,119 @@
                 updateBulkActionsBar();
             });
 
-            // Initialize action buttons
-            $('.confirm-action, .complete-action, .cancel-action').click(function(e) {
-                e.preventDefault();
-                let action = '';
-                let btnClass = '';
+            // Initialize action buttons (per-row)
+            function getBadgeClassForStatus(status){
+                if(!status) return 'bg-secondary';
+                status = status.toLowerCase();
+                if(status.includes('chờ') || status.includes('pending')) return 'bg-warning text-dark';
+                if(status.includes('đã xác nhận') || status.includes('confirmed')) return 'bg-primary';
+                if(status.includes('hoàn thành') || status.includes('completed')) return 'bg-success';
+                if(status.includes('đã hủy') || status.includes('cancelled') || status.includes('hủy')) return 'bg-danger';
+                return 'bg-secondary';
+            }
 
-                if ($(this).hasClass('confirm-action')) {
-                    action = 'xác nhận';
-                    btnClass = 'btn-primary';
-                    $('#warningMessage').addClass('d-none');
-                } else if ($(this).hasClass('complete-action')) {
-                    action = 'hoàn thành';
-                    btnClass = 'btn-success';
-                    $('#warningMessage').addClass('d-none');
-                } else if ($(this).hasClass('cancel-action')) {
-                    action = 'hủy';
-                    btnClass = 'btn-danger';
-                    $('#warningMessage').removeClass('d-none');
+            function adjustCounts(oldStatus, newStatus){
+                function change(cardClass, delta){
+                    const el = $('.status-card.'+cardClass+' .status-value');
+                    if(!el.length) return;
+                    const v = parseInt(el.text()||'0') + delta;
+                    el.text(Math.max(0,v));
                 }
 
-                $('#confirmationMessage').text(`Bạn có chắc chắn muốn ${action} đơn đặt phòng này?`);
-                $('#confirmAction').removeClass('btn-primary btn-success btn-danger').addClass(btnClass);
+                const map = (s)=>{ if(!s) return null; s=s.toLowerCase(); if(s.includes('chờ')) return 'pending'; if(s.includes('đã xác nhận')||s.includes('confirmed')) return 'confirmed'; if(s.includes('hoàn thành')||s.includes('completed')) return 'completed'; if(s.includes('đã hủy')||s.includes('hủy')) return 'cancelled'; return null; };
 
-                $('#confirmationModal').modal('show');
+                const o = map(oldStatus); const n = map(newStatus);
+                if(o && o!==n) change(o, -1);
+                if(n && o!==n) change(n, 1);
+            }
+
+            function updateRowStatus(id, newStatus){
+                const cb = $(`.booking-checkbox[value="${id}"]`);
+                if(!cb.length) return;
+                const tr = cb.closest('tr');
+                const statusTd = tr.find('td').eq(8);
+                const oldStatus = statusTd.text().trim();
+                const badgeClass = getBadgeClassForStatus(newStatus);
+                statusTd.html(`<span class="badge ${badgeClass} booking-status-badge">${newStatus}</span>`);
+                // uncheck
+                cb.prop('checked', false);
+                updateBulkActionsBar();
+                adjustCounts(oldStatus, newStatus);
+            }
+
+            $('.confirm-action').click(function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (!id) return;
+                if (!confirm('Xác nhận đơn đặt phòng này?')) return;
+                fetch('/Admin/ConfirmBooking/' + id, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            if(data.bookingId && data.newStatus) updateRowStatus(data.bookingId, data.newStatus);
+                        } else alert(data.message || 'Lỗi');
+                    })
+                    .catch(err => alert('Lỗi: ' + err));
             });
 
-            // Bulk actions
-            $('#bulkConfirm, #bulkComplete, #bulkCancel').click(function() {
-                let action = '';
-                let btnClass = '';
+            $('.cancel-action').click(function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (!id) return;
+                if (!confirm('Hủy đơn đặt phòng này?')) return;
+                fetch('/Admin/CancelBooking/' + id, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            if(data.bookingId && data.newStatus) updateRowStatus(data.bookingId, data.newStatus);
+                        } else alert(data.message || 'Lỗi');
+                    })
+                    .catch(err => alert('Lỗi: ' + err));
+            });
 
-                if ($(this).attr('id') === 'bulkConfirm') {
-                    action = 'xác nhận';
-                    btnClass = 'btn-primary';
-                    $('#warningMessage').addClass('d-none');
-                } else if ($(this).attr('id') === 'bulkComplete') {
-                    action = 'hoàn thành';
-                    btnClass = 'btn-success';
-                    $('#warningMessage').addClass('d-none');
-                } else if ($(this).attr('id') === 'bulkCancel') {
-                    action = 'hủy';
-                    btnClass = 'btn-danger';
-                    $('#warningMessage').removeClass('d-none');
-                }
+            // Bulk actions (confirm/cancel)
+            function getSelectedIds(){
+                return $('.booking-checkbox:checked').map(function(){ return parseInt(this.value); }).get();
+            }
 
-                const selectedCount = $('tbody .form-check-input:checked').length;
-                $('#confirmationMessage').text(`Bạn có chắc chắn muốn ${action} ${selectedCount} đơn đặt phòng đã chọn?`);
-                $('#confirmAction').removeClass('btn-primary btn-success btn-danger').addClass(btnClass);
+            $('#bulkConfirm').click(function(){
+                const ids = getSelectedIds();
+                if (!ids.length) { alert('Vui lòng chọn ít nhất một đơn.'); return; }
+                if (!confirm(`Xác nhận ${ids.length} đơn đã chọn?`)) return;
+                fetch('/Admin/BulkConfirm', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ids)
+                }).then(r=>r.json())
+                .then(data=>{
+                    if(data.success){
+                        alert(data.message);
+                        if(Array.isArray(data.updatedIds) && data.newStatus){
+                            data.updatedIds.forEach(function(id){ updateRowStatus(id, data.newStatus); });
+                        }
+                    } else alert(data.message||'Lỗi');
+                })
+                .catch(err=>alert('Lỗi: '+err));
+            });
 
-                $('#confirmationModal').modal('show');
+            $('#bulkCancel').click(function(){
+                const ids = getSelectedIds();
+                if (!ids.length) { alert('Vui lòng chọn ít nhất một đơn.'); return; }
+                if (!confirm(`Hủy ${ids.length} đơn đã chọn?`)) return;
+                fetch('/Admin/BulkCancel', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ids)
+                }).then(r=>r.json())
+                .then(data=>{
+                    if(data.success){
+                        alert(data.message);
+                        if(Array.isArray(data.updatedIds) && data.newStatus){
+                            data.updatedIds.forEach(function(id){ updateRowStatus(id, data.newStatus); });
+                        }
+                    } else alert(data.message||'Lỗi');
+                })
+                .catch(err=>alert('Lỗi: '+err));
             });
 
             // Filter by status

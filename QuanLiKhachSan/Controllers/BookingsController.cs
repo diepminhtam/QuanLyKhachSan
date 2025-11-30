@@ -100,10 +100,14 @@ namespace QuanLiKhachSan.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BookingViewModel model)
         {
-            // Log raw form value and model binding for AcceptTerms to help debug binding issues
+            // Log raw form value and model binding for AcceptTerms (informational)
             try
             {
-                var raw = Request?.Form?["AcceptTerms"].ToString();
+                string? raw = null;
+                if (Request != null && Request.Form != null && Request.Form.ContainsKey("AcceptTerms"))
+                {
+                    raw = Request.Form["AcceptTerms"].ToString();
+                }
                 _logger.LogInformation("BookingsController.Create POST: Request.Form[AcceptTerms]={Raw}, model.AcceptTerms={ModelAccept}", raw, model.AcceptTerms);
             }
             catch (Exception ex)
@@ -113,39 +117,18 @@ namespace QuanLiKhachSan.Controllers
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("ModelState không hợp lệ: {@Errors}",
-                    ModelState.Values.SelectMany(v => v.Errors));
-                await ReloadRoomInfo(model);
-                return View(model);
-            }
+                var errors = ModelState
+                    .Where(kv => kv.Value?.Errors != null && kv.Value.Errors.Count > 0)
+                    .ToDictionary(kv => kv.Key, kv => kv.Value.Errors.Select(e => e.ErrorMessage).ToArray());
 
-            // Server-side enforcement: người dùng phải đồng ý điều khoản
-            if (!model.AcceptTerms)
-            {
-                ModelState.AddModelError("AcceptTerms", "Bạn phải đồng ý với Điều khoản và Điều kiện");
+                _logger.LogWarning("ModelState không hợp lệ: {ErrorsJson}", System.Text.Json.JsonSerializer.Serialize(errors));
                 await ReloadRoomInfo(model);
                 return View(model);
             }
 
             try
             {
-                // 1. Kiểm tra ngày hợp lệ
-                if (model.CheckInDate >= model.CheckOutDate)
-                {
-                    ModelState.AddModelError("CheckOutDate", "Ngày trả phòng phải sau ngày nhận phòng");
-                    await ReloadRoomInfo(model);
-                    return View(model);
-                }
-
-                // 2. Kiểm tra số khách
-                if (model.GuestCount > model.MaxGuests)
-                {
-                    ModelState.AddModelError("GuestCount", $"Số khách không được vượt quá {model.MaxGuests} người");
-                    await ReloadRoomInfo(model);
-                    return View(model);
-                }
-
-                // 3. Kiểm tra phòng có tồn tại
+                // 1. Kiểm tra phòng tồn tại
                 var room = await _context.Rooms.FindAsync(model.RoomId);
                 if (room == null)
                 {
@@ -154,71 +137,107 @@ namespace QuanLiKhachSan.Controllers
                     return View(model);
                 }
 
-                // 4. Kiểm tra phòng có trống không
-                var isRoomAvailable = await IsRoomAvailableAsync(model.RoomId, model.CheckInDate, model.CheckOutDate);
-                model.IsAvailable = isRoomAvailable;
-                if (!isRoomAvailable)
+                // 2. Kiểm tra số khách
+                if (model.GuestCount > room.Capacity)
                 {
-                    ModelState.AddModelError("", "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày khác.");
+                    ModelState.AddModelError("GuestCount", $"Số khách không được vượt quá {room.Capacity} người");
                     await ReloadRoomInfo(model);
                     return View(model);
                 }
 
-                // 5. Lấy user info
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null)
+                // 3. Bắt đầu transaction và re-check availability để tránh race condition
+                using (var tx = await _context.Database.BeginTransactionAsync())
                 {
-                    return RedirectToAction("Login", "Account");
-                }
+                    var isAvailable = await IsRoomAvailableAsync(model.RoomId, model.CheckInDate, model.CheckOutDate);
+                    model.IsAvailable = isAvailable;
+                    if (!isAvailable)
+                    {
+                        ModelState.AddModelError("", "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày khác.");
+                        await ReloadRoomInfo(model);
+                        return View(model);
+                    }
 
-                // 6. Lấy booking status
-                var bookingStatus = await _context.BookingStatuses
-                    .FirstOrDefaultAsync(bs => bs.Name == "Chờ xác nhận");
+                    // 4. Tính toán tổng giá chính xác tại thời điểm đặt
+                    var nights = (model.CheckOutDate - model.CheckInDate).Days;
+                    nights = nights > 0 ? nights : 1;
+                    var roomTotal = room.PricePerNight * nights;
+                    var serviceFee = roomTotal * 0.05m;
+                    var tax = roomTotal * 0.1m;
+                    var totalPrice = roomTotal + serviceFee + tax - model.Discount;
 
-                if (bookingStatus == null)
-                {
-                    // Fallback: lấy status đầu tiên
-                    bookingStatus = await _context.BookingStatuses.FirstOrDefaultAsync();
+                    // 5. Lấy user
+                    var user = await _userManager.GetUserAsync(User);
+                    if (user == null)
+                    {
+                        return RedirectToAction("Login", "Account");
+                    }
+
+                    // 6. Lấy trạng thái booking (fallback nếu thiếu)
+                    var bookingStatus = await _context.BookingStatuses.FirstOrDefaultAsync(bs => bs.Name == "Chờ xác nhận")
+                                        ?? await _context.BookingStatuses.FirstOrDefaultAsync();
+
                     if (bookingStatus == null)
                     {
                         ModelState.AddModelError("", "Lỗi hệ thống. Vui lòng thử lại.");
                         await ReloadRoomInfo(model);
                         return View(model);
                     }
+
+                    // 7. Tạo và lưu booking
+                    var booking = new Booking
+                    {
+                        RoomId = model.RoomId,
+                        CheckIn = model.CheckInDate,
+                        CheckOut = model.CheckOutDate,
+                        Guests = model.GuestCount,
+                        TotalPrice = totalPrice,
+                        CreatedDate = DateTime.UtcNow,
+                        BookingStatusId = bookingStatus.Id,
+                        UserId = user.Id
+                    };
+
+                    _context.Bookings.Add(booking);
+                    // Save once to generate booking.Id
+                    await _context.SaveChangesAsync();
+
+                    // 8. Ghi Payment (nếu cần). Ở đây mặc định tạo bản ghi 'Chờ thanh toán' nếu tồn tại
+                    var pendingPaymentStatus = await _context.PaymentStatuses.FirstOrDefaultAsync(ps => ps.Name == "Chờ thanh toán")
+                                               ?? await _context.PaymentStatuses.FirstOrDefaultAsync();
+
+                    if (pendingPaymentStatus != null)
+                    {
+                        var payment = new Payment
+                        {
+                            BookingId = booking.Id,
+                            Amount = booking.TotalPrice,
+                            PaymentDate = DateTime.UtcNow,
+                            PaymentStatusId = pendingPaymentStatus.Id
+                        };
+
+                        _context.Payments.Add(payment);
+                    }
+
+                    // 9. Ghi lịch sử trạng thái đặt phòng
+                    var history = new BookingStatusHistory
+                    {
+                        BookingId = booking.Id,
+                        FromBookingStatusId = null,
+                        ToBookingStatusId = bookingStatus.Id,
+                        ChangedByUserId = user.Id,
+                        Note = "Tạo đặt phòng bởi khách",
+                        ChangedAt = DateTime.UtcNow
+                    };
+
+                    _context.Add(history);
+
+                    await _context.SaveChangesAsync();
+                    await tx.CommitAsync();
+
+                    TempData["Success"] = "Đặt phòng thành công. Mã đơn: BK" + booking.Id.ToString("D6");
+                    _logger.LogInformation("Booking created {BookingId} for user {UserId}", booking.Id, user.Id);
+
+                    return RedirectToAction("Confirmation", new { id = booking.Id });
                 }
-
-                // 7. Tính toán tổng giá
-                var nights = (model.CheckOutDate - model.CheckInDate).Days;
-                nights = nights > 0 ? nights : 1;
-                var roomTotal = room.PricePerNight * nights;
-                var serviceFee = roomTotal * 0.05m;
-                var tax = roomTotal * 0.1m;
-                var totalPrice = roomTotal + serviceFee + tax;
-
-                // 8. Tạo booking
-                var booking = new Booking
-                {
-                    RoomId = model.RoomId,
-                    CheckIn = model.CheckInDate,
-                    CheckOut = model.CheckOutDate,
-                    Guests = model.GuestCount,
-                    TotalPrice = totalPrice,
-                    CreatedDate = DateTime.Now,
-                    BookingStatusId = bookingStatus.Id,
-                    UserId = user.Id
-                };
-
-                // 9. Lưu booking
-                _context.Bookings.Add(booking);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Redirecting to Confirmation with ID: {BookingId}", booking.Id);
-
-                // Thông báo thành công cho người dùng
-                TempData["Success"] = "Đặt phòng thành công. Mã đơn: BK" + booking.Id.ToString("D6");
-
-                // 10. Chuyển hướng sang confirmation
-                return RedirectToAction("Confirmation", "Bookings", new { id = booking.Id });
             }
             catch (DbUpdateException dbEx)
             {

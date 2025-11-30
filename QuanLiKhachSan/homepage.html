@@ -1,8 +1,83 @@
-﻿@model List<QuanLiKhachSan.ViewModels.Room.RoomCardViewModel>
-@{
-    ViewData["Title"] = "Trang chủ";
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang ch&#x1EE7; - HotelBookingSystem</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/site.css?v=nFrZwUxyuWTZxCgqJBE2dc_MT5xCBVS3EAQkPnERCVI" />
+    <link rel="stylesheet" href="/HotelBookingSystem.styles.css?v=ozSydvdZgyEVUJ1RFQ3RKxkwkHdI0meCrn2tFDBf18w" />
+    <link rel="stylesheet" href="/css/header.css?v=WyfJiGPzHhnbiSBH1s05SKJozJpFJ519Axao6_pNm_g" />
+    <link rel="stylesheet" href="/css/home.css?v=PDyAjAM-s5hFd3p8YiNrvPv7izQgiypjPyZOTNWykfY" />
+    <link rel="stylesheet" href="/css/login.css?v=PDyAjAM-s5hFd3p8YiNrvPv7izQgiypjPyZOTNWykfY" />
+    <link rel="stylesheet" href="/css/register.css?v=dSuRB8IARYq6TkDPeAvFK-q-ha1yF4w4rZPNnmNraf0" />
+    <link rel="stylesheet" href="/css/rooms-list.css?v=hNy_X8fWoQW6Uvty_-9uWVrJ-BmAB2sRqKJ2RZD0rfo" />
+    <link rel="stylesheet" href="/css/profile.css?v=fvi8XhEuOjyjkwpaN6sadI8c0rXST-FPXtkm3PkxiD0" />
+    
+</head>
+<body>
+    <header b-gxqm2ju6yd>
+        <!-- Top Header with contact info and social media -->
+        <div b-gxqm2ju6yd class="top-header d-none d-md-block">
+            <div b-gxqm2ju6yd class="container d-flex justify-content-between">
+                <div b-gxqm2ju6yd>
+                    <i b-gxqm2ju6yd class="fas fa-phone-alt me-2"></i> +84 123 456 789
+                    <i b-gxqm2ju6yd class="fas fa-envelope ms-4 me-2"></i> info@luxuryhotel.com
+                </div>
+                <div b-gxqm2ju6yd>
+                    <a b-gxqm2ju6yd href="#" class="text-white me-3"><i b-gxqm2ju6yd class="fab fa-facebook-f"></i></a>
+                    <a b-gxqm2ju6yd href="#" class="text-white me-3"><i b-gxqm2ju6yd class="fab fa-twitter"></i></a>
+                    <a b-gxqm2ju6yd href="#" class="text-white me-3"><i b-gxqm2ju6yd class="fab fa-instagram"></i></a>
+                    <a b-gxqm2ju6yd href="#" class="text-white"><i b-gxqm2ju6yd class="fab fa-tripadvisor"></i></a>
+                </div>
+            </div>
+        </div>
 
+        <!-- Main Header with navigation -->
+        <div b-gxqm2ju6yd class="main-header">
+            <div b-gxqm2ju6yd class="container">
+                <nav b-gxqm2ju6yd class="navbar navbar-expand-lg navbar-light">
+                    <a b-gxqm2ju6yd class="navbar-brand" href="/">
+                        <i b-gxqm2ju6yd class="fas fa-hotel logo-icon"></i> Luxury Hotel
+                    </a>
+                    <button b-gxqm2ju6yd class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span b-gxqm2ju6yd class="navbar-toggler-icon"></span>
+                    </button>
+                    <div b-gxqm2ju6yd class="collapse navbar-collapse">
+                        <ul b-gxqm2ju6yd class="navbar-nav mx-auto">
+                            <li b-gxqm2ju6yd class="nav-item">
+                                <a class="nav-link active-link" href="/">Trang chủ</a>
+                            </li>
+                            <li b-gxqm2ju6yd class="nav-item">
+                                <a class="nav-link" href="/Home/Rooms">Phòng</a>
+                            </li>
+                            <li b-gxqm2ju6yd class="nav-item">
+                                <a class="nav-link" href="/Home/Services">Dịch vụ</a>
+                            </li>
+                            <li b-gxqm2ju6yd class="nav-item">
+                                <a class="nav-link" href="/Home/Gallery">Thư viện ảnh</a>
+                            </li>
+                            <li b-gxqm2ju6yd class="nav-item">
+                                <a class="nav-link" href="/Home/Contact">Liên hệ</a>
+                            </li>
+                        </ul>
+
+                        <div b-gxqm2ju6yd class="user-actions">
+                            <!-- If user is logged in -->
+                                <a class="btn btn-login" href="/Account/Login">Đăng nhập</a>
+                                <a class="btn btn-register" href="/Account/Register">Đăng ký</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+    <div b-gxqm2ju6yd class="container-fluid">
+        <main b-gxqm2ju6yd role="main" class="pb-3">
+            
 <!-- Hero Section -->
 <section id="hero" class="hero-section">
     <div class="hero-content">
@@ -13,7 +88,7 @@
 
         <!-- Search Form -->
         <div class="search-container">
-            <form id="searchForm" asp-controller="Home" asp-action="Rooms" method="get">
+            <form id="searchForm" method="get" action="/Home/Rooms">
                 <div class="row search-box">
                     <div class="col-lg-3 col-md-6">
                         <div class="form-group">
@@ -110,61 +185,129 @@
 
         <div class="room-carousel">
             <div class="row">
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var room in Model)
-                    {
                         <div class="col-lg-3 col-md-6">
                             <div class="room-card">
                                 <div class="room-img">
-                                    <a asp-controller="RoomDetails" asp-action="Index" asp-route-id="@room.Id">
-                                        <img src="@room.ImageUrl" alt="@room.Name">
+                                    <a href="/RoomDetails/331">
+                                        <img src="https://movenpickresortcamranh.com/wp-content/uploads/2022/06/Movenpick-Resort-Cam-Ranh12.jpg" alt="Ph&#xF2;ng Deluxe H&#x1B0;&#x1EDB;ng Bi&#x1EC3;n">
                                     </a>
                                     <div class="room-price">
-                                        <span>@String.Format("{0:N0}", room.PricePerNight) VNĐ</span>
+                                        <span>2,000,000 VNĐ</span>
                                         <small>/đêm</small>
                                     </div>
                                 </div>
                                 <div class="room-info">
-                                    <h3><a asp-controller="RoomDetails" asp-action="Index" asp-route-id="@room.Id">@room.Name</a></h3>
+                                    <h3><a href="/RoomDetails/331">Ph&#xF2;ng Deluxe H&#x1B0;&#x1EDB;ng Bi&#x1EC3;n</a></h3>
                                     <div class="room-rating">
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            if (i <= Math.Floor(room.AverageRating))
-                                            {
-                                                <i class="fas fa-star"></i>
-                                            }
-                                            else if (i - room.AverageRating < 1 && i - room.AverageRating > 0)
-                                            {
-                                                <i class="fas fa-star-half-alt"></i>
-                                            }
-                                            else
-                                            {
                                                 <i class="far fa-star"></i>
-                                            }
-                                        }
-                                        <span>(@room.AverageRating.ToString("0.0"))</span>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                        <span>(0.0)</span>
                                     </div>
-                                    <p>@(room.Description != null && room.Description.Length > 100 ? room.Description.Substring(0, 100) + "..." : room.Description)</p>
+                                    <p>Ph&#xF2;ng sang tr&#x1ECD;ng v&#x1EDB;i t&#x1EA7;m nh&#xEC;n tuy&#x1EC7;t &#x111;&#x1EB9;p ra bi&#x1EC3;n v&#xE0; c&#xE1;c ti&#x1EC7;n nghi hi&#x1EC7;n &#x111;&#x1EA1;i.</p>
                                     <div class="room-features">
-                                        <span><i class="fas fa-users"></i> @room.Capacity người</span>
-                                        <span><i class="fas fa-bed"></i> @room.RoomType</span>
+                                        <span><i class="fas fa-users"></i> 2 người</span>
+                                        <span><i class="fas fa-bed"></i> Deluxe</span>
                                     </div>
-                                    <a asp-controller="RoomDetails" asp-action="Index" asp-route-id="@room.Id" class="btn btn-outline-primary">Xem chi tiết</a>
+                                    <a class="btn btn-outline-primary" href="/RoomDetails/331">Xem chi tiết</a>
                                 </div>
                             </div>
                         </div>
-                    }
-                }
-                else
-                {
-                    <div class="col-12 text-center">
-                        <p>Hiện không có phòng nào để hiển thị</p>
-                    </div>
-                }
+                        <div class="col-lg-3 col-md-6">
+                            <div class="room-card">
+                                <div class="room-img">
+                                    <a href="/RoomDetails/332">
+                                        <img src="https://rosevalleydalat.com/wp-content/uploads/2019/05/Standard-double-1.jpg" alt="Ph&#xF2;ng Standard Gi&#x1B0;&#x1EDD;ng &#x110;&#xF4;i">
+                                    </a>
+                                    <div class="room-price">
+                                        <span>1,200,000 VNĐ</span>
+                                        <small>/đêm</small>
+                                    </div>
+                                </div>
+                                <div class="room-info">
+                                    <h3><a href="/RoomDetails/332">Ph&#xF2;ng Standard Gi&#x1B0;&#x1EDD;ng &#x110;&#xF4;i</a></h3>
+                                    <div class="room-rating">
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                        <span>(0.0)</span>
+                                    </div>
+                                    <p>Ph&#xF2;ng tho&#x1EA3;i m&#xE1;i v&#x1EDB;i gi&#x1B0;&#x1EDD;ng &#x111;&#xF4;i, ph&#xF9; h&#x1EE3;p cho kh&#xE1;ch c&#xF4;ng t&#xE1;c.</p>
+                                    <div class="room-features">
+                                        <span><i class="fas fa-users"></i> 2 người</span>
+                                        <span><i class="fas fa-bed"></i> Standard</span>
+                                    </div>
+                                    <a class="btn btn-outline-primary" href="/RoomDetails/332">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="room-card">
+                                <div class="room-img">
+                                    <a href="/RoomDetails/333">
+                                        <img src="https://ezcloud.vn/wp-content/uploads/2023/10/family-suite-la-gi.webp" alt="Ph&#xF2;ng Suite Gia &#x110;&#xEC;nh">
+                                    </a>
+                                    <div class="room-price">
+                                        <span>3,500,000 VNĐ</span>
+                                        <small>/đêm</small>
+                                    </div>
+                                </div>
+                                <div class="room-info">
+                                    <h3><a href="/RoomDetails/333">Ph&#xF2;ng Suite Gia &#x110;&#xEC;nh</a></h3>
+                                    <div class="room-rating">
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                        <span>(0.0)</span>
+                                    </div>
+                                    <p>Ph&#xF2;ng r&#x1ED9;ng r&#xE3;i l&#xFD; t&#x1B0;&#x1EDF;ng cho gia &#x111;&#xEC;nh c&#xF3; tr&#x1EBB; em.</p>
+                                    <div class="room-features">
+                                        <span><i class="fas fa-users"></i> 4 người</span>
+                                        <span><i class="fas fa-bed"></i> Suite</span>
+                                    </div>
+                                    <a class="btn btn-outline-primary" href="/RoomDetails/333">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="room-card">
+                                <div class="room-img">
+                                    <a href="/RoomDetails/334">
+                                        <img src="https://ezcloud.vn/wp-content/uploads/2023/10/phong-executive-la-gi.webp" alt="Ph&#xF2;ng Executive Business">
+                                    </a>
+                                    <div class="room-price">
+                                        <span>1,800,000 VNĐ</span>
+                                        <small>/đêm</small>
+                                    </div>
+                                </div>
+                                <div class="room-info">
+                                    <h3><a href="/RoomDetails/334">Ph&#xF2;ng Executive Business</a></h3>
+                                    <div class="room-rating">
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                        <span>(0.0)</span>
+                                    </div>
+                                    <p>Ph&#xF2;ng chuy&#xEA;n nghi&#x1EC7;p v&#x1EDB;i b&#xE0;n l&#xE0;m vi&#x1EC7;c v&#xE0; internet t&#x1ED1;c &#x111;&#x1ED9; cao.</p>
+                                    <div class="room-features">
+                                        <span><i class="fas fa-users"></i> 1 người</span>
+                                        <span><i class="fas fa-bed"></i> Executive</span>
+                                    </div>
+                                    <a class="btn btn-outline-primary" href="/RoomDetails/334">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
             </div>
             <div class="text-center mt-4">
-                <a asp-controller="Home" asp-action="Rooms" class="btn btn-primary">Xem tất cả phòng</a>
+                <a class="btn btn-primary" href="/Home/Rooms">Xem tất cả phòng</a>
             </div>
         </div>
     </div>
@@ -361,6 +504,29 @@
     </div>
 </section>
 
-@section Scripts {
-    <script src="~/js/home.js" asp-append-version="true"></script>
-}
+
+        </main>
+    </div>
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/site.js?v=4q1jwFhaPaZgr8WAUSrux6hAuh0XDg9kPS3xIVq36I0"></script>
+    
+    <script src="/js/home.js?v=TmAg66W5Pjnv6LpF02fjjTEzNEkFceWkreg755Je6z4"></script>
+
+
+    <script>
+        // Highlight active navigation menu item
+        $(document).ready(function() {
+            var path = window.location.pathname;
+            $(".navbar-nav .nav-link").each(function() {
+                var href = $(this).attr('href');
+                if (path === href) {
+                    $(this).addClass('active-link');
+                } else {
+                    $(this).removeClass('active-link');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

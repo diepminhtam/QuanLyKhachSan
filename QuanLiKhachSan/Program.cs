@@ -46,7 +46,12 @@ namespace QuanLiKhachSan
             });
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<QuanLiKhachSan.Filters.ViewModelLoggingFilter>();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                // Register filter as a service so it can log view model types for debugging
+                options.Filters.AddService<QuanLiKhachSan.Filters.ViewModelLoggingFilter>();
+            });
 
             // Đăng ký các services
             builder.Services.AddScoped<IRoomService, RoomService>();

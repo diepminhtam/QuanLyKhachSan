@@ -5,6 +5,7 @@ using QuanLiKhachSan.Data;
 using QuanLiKhachSan.Models;
 using QuanLiKhachSan.ViewModels.Admin;
 using System.Globalization;
+using System.Security.Claims;
 
 
 namespace QuanLiKhachSan.Controllers
@@ -13,84 +14,92 @@ namespace QuanLiKhachSan.Controllers
     public class AdminController : Controller
     {
             [HttpGet("Dashboard")]
-            public IActionResult Dashboard()
+            public async Task<IActionResult> Dashboard()
         {
-            // Calculate metrics
-            var totalRevenue = _context.Bookings.Sum(b => b.TotalPrice);
-            var totalBookings = _context.Bookings.Count();
-            var totalRooms = _context.Rooms.Count();
-            var occupiedRooms = _context.Bookings.Count(b => b.CheckIn <= DateTime.Now && b.CheckOut >= DateTime.Now);
-            var occupancyRate = totalRooms > 0 ? (double)occupiedRooms / totalRooms * 100 : 0;
-            var totalCustomers = _context.Users.Count();
+            try
+            {
+                // Calculate metrics (async, safe)
+                var totalRevenue = await _context.Bookings.SumAsync(b => (decimal?)b.TotalPrice) ?? 0m;
+                var totalBookings = await _context.Bookings.CountAsync();
+                var totalRooms = await _context.Rooms.CountAsync();
+                var now = DateTime.Now;
+                var occupiedRooms = await _context.Bookings.CountAsync(b => b.CheckIn <= now && b.CheckOut >= now);
+                var occupancyRate = totalRooms > 0 ? (double)occupiedRooms / totalRooms * 100 : 0;
+                var totalCustomers = await _context.Users.CountAsync();
 
-            // Recent Bookings (10)
-            var recentBookings = _context.Bookings
-                .OrderByDescending(b => b.CreatedDate)
-                .Take(10)
-                .Select(b => new DashboardViewModel.RecentBookingDto
+                // Recent Bookings (10) - include navigations to avoid null-ref / client evaluation
+                var recentBookings = await _context.Bookings
+                    .Include(b => b.User)
+                    .Include(b => b.Room)
+                    .Include(b => b.BookingStatus)
+                    .OrderByDescending(b => b.CreatedDate)
+                    .Take(10)
+                    .Select(b => new DashboardViewModel.RecentBookingDto
+                    {
+                        BookingNumber = $"BK{b.Id:D6}",
+                        CustomerName = b.User != null ? b.User.FullName : "-",
+                        RoomName = b.Room != null ? b.Room.Name : "-",
+                        CheckIn = b.CheckIn,
+                        CheckOut = b.CheckOut,
+                        Status = b.BookingStatus != null ? b.BookingStatus.Name : "-",
+                        TotalPrice = b.TotalPrice
+                    })
+                    .ToListAsync();
+
+                // Recent Reviews (10) - lấy từ DB trước, xử lý Initials trên bộ nhớ
+                var recentReviewsRaw = await _context.Reviews
+                    .Include(r => r.User)
+                    .Include(r => r.Room)
+                    .OrderByDescending(r => r.CreatedDate)
+                    .Take(10)
+                    .Select(r => new {
+                        CustomerName = r.User != null ? r.User.FullName : "-",
+                        CreatedDate = r.CreatedDate,
+                        Rating = r.Rating,
+                        RoomName = r.Room != null ? r.Room.Name : "-",
+                        Comment = r.Comment
+                    })
+                    .ToListAsync();
+
+                var recentReviews = recentReviewsRaw.Select(r => new DashboardViewModel.RecentReviewDto
                 {
-                    BookingNumber = $"BK{b.Id:D6}",
-                    CustomerName = b.User.FullName,
-                    RoomName = b.Room.Name,
-                    CheckIn = b.CheckIn,
-                    CheckOut = b.CheckOut,
-                    Status = b.BookingStatus.Name,
-                    TotalPrice = b.TotalPrice
-                })
-                .ToList();
-
-            // Recent Reviews (10) - lấy từ DB trước, xử lý Initials trên bộ nhớ
-            var recentReviewsRaw = _context.Reviews
-                .OrderByDescending(r => r.CreatedDate)
-                .Take(10)
-                .Select(r => new {
-                    CustomerName = r.User.FullName,
+                    CustomerName = r.CustomerName,
+                    Initials = string.Join("", r.CustomerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x[0])).ToUpper(),
                     CreatedDate = r.CreatedDate,
                     Rating = r.Rating,
-                    RoomName = r.Room.Name,
+                    RoomName = r.RoomName,
                     Comment = r.Comment
-                })
-                .ToList();
+                }).ToList();
 
-            var recentReviews = recentReviewsRaw.Select(r => new DashboardViewModel.RecentReviewDto
-            {
-                CustomerName = r.CustomerName,
-                Initials = string.Join("", r.CustomerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x[0])).ToUpper(),
-                CreatedDate = r.CreatedDate,
-                Rating = r.Rating,
-                RoomName = r.RoomName,
-                Comment = r.Comment
-            }).ToList();
+                // Top Customers (10)
+                var topCustomersRaw = await _context.Users
+                    .Select(u => new {
+                        u.FullName,
+                        u.Email,
+                        BookingCount = u.Bookings.Count(),
+                        TotalRevenue = u.Bookings.Sum(b => (decimal?)b.TotalPrice) ?? 0m
+                    })
+                    .OrderByDescending(x => x.TotalRevenue)
+                    .ThenByDescending(x => x.BookingCount)
+                    .Take(10)
+                    .ToListAsync();
 
-            // Top Customers (10)
-            var topCustomers = _context.Users
-                .Select(u => new {
-                    u.FullName,
-                    u.Email,
-                    BookingCount = u.Bookings.Count(),
-                    TotalRevenue = u.Bookings.Sum(b => b.TotalPrice)
-                })
-                .OrderByDescending(x => x.TotalRevenue)
-                .ThenByDescending(x => x.BookingCount)
-                .Take(10)
-                .ToList()
-                .Select(x => new DashboardViewModel.TopCustomerDto
+                var topCustomers = topCustomersRaw.Select(x => new DashboardViewModel.TopCustomerDto
                 {
                     CustomerName = x.FullName,
                     Initials = string.Join("", x.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(n => n[0])).ToUpper(),
                     Email = x.Email,
                     BookingCount = x.BookingCount,
                     TotalRevenue = x.TotalRevenue
-                })
-                .ToList();
+                }).ToList();
 
-            // Room Status Counts
-            var now = DateTime.Now;
-            var rooms = _context.Rooms.ToList();
-            var occupiedRoomIds = _context.Bookings
-                .Where(b => b.CheckIn <= now && b.CheckOut >= now)
-                .Select(b => b.RoomId)
-                .ToHashSet();
+                // Room Status Counts
+                var rooms = await _context.Rooms.ToListAsync();
+                    var occupiedRoomIdsList = await _context.Bookings
+                        .Where(b => b.CheckIn <= now && b.CheckOut >= now)
+                        .Select(b => b.RoomId)
+                        .ToListAsync();
+                    var occupiedRoomIds = occupiedRoomIdsList.ToHashSet();
             var roomStatusCounts = new DashboardViewModel.RoomStatusCountsDto
             {
                 Available = rooms.Count(r => r.IsAvailable && !occupiedRoomIds.Contains(r.Id)),
@@ -176,10 +185,16 @@ namespace QuanLiKhachSan.Controllers
                 Notifications = notifications
             };
 
-            return View("Dashboard", dashboardVM);
+                return View("Dashboard", dashboardVM);
+            }
+            catch (Exception ex)
+            {
+                // In Development: return 500 with message to help debugging
+                return StatusCode(500, $"Dashboard error: {ex.Message}");
+            }
         }
 
-            private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
         public AdminController(ApplicationDbContext context)
         {
@@ -255,13 +270,74 @@ namespace QuanLiKhachSan.Controllers
         }
 
         [HttpGet("Users")]
-        public IActionResult Users()
+        public async Task<IActionResult> Users(string? search = null, string? status = null, int page = 1)
         {
-            var viewModel = new UsersViewModel
+            // Query users from database
+            var query = _context.Users
+                .Include(u => u.Bookings)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                Users = GetSampleUsers()
+                query = query.Where(u => u.FullName.Contains(search) || u.Email.Contains(search));
+            }
+
+            // TODO: filter by status if you have a status field
+
+            var totalUsers = await query.CountAsync();
+            var pageSize = 10;
+
+            var users = await query
+                .OrderByDescending(u => u.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var vm = new UsersViewModel
+            {
+                TotalUsers = totalUsers,
+                Page = page,
+                PageSize = pageSize,
+                Users = users.Select((u, idx) => new UserItemViewModel
+                {
+                    Id = u.Id,
+                    UserId = $"UID{(page-1)*pageSize + idx + 1:000}",
+                    FirstName = SplitFirstName(u.FullName),
+                    LastName = SplitLastName(u.FullName),
+                    Email = u.Email,
+                    Phone = u.PhoneNumber ?? "",
+                    RegisterDate = DateTime.Now, // no CreatedDate on IdentityUser by default
+                    BookingsCount = u.Bookings?.Count() ?? 0,
+                    TotalSpending = u.Bookings?.Sum(b => b.TotalPrice) ?? 0m,
+                    Status = "active", // adapt if you store status
+                    UserType = "normal",
+                    Address = "",
+                    LoyaltyPoints = 0,
+                    LastLoginDate = null
+                }).ToList()
             };
-            return View("AdminUsers", viewModel);
+
+            // populate counts
+            vm.ActiveCount = await _context.Users.CountAsync();
+            vm.NewCount = await _context.Users.CountAsync();
+            vm.VipCount = 0;
+            vm.InactiveCount = 0;
+
+            return View("AdminUsers", vm);
+        }
+
+        private static string SplitFirstName(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
+            var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length > 0 ? parts[0] : fullName;
+        }
+
+        private static string SplitLastName(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
+            var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length > 1 ? parts[parts.Length - 1] : "";
         }
 
         private List<UserItemViewModel> GetSampleUsers()
@@ -413,10 +489,23 @@ namespace QuanLiKhachSan.Controllers
                     return Json(new { success = false, message = "Không tìm thấy trạng thái xác nhận" });
                 }
 
+                var previousStatusId = booking.BookingStatusId;
                 booking.BookingStatusId = confirmedStatus.Id;
+
+                var history = new BookingStatusHistory
+                {
+                    BookingId = booking.Id,
+                    FromBookingStatusId = previousStatusId,
+                    ToBookingStatusId = confirmedStatus.Id,
+                    ChangedByUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                    Note = "Xác nhận bởi quản trị viên",
+                    ChangedAt = DateTime.UtcNow
+                };
+
+                _context.BookingStatusHistories.Add(history);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "Đã xác nhận đơn đặt phòng thành công" });
+                return Json(new { success = true, message = "Đã xác nhận đơn đặt phòng thành công", bookingId = booking.Id, newStatus = confirmedStatus.Name });
             }
             catch (Exception ex)
             {
@@ -446,15 +535,194 @@ namespace QuanLiKhachSan.Controllers
                     return Json(new { success = false, message = "Không tìm thấy trạng thái hủy" });
                 }
 
+                var previousStatusId = booking.BookingStatusId;
                 booking.BookingStatusId = cancelledStatus.Id;
+
+                var history = new BookingStatusHistory
+                {
+                    BookingId = booking.Id,
+                    FromBookingStatusId = previousStatusId,
+                    ToBookingStatusId = cancelledStatus.Id,
+                    ChangedByUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                    Note = "Hủy bởi quản trị viên",
+                    ChangedAt = DateTime.UtcNow
+                };
+
+                _context.BookingStatusHistories.Add(history);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "Đã hủy đơn đặt phòng thành công" });
+                return Json(new { success = true, message = "Đã hủy đơn đặt phòng thành công", bookingId = booking.Id, newStatus = cancelledStatus.Name });
             }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
+        }
+
+        [HttpPost("BulkConfirm")]
+        public async Task<IActionResult> BulkConfirm([FromBody] List<int> ids)
+        {
+            if (ids == null || !ids.Any()) return Json(new { success = false, message = "Không có đơn nào được chọn" });
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var confirmedStatus = await _context.BookingStatuses.FirstOrDefaultAsync(s => s.Name == "Đã xác nhận");
+                if (confirmedStatus == null) return Json(new { success = false, message = "Không tìm thấy trạng thái xác nhận" });
+
+                var bookings = await _context.Bookings.Where(b => ids.Contains(b.Id)).ToListAsync();
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                var updatedIds = new List<int>();
+                foreach (var booking in bookings)
+                {
+                    var previous = booking.BookingStatusId;
+                    booking.BookingStatusId = confirmedStatus.Id;
+
+                    _context.BookingStatusHistories.Add(new BookingStatusHistory
+                    {
+                        BookingId = booking.Id,
+                        FromBookingStatusId = previous,
+                        ToBookingStatusId = confirmedStatus.Id,
+                        ChangedByUserId = userId,
+                        Note = "Xác nhận hàng loạt bởi quản trị viên",
+                        ChangedAt = DateTime.UtcNow
+                    });
+
+                    updatedIds.Add(booking.Id);
+                }
+
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+                return Json(new { success = true, message = $"Đã xác nhận {updatedIds.Count} đơn", updatedIds, newStatus = confirmedStatus.Name });
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("BulkCancel")]
+        public async Task<IActionResult> BulkCancel([FromBody] List<int> ids)
+        {
+            if (ids == null || !ids.Any()) return Json(new { success = false, message = "Không có đơn nào được chọn" });
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var cancelledStatus = await _context.BookingStatuses.FirstOrDefaultAsync(s => s.Name == "Đã hủy");
+                if (cancelledStatus == null) return Json(new { success = false, message = "Không tìm thấy trạng thái hủy" });
+
+                var bookings = await _context.Bookings.Where(b => ids.Contains(b.Id)).ToListAsync();
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var updatedIds = new List<int>();
+                foreach (var booking in bookings)
+                {
+                    var previous = booking.BookingStatusId;
+                    booking.BookingStatusId = cancelledStatus.Id;
+
+                    _context.BookingStatusHistories.Add(new BookingStatusHistory
+                    {
+                        BookingId = booking.Id,
+                        FromBookingStatusId = previous,
+                        ToBookingStatusId = cancelledStatus.Id,
+                        ChangedByUserId = userId,
+                        Note = "Hủy hàng loạt bởi quản trị viên",
+                        ChangedAt = DateTime.UtcNow
+                    });
+
+                    updatedIds.Add(booking.Id);
+                }
+
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+                return Json(new { success = true, message = $"Đã hủy {updatedIds.Count} đơn", updatedIds, newStatus = cancelledStatus.Name });
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("Bookings/Details/{id}")]
+        public async Task<IActionResult> BookingDetails(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.User)
+                .Include(b => b.Room)
+                .Include(b => b.BookingStatus)
+                .Include(b => b.Payments)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            var histories = await _context.BookingStatusHistories
+                .Where(h => h.BookingId == id)
+                .Include(h => h.FromBookingStatus)
+                .Include(h => h.ToBookingStatus)
+                .OrderByDescending(h => h.ChangedAt)
+                .ToListAsync();
+
+            var vm = new QuanLiKhachSan.ViewModels.Booking.BookingDetailsViewModel
+            {
+                Id = booking.Id,
+                BookingNumber = $"BK{booking.Id:D6}",
+                Status = booking.BookingStatus?.Name ?? "-",
+                BookingDate = booking.CreatedDate,
+                RoomId = booking.RoomId,
+                RoomName = booking.Room?.Name ?? "-",
+                RoomType = booking.Room?.RoomType ?? "",
+                RoomDescription = booking.Room?.Description ?? "",
+                RoomImageUrl = booking.Room?.ImageUrl ?? "/images/rooms/room-placeholder.jpg",
+                RoomRating = booking.Room?.AverageRating ?? 0,
+                RoomCapacity = booking.Room?.Capacity ?? 1,
+                CheckInDate = booking.CheckIn,
+                CheckOutDate = booking.CheckOut,
+                GuestsCount = booking.Guests,
+                GuestName = booking.User?.FullName ?? booking.UserId,
+                GuestEmail = booking.User?.Email ?? "",
+                GuestPhone = booking.User?.PhoneNumber ?? "",
+                RoomPrice = booking.TotalPrice,
+                TotalPrice = booking.TotalPrice,
+                PaymentStatus = booking.Payments.Any() ? "Đã thanh toán" : "Chưa thanh toán",
+                PaymentMethod = booking.Payments.FirstOrDefault()?.PaymentStatus.Name ?? "",
+                BookingActivities = new List<QuanLiKhachSan.ViewModels.Booking.BookingActivityViewModel>()
+            };
+
+            // Add status history activities
+            foreach (var h in histories)
+            {
+                var type = "update";
+                var toName = h.ToBookingStatus?.Name ?? "";
+                if (toName.Contains("xác nhận") || toName.Contains("Đã xác nhận")) type = "confirm";
+                if (toName.Contains("hủy") || toName.Contains("Đã hủy")) type = "cancel";
+
+                vm.BookingActivities.Add(new QuanLiKhachSan.ViewModels.Booking.BookingActivityViewModel
+                {
+                    Date = h.ChangedAt,
+                    Title = h.ToBookingStatus?.Name ?? "Trạng thái cập nhật",
+                    Description = h.Note ?? $"{h.FromBookingStatus?.Name ?? "-"} → {h.ToBookingStatus?.Name ?? "-"}",
+                    Type = type
+                });
+            }
+
+            // Add payments as activities
+            foreach (var p in booking.Payments.OrderByDescending(p => p.PaymentDate))
+            {
+                vm.BookingActivities.Add(new QuanLiKhachSan.ViewModels.Booking.BookingActivityViewModel
+                {
+                    Date = p.PaymentDate,
+                    Title = $"Thanh toán: {p.Amount:N0} VNĐ",
+                    Description = p.PaymentStatus?.Name ?? "",
+                    Type = "payment"
+                });
+            }
+
+            return View("Admin/Bookings/Details", vm);
         }
 
     }

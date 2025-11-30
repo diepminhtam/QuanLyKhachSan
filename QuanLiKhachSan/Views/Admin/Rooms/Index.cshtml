@@ -1,0 +1,48 @@
+@model IEnumerable<QuanLiKhachSan.Models.Room>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Quản lý phòng";
+}
+
+<h2>Quản lý phòng</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<p>
+    <a class="btn btn-primary" asp-controller="Rooms" asp-action="Create" asp-area="">Thêm phòng mới</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Tên</th>
+            <th>Loại</th>
+            <th>Sức chứa</th>
+            <th>Giá/đêm</th>
+            <th>Hiển thị</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td>@r.Id</td>
+            <td>@r.Name</td>
+            <td>@r.RoomType</td>
+            <td>@r.Capacity</td>
+            <td>@String.Format("{0:N2}", r.PricePerNight)</td>
+            <td>@(r.IsAvailable ? "Có" : "Không")</td>
+            <td>
+                <a class="btn btn-sm btn-secondary" asp-action="Details" asp-route-id="@r.Id">Chi tiết</a>
+                <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@r.Id">Sửa</a>
+                <a class="btn btn-sm btn-danger" asp-action="Delete" asp-route-id="@r.Id">Xoá</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

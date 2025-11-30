@@ -14,6 +14,7 @@ namespace QuanLiKhachSan.Data
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<BookingStatus> BookingStatuses { get; set; }
+        public DbSet<BookingStatusHistory> BookingStatusHistories { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PaymentStatus> PaymentStatuses { get; set; }
         public DbSet<Review> Reviews { get; set; }
@@ -98,6 +99,25 @@ namespace QuanLiKhachSan.Data
                 .HasOne(r => r.Room)
                 .WithMany(room => room.Reviews)
                 .HasForeignKey(r => r.RoomId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // BookingStatusHistory
+            builder.Entity<BookingStatusHistory>()
+                .HasOne(h => h.Booking)
+                .WithMany() // Booking -> many histories
+                .HasForeignKey(h => h.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<BookingStatusHistory>()
+                .HasOne(h => h.FromBookingStatus)
+                .WithMany()
+                .HasForeignKey(h => h.FromBookingStatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<BookingStatusHistory>()
+                .HasOne(h => h.ToBookingStatus)
+                .WithMany()
+                .HasForeignKey(h => h.ToBookingStatusId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

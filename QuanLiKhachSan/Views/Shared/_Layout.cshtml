@@ -63,7 +63,19 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Contact">Liên hệ</a>
                             </li>
-                            
+                            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">Quản trị</a>
+                                    <ul class="dropdown-menu" aria-labelledby="adminMenu">
+                                        <li><a class="dropdown-item" href="@Url.Action("Dashboard","Admin")">Dashboard</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Rooms">Phòng</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Bookings">Đặt phòng</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Users">Người dùng</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Reviews">Đánh giá</a></li>
+                                    </ul>
+                                </li>
+                            }
                         </ul>
 
                         <div class="user-actions">
@@ -80,9 +92,9 @@
                                         @if (User.IsInRole("Admin"))
                                         {
                                             <li>
-                                                <a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="Dashboard">
-                                                    <i class="fas fa-tools"></i> Quản trị
-                                                </a>
+                                                <a class="dropdown-item" href="@Url.Action("Dashboard","Admin")">
+                                                        <i class="fas fa-tools"></i> Quản trị
+                                                    </a>
                                             </li>
                                             <li><hr class="dropdown-divider"></li>
                                         }

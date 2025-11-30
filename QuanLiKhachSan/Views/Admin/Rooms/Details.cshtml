@@ -1,0 +1,41 @@
+@model QuanLiKhachSan.Models.Room
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Chi tiết phòng";
+}
+
+<h2>Chi tiết phòng</h2>
+
+<dl class="row">
+    <dt class="col-sm-2">Id</dt>
+    <dd class="col-sm-10">@Model.Id</dd>
+
+    <dt class="col-sm-2">Tên</dt>
+    <dd class="col-sm-10">@Model.Name</dd>
+
+    <dt class="col-sm-2">Loại</dt>
+    <dd class="col-sm-10">@Model.RoomType</dd>
+
+    <dt class="col-sm-2">Sức chứa</dt>
+    <dd class="col-sm-10">@Model.Capacity</dd>
+
+    <dt class="col-sm-2">Giá/đêm</dt>
+    <dd class="col-sm-10">@String.Format("{0:N2}", Model.PricePerNight)</dd>
+
+    <dt class="col-sm-2">Mô tả</dt>
+    <dd class="col-sm-10">@Model.Description</dd>
+
+    <dt class="col-sm-2">Ảnh</dt>
+    <dd class="col-sm-10">
+        @if (!string.IsNullOrEmpty(Model.ImageUrl)) {
+            <img src="@Model.ImageUrl" alt="@Model.Name" style="max-width:300px;" />
+        } else {
+            <span>Không có ảnh</span>
+        }
+    </dd>
+</dl>
+
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Sửa</a>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</p>

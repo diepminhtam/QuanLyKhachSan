@@ -3,7 +3,7 @@
     position: relative;
     height: 80vh;
     min-height: 600px;
-    background: url('/images/hero-bg.jpg') no-repeat center center;
+    background: url('/images/hero-bg.svg') no-repeat center center;
     background-size: cover;
     display: flex;
     align-items: center;
@@ -277,7 +277,7 @@ section {
 
 /* Testimonials */
 .testimonials-section {
-    background: url('/images/testimonial-bg.jpg') no-repeat center center;
+    background: url('/images/testimonial-bg.svg') no-repeat center center;
     background-size: cover;
     position: relative;
     color: #fff;

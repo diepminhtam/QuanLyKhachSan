@@ -1,0 +1,22 @@
+@model QuanLiKhachSan.Models.Room
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Xoá phòng";
+}
+
+<h2>Xoá phòng</h2>
+
+<div class="alert alert-danger">Bạn có chắc muốn xoá phòng này không? Hành động không thể hoàn tác.</div>
+
+<dl class="row">
+    <dt class="col-sm-2">Tên</dt>
+    <dd class="col-sm-10">@Model.Name</dd>
+    <dt class="col-sm-2">Loại</dt>
+    <dd class="col-sm-10">@Model.RoomType</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Xác nhận xoá</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

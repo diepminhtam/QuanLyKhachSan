@@ -1,8 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace QuanLiKhachSan.ViewModels.Booking
 {
-    public class BookingViewModel
+    // BookingViewModel implements IValidatableObject for cross-field validation
+}
+
+namespace QuanLiKhachSan.ViewModels.Booking
+{
+    public class BookingViewModel : IValidatableObject
     {
         public int RoomId { get; set; }
 
@@ -68,9 +74,43 @@ namespace QuanLiKhachSan.ViewModels.Booking
         // SỬA LẠI TÍNH TOÁN TỔNG GIÁ - ĐƠN GIẢN HÓA
         public decimal CalculatedTotalPrice => (RoomPrice * NumberOfNights) - Discount;
 
-        // THÊM PROPERTY ĐỂ BINDING TERMS
-        [Required(ErrorMessage = "Vui lòng chấp nhận điều khoản")]
-        [Range(typeof(bool), "true", "true", ErrorMessage = "Bạn phải đồng ý với điều khoản")]
+        // Property để binding AcceptTerms
         public bool AcceptTerms { get; set; }
+
+        // Cross-field validation
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var results = new List<ValidationResult>();
+
+            // Check dates
+            if (CheckInDate == default)
+            {
+                results.Add(new ValidationResult("Vui lòng chọn ngày nhận phòng", new[] { nameof(CheckInDate) }));
+            }
+
+            if (CheckOutDate == default)
+            {
+                results.Add(new ValidationResult("Vui lòng chọn ngày trả phòng", new[] { nameof(CheckOutDate) }));
+            }
+
+            if (CheckInDate != default && CheckOutDate != default && CheckOutDate <= CheckInDate)
+            {
+                results.Add(new ValidationResult("Ngày trả phòng phải sau ngày nhận phòng", new[] { nameof(CheckOutDate) }));
+            }
+
+            // Guest count vs capacity
+            if (MaxGuests > 0 && GuestCount > MaxGuests)
+            {
+                results.Add(new ValidationResult($"Số khách không được vượt quá {MaxGuests} người", new[] { nameof(GuestCount) }));
+            }
+
+            // Accept terms must be checked
+            if (!AcceptTerms)
+            {
+                results.Add(new ValidationResult("Bạn phải đồng ý với Điều khoản và Điều kiện", new[] { nameof(AcceptTerms) }));
+            }
+
+            return results;
+        }
     }
 }

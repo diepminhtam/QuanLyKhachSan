@@ -1,0 +1,136 @@
+@model QuanLiKhachSan.ViewModels.Booking.BookingDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết đặt phòng - Admin";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Chi tiết đặt phòng <small class="text-muted">#@Model.BookingNumber</small></h2>
+        <div>
+            <button id="confirmBtn" class="btn btn-primary me-2">Xác nhận</button>
+            <button id="cancelBtn" class="btn btn-danger">Hủy</button>
+            <a class="btn btn-outline-secondary ms-2" href="@Url.Action("Bookings", "Admin")">Quay lại</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">Thông tin chung</div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Mã đặt phòng</dt>
+                        <dd class="col-sm-9">#@Model.BookingNumber</dd>
+
+                        <dt class="col-sm-3">Trạng thái</dt>
+                        <dd class="col-sm-9">@Model.Status</dd>
+
+                        <dt class="col-sm-3">Ngày đặt</dt>
+                        <dd class="col-sm-9">@Model.BookingDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-3">Khách</dt>
+                        <dd class="col-sm-9">@Model.GuestName &lt;@Model.GuestEmail&gt;</dd>
+
+                        <dt class="col-sm-3">Nhận - Trả</dt>
+                        <dd class="col-sm-9">@Model.CheckInDate.ToString("dd/MM/yyyy") - @Model.CheckOutDate.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-3">Số khách</dt>
+                        <dd class="col-sm-9">@Model.GuestsCount</dd>
+
+                        <dt class="col-sm-3">Tổng tiền</dt>
+                        <dd class="col-sm-9">@Model.TotalPrice.ToString("N0") VNĐ</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Lịch sử trạng thái & hoạt động</div>
+                <div class="card-body">
+                    @if (Model.BookingActivities != null && Model.BookingActivities.Any())
+                    {
+                        <ul class="list-group">
+                            @foreach (var act in Model.BookingActivities.OrderByDescending(a=>a.Date))
+                            {
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>@act.Title</strong>
+                                            <div class="text-muted">@act.Description</div>
+                                        </div>
+                                        <small class="text-muted">@act.Date.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa có hoạt động nào.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">Thông tin phòng</div>
+                <div class="card-body text-center">
+                    <img src="@Model.RoomImageUrl" class="img-fluid mb-2" style="max-height:160px;object-fit:cover;" />
+                    <h5>@Model.RoomName</h5>
+                    <p class="text-muted">@Model.RoomType</p>
+                    <p>@Model.RoomDescription</p>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Thanh toán</div>
+                <div class="card-body">
+                    <p><strong>Trạng thái:</strong> @Model.PaymentStatus</p>
+                    <p><strong>Phương thức:</strong> @Model.PaymentMethod</p>
+                    <p><strong>Tổng:</strong> @Model.TotalPrice.ToString("N0") VNĐ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+            const id = @Model.Id;
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+
+            async function postAction(url){
+                try{
+                    const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' } });
+                    const data = await resp.json();
+                    if(data.success){
+                        alert(data.message || 'Thành công');
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Lỗi');
+                    }
+                } catch(err){
+                    alert('Lỗi kết nối: ' + err.message);
+                }
+            }
+
+            if(confirmBtn){
+                confirmBtn.addEventListener('click', function(){
+                    if(confirm('Xác nhận đơn đặt phòng này?')){
+                        postAction('/Admin/ConfirmBooking/' + id);
+                    }
+                });
+            }
+            if(cancelBtn){
+                cancelBtn.addEventListener('click', function(){
+                    if(confirm('Hủy đơn đặt phòng này?')){
+                        postAction('/Admin/CancelBooking/' + id);
+                    }
+                });
+            }
+        })();
+    </script>
+}
