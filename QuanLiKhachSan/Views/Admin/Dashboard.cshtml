@@ -1,474 +1,250 @@
 ﻿@model QuanLiKhachSan.ViewModels.Admin.DashboardViewModel
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Bảng điều khiển";
     Layout = "_AdminLayout";
+
+    // defensive model alias
+    var M = Model ?? new QuanLiKhachSan.ViewModels.Admin.DashboardViewModel();
 }
 
 @functions {
-    public string GetStatusBadgeClass(string status)
+    private string GetStatusBadgeClass(string status)
     {
-        return status?.ToLower() switch
+        if (string.IsNullOrWhiteSpace(status)) return "badge bg-secondary";
+        return status.ToLowerInvariant() switch
         {
-            "chờ xác nhận" or "pending" => "bg-warning text-dark",
-            "đã xác nhận" or "confirmed" => "bg-primary",
-            "hoàn thành" or "completed" => "bg-success",
-            "đã hủy" or "cancelled" => "bg-danger",
-            _ => "bg-secondary"
+            var s when s.Contains("pending") || s.Contains("chờ") => "badge bg-warning text-dark",
+            var s when s.Contains("confirmed") || s.Contains("xác nhận") => "badge bg-primary",
+            var s when s.Contains("completed") || s.Contains("hoàn thành") => "badge bg-success",
+            var s when s.Contains("cancelled") || s.Contains("hủy") => "badge bg-danger",
+            _ => "badge bg-secondary"
         };
     }
 }
 
-<div class="admin-dashboard">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header mb-4">
-        <div class="d-flex align-items-center justify-content-between">
-            <h1 class="h3 mb-0">Dashboard</h1>
-            <div class="date-range-picker">
-                <form method="get" class="d-flex gap-2" id="dashboardFilters">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                        <input type="text" name="start" id="start" class="form-control" value="@(Model.FilterStart?.ToString("dd/MM/yyyy") ?? "")" placeholder="Start" />
-                    </div>
-                    <div class="input-group">
-                        <input type="text" name="end" id="end" class="form-control" value="@(Model.FilterEnd?.ToString("dd/MM/yyyy") ?? "")" placeholder="End" />
-                    </div>
-                    <select name="status" class="form-select">
-                        <option value="">-- Tất cả trạng thái --</option>
-                        @foreach(var s in Model.BookingsByStatus.Select(x => x.Key))
-                        {
-                            if (s == Model.FilterStatus)
-                            {
-                                <option value="@s" selected>@s</option>
-                            }
-                            else
-                            {
-                                <option value="@s">@s</option>
-                            }
-                        }
-                    </select>
-                    <select name="sort" class="form-select">
-                        <option value="">Mặc định</option>
-                        <option value="price_desc">Giá (Lớn → Nhỏ)</option>
-                        <option value="price_asc">Giá (Nhỏ → Lớn)</option>
-                        <option value="checkin_desc">Nhận phòng (Mới → Cũ)</option>
-                        <option value="checkin_asc">Nhận phòng (Cũ → Mới)</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary">Áp dụng</button>
-                </form>
-            </div>
+<div class="admin-dashboard container-fluid">
+    <div class="dashboard-header d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0">Bảng điều khiển</h1>
+            <p class="text-muted small mt-1">Tổng quan hoạt động và thống kê hệ thống</p>
         </div>
+
+        <form method="get" id="dashboardFilters" class="d-flex gap-2 align-items-center">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-calendar-alt" aria-hidden="true"></i></span>
+                <input id="start" name="start" class="form-control" value="@(M.FilterStart?.ToString("yyyy-MM-dd") ?? "")" placeholder="Từ" aria-label="Start date" />
+            </div>
+            <div class="input-group">
+                <input id="end" name="end" class="form-control" value="@(M.FilterEnd?.ToString("yyyy-MM-dd") ?? "")" placeholder="Đến" aria-label="End date" />
+            </div>
+
+            <select name="status" class="form-select">
+                <option value="">Tất cả trạng thái</option>
+                @foreach (var kv in (M.BookingsByStatus ?? Enumerable.Empty<KeyValuePair<string,int>>()))
+                {
+                    <option value="@kv.Key" selected="@((kv.Key == M.FilterStatus).ToString().ToLowerInvariant())">@kv.Key</option>
+                }
+            </select>
+
+            <button type="submit" class="btn btn-primary">Áp dụng</button>
+        </form>
     </div>
 
-    <!-- Key Metrics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
+    <!-- Metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card metric-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="metric-title">Doanh thu</h6>
-                            <h3 class="metric-value">@Model.TotalRevenue.ToString("N0") VNĐ</h3>
-                            <div class="metric-change positive">
-                                <i class="fas fa-arrow-up"></i> 12.5% <span class="small">so với tháng trước</span>
-                            </div>
-                        </div>
-                        <div class="metric-icon">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Doanh thu</div>
+                        <div class="h4 mb-0">@M.TotalRevenue.ToString("N0") VNĐ</div>
+                        <div class="small text-success mt-1"><i class="fas fa-arrow-up"></i> Tăng so với tháng trước</div>
                     </div>
+                    <div class="metric-icon text-muted"><i class="fas fa-wallet fa-2x" aria-hidden="true"></i></div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card metric-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="metric-title">Đặt phòng</h6>
-                            <h3 class="metric-value">@Model.TotalBookings</h3>
-                            <div class="metric-change positive">
-                                <i class="fas fa-arrow-up"></i> 8.3% <span class="small">so với tháng trước</span>
-                            </div>
-                        </div>
-                        <div class="metric-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Số đặt phòng</div>
+                        <div class="h4 mb-0">@M.TotalBookings</div>
+                        <div class="small text-success mt-1"><i class="fas fa-arrow-up"></i> Tăng</div>
                     </div>
+                    <div class="metric-icon text-muted"><i class="fas fa-calendar-check fa-2x" aria-hidden="true"></i></div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card metric-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="metric-title">Công suất phòng</h6>
-                            <h3 class="metric-value">@Model.RoomOccupancyRate.ToString("F1")%</h3>
-                            <div class="metric-change negative">
-                                <i class="fas fa-arrow-down"></i> 2.1% <span class="small">so với tháng trước</span>
-                            </div>
-                        </div>
-                        <div class="metric-icon">
-                            <i class="fas fa-bed"></i>
-                        </div>
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Công suất phòng</div>
+                        <div class="h4 mb-0">@M.RoomOccupancyRate.ToString("F1")% </div>
+                        <div class="small text-danger mt-1"><i class="fas fa-arrow-down"></i> Giảm</div>
                     </div>
+                    <div class="metric-icon text-muted"><i class="fas fa-bed fa-2x" aria-hidden="true"></i></div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card metric-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="metric-title">Khách hàng mới</h6>
-                            <h3 class="metric-value">@Model.TotalCustomers</h3>
-                            <div class="metric-change positive">
-                                <i class="fas fa-arrow-up"></i> 5.7% <span class="small">so với tháng trước</span>
-                            </div>
-                        </div>
-                        <div class="metric-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Khách hàng</div>
+                        <div class="h4 mb-0">@M.TotalCustomers</div>
+                        <div class="small text-success mt-1">Khách mới</div>
                     </div>
+                    <div class="metric-icon text-muted"><i class="fas fa-users fa-2x" aria-hidden="true"></i></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Row -->
-    <div class="row mb-4">
-        <div class="col-xl-8 mb-4">
+    <!-- Charts -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-8">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Doanh thu theo tháng</h5>
-                    <div class="card-actions">
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="revenueDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                2023
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="revenueDropdown">
-                                <li><a class="dropdown-item" href="#">2023</a></li>
-                                <li><a class="dropdown-item" href="#">2022</a></li>
-                                <li><a class="dropdown-item" href="#">2021</a></li>
-                            </ul>
-                        </div>
-                    </div>
+                    <h6 class="mb-0">Doanh thu theo tháng</h6>
+                    <small class="text-muted">Năm hiện tại</small>
                 </div>
-                <div class="card-body">
-                    <canvas id="revenueChart" height="300"></canvas>
+                <div class="card-body p-3">
+                    <div style="height: 320px;">
+                        <canvas id="revenueChart" aria-label="Biểu đồ doanh thu theo tháng"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-4 mb-4">
+        <div class="col-xl-4">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Loại phòng được đặt</h5>
-                    <div class="card-actions">
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="roomTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                Tháng này
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="roomTypeDropdown">
-                                <li><a class="dropdown-item" href="#">Tháng này</a></li>
-                                <li><a class="dropdown-item" href="#">Quý này</a></li>
-                                <li><a class="dropdown-item" href="#">Năm nay</a></li>
-                            </ul>
+                    <h6 class="mb-0">Tình trạng phòng</h6>
+                </div>
+                <div class="card-body p-3">
+                    <div style="height:200px;">
+                        <canvas id="roomStatusChart" aria-label="Biểu đồ tình trạng phòng"></canvas>
+                    </div>
+
+                    <div class="room-status-summary mt-3">
+                        <div class="row gy-2">
+                            <div class="col-6">
+                                <div class="status-item">
+                                    <div class="status-icon available"><i class="fas fa-check-circle"></i></div>
+                                    <div class="status-details">
+                                        <div class="h5 mb-0">@M.RoomStatusCounts.Available</div>
+                                        <small class="text-muted">Phòng trống</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="status-item">
+                                    <div class="status-icon occupied"><i class="fas fa-bed"></i></div>
+                                    <div class="status-details">
+                                        <div class="h5 mb-0">@M.RoomStatusCounts.Occupied</div>
+                                        <small class="text-muted">Đang đặt</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="status-item">
+                                    <div class="status-icon cleaning"><i class="fas fa-broom"></i></div>
+                                    <div class="status-details">
+                                        <div class="h5 mb-0">@M.RoomStatusCounts.Cleaning</div>
+                                        <small class="text-muted">Đang dọn</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="status-item">
+                                    <div class="status-icon maintenance"><i class="fas fa-tools"></i></div>
+                                    <div class="status-details">
+                                        <div class="h5 mb-0">@M.RoomStatusCounts.Maintenance</div>
+                                        <small class="text-muted">Bảo trì</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <canvas id="roomTypeChart" height="300"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Bookings & Availability -->
-    <div class="row mb-4">
-        <div class="col-xl-8 mb-4">
+    <!-- Recent bookings and lists -->
+    <div class="row g-3">
+        <div class="col-xl-8">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Đặt phòng gần đây</h5>
-                    <a href="/Admin/Bookings" class="btn btn-sm btn-primary">Xem tất cả</a>
+                    <h6 class="mb-0">Đặt phòng gần đây</h6>
+                    <a asp-controller="Admin" asp-action="Bookings" class="btn btn-sm btn-primary">Xem tất cả</a>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Mã đặt</th>
-                                    <th>Khách hàng</th>
+                                    <th>Mã</th>
+                                    <th>Khách</th>
                                     <th>Phòng</th>
-                                    <th>Nhận phòng</th>
-                                    <th>Trả phòng</th>
+                                    <th>Nhận</th>
+                                    <th>Trả</th>
                                     <th>Trạng thái</th>
-                                    <th>Tổng tiền</th>
-                                    <th></th>
+                                    <th class="text-end">Tổng</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var booking in Model.RecentBookings.Take(10))
+                                @foreach (var b in (M.RecentBookings ?? Enumerable.Empty<QuanLiKhachSan.ViewModels.Admin.DashboardViewModel.RecentBookingDto>()).Take(10))
                                 {
                                     <tr>
-                                        <td>@booking.BookingNumber</td>
-                                        <td>@booking.CustomerName</td>
-                                        <td>@booking.RoomName</td>
-                                        <td>@booking.CheckIn.ToString("dd/MM/yyyy")</td>
-                                        <td>@booking.CheckOut.ToString("dd/MM/yyyy")</td>
-                                        <td>
-                                            <span class="badge @GetStatusBadgeClass(booking.Status)">@booking.Status</span>
-                                        </td>
-                                        <td>@booking.TotalPrice.ToString("N0") VNĐ</td>
-                                        <td>
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Chi tiết</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-check-double me-2"></i>Hoàn thành</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Hủy</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
+                                        <td>@(b.BookingNumber ?? "-")</td>
+                                        <td>@(b.CustomerName ?? "-")</td>
+                                        <td>@(b.RoomName ?? "-")</td>
+                                        <td>@b.CheckIn.ToString("dd/MM/yyyy")</td>
+                                        <td>@b.CheckOut.ToString("dd/MM/yyyy")</td>
+                                        <td><span class="@(GetStatusBadgeClass(b.Status))">@b.Status</span></td>
+                                        <td class="text-end">@b.TotalPrice.ToString("N0") VNĐ</td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
-                    <div class="card-footer d-flex justify-content-between align-items-center">
-                        @{ 
-                            var total = Model.TotalRecentBookings;
-                            var currentPage = Model.Page <= 0 ? 1 : Model.Page;
-                            var pageSize = Model.PageSize <= 0 ? 10 : Model.PageSize;
-                            var totalPages = (int)Math.Ceiling(total / (double)pageSize);
-                            var sortValue = Context.Request.Query["sort"].ToString();
-                        }
-                        <div>
-                            <small class="text-muted">Hiển thị trang @currentPage trên @totalPages (Tổng @total đặt)</small>
-                        </div>
-                        <nav>
-                            <ul class="pagination mb-0">
-                                @if (currentPage > 1)
-                                {
-                                    <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Dashboard","Admin", new { start = Model.FilterStart?.ToString("dd/MM/yyyy"), end = Model.FilterEnd?.ToString("dd/MM/yyyy"), status = Model.FilterStatus, sort = sortValue, page = currentPage - 1, pageSize = pageSize })">Previous</a>
-                                    </li>
-                                }
-                                else
-                                {
-                                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
-                                }
-
-                                @for (var p = 1; p <= totalPages; p++)
-                                {
-                                    if (p == currentPage)
-                                    {
-                                        <li class="page-item active"><span class="page-link">@p</span></li>
-                                    }
-                                    else
-                                    {
-                                        <li class="page-item"><a class="page-link" href="@Url.Action("Dashboard","Admin", new { start = Model.FilterStart?.ToString("dd/MM/yyyy"), end = Model.FilterEnd?.ToString("dd/MM/yyyy"), status = Model.FilterStatus, sort = sortValue, page = p, pageSize = pageSize })">@p</a></li>
-                                    }
-                                }
-
-                                @if (currentPage < totalPages)
-                                {
-                                    <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Dashboard","Admin", new { start = Model.FilterStart?.ToString("dd/MM/yyyy"), end = Model.FilterEnd?.ToString("dd/MM/yyyy"), status = Model.FilterStatus, sort = sortValue, page = currentPage + 1, pageSize = pageSize })">Next</a>
-                                    </li>
-                                }
-                                else
-                                {
-                                    <li class="page-item disabled"><span class="page-link">Next</span></li>
-                                }
-                            </ul>
-                        </nav>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-4 mb-4">
+        <div class="col-xl-4">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Tình trạng phòng</h5>
-                    <a href="/Admin/Rooms" class="btn btn-sm btn-primary">Quản lý phòng</a>
-                </div>
-                <div class="card-body">
-                    <div class="room-status-chart mb-4">
-                        <canvas id="roomStatusChart" height="200"></canvas>
-                    </div>
-                    <div class="room-status-summary">
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="status-item">
-                                    <div class="status-icon available">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <div class="status-details">
-                                        <h4>@Model.RoomStatusCounts.Available</h4>
-                                        <p>Phòng trống</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="status-item">
-                                    <div class="status-icon occupied">
-                                        <i class="fas fa-bed"></i>
-                                    </div>
-                                    <div class="status-details">
-                                        <h4>@Model.RoomStatusCounts.Occupied</h4>
-                                        <p>Phòng đã đặt</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="status-item">
-                                    <div class="status-icon cleaning">
-                                        <i class="fas fa-broom"></i>
-                                    </div>
-                                    <div class="status-details">
-                                        <h4>@Model.RoomStatusCounts.Cleaning</h4>
-                                        <p>Đang dọn dẹp</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="status-item">
-                                    <div class="status-icon maintenance">
-                                        <i class="fas fa-tools"></i>
-                                    </div>
-                                    <div class="status-details">
-                                        <h4>@Model.RoomStatusCounts.Maintenance</h4>
-                                        <p>Bảo trì</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom Row -->
-    <div class="row">
-        <div class="col-xl-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Đánh giá gần đây</h5>
-                    <a href="/Admin/Reviews" class="btn btn-sm btn-primary">Xem tất cả</a>
+                    <h6 class="mb-0">Đánh giá gần đây</h6>
+                    <a asp-controller="Admin" asp-action="Reviews" class="btn btn-sm btn-primary">Xem tất cả</a>
                 </div>
                 <div class="card-body p-0">
-                    <div class="reviews-list">
-                        @foreach (var review in Model.RecentReviews.Take(10))
+                    <div class="reviews-list p-3">
+                        @foreach (var r in (M.RecentReviews ?? Enumerable.Empty<QuanLiKhachSan.ViewModels.Admin.DashboardViewModel.RecentReviewDto>()).Take(8))
                         {
                             <div class="review-item">
-                                <div class="review-header">
-                                    <div class="reviewer-info">
-                                        <div class="reviewer-avatar">
-                                            <span>@review.Initials</span>
-                                        </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="reviewer-avatar me-2">@r.Initials</div>
                                         <div>
-                                            <h6>@review.CustomerName</h6>
-                                            <div class="review-date">@review.CreatedDate.ToString("dd/MM/yyyy")</div>
+                                            <div class="fw-600">@r.CustomerName</div>
+                                            <small class="text-muted">@r.CreatedDate.ToString("dd/MM/yyyy")</small>
                                         </div>
                                     </div>
-                                    <div class="review-rating">
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            if (i <= review.Rating)
-                                            {
-                                                <i class="fas fa-star"></i>
-                                            }
-                                            else
-                                            {
-                                                <i class="far fa-star"></i>
-                                            }
-                                        }
+                                    <div class="text-warning">
+                                        @for (int i=1;i<=5;i++) { if (i<=r.Rating) { <i class="fas fa-star"></i>; } else { <i class="far fa-star"></i>; } }
                                     </div>
                                 </div>
-                                <div class="review-room">@review.RoomName</div>
-                                <div class="review-content">
-                                    <p>@review.Comment</p>
-                                </div>
+                                <div class="review-room text-primary small fw-600">@r.RoomName</div>
+                                <div class="review-content small text-muted">@r.Comment</div>
                             </div>
                         }
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Khách hàng hàng đầu</h5>
-                    <a href="/Admin/Customers" class="btn btn-sm btn-primary">Xem tất cả</a>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Khách hàng</th>
-                                    <th>Đặt phòng</th>
-                                    <th>Doanh thu</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var customer in Model.TopCustomers.Take(10))
-                                {
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="customer-avatar me-2">
-                                                    <span>@customer.Initials</span>
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">@customer.CustomerName</h6>
-                                                    <small class="text-muted">@customer.Email</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>@customer.BookingCount</td>
-                                        <td>@customer.TotalRevenue.ToString("N0") VNĐ</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Thông báo gần đây</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="notifications-list">
-                        @foreach (var notification in Model.Notifications.Take(10))
-                        {
-                            <a href="#" class="notification-item @(notification.Unread ? "unread" : "")">
-                                <div class="notification-icon @notification.BgClass">
-                                    <i class="@notification.IconClass"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <div class="notification-title">@notification.Title</div>
-                                    <div class="notification-text">@notification.Text</div>
-                                    <div class="notification-time">@notification.TimeAgo</div>
-                                </div>
-                            </a>
-                        }
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="/Admin/Notifications" class="btn btn-sm btn-outline-primary">Xem tất cả thông báo</a>
                     </div>
                 </div>
             </div>
@@ -477,68 +253,31 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" integrity="" crossorigin="anonymous"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize date inputs using daterangepicker (single-date) or fallback to native date inputs
-            if (typeof $().daterangepicker === 'function') {
-                $('#start').daterangepicker({ singleDatePicker: true, showDropdowns: true, locale: { format: 'DD/MM/YYYY' } });
-                $('#end').daterangepicker({ singleDatePicker: true, showDropdowns: true, locale: { format: 'DD/MM/YYYY' } });
-            } else {
-                try { document.getElementById('start').setAttribute('type','date'); } catch {}
-                try { document.getElementById('end').setAttribute('type','date'); } catch {}
-            }
-
-            // Prepare chart data from server model
-            const revenueLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueByMonth.Select(r => r.Label)));
-            const revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueByMonth.Select(r => r.Value)));
+        (function(){
+            const revenueLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((M.RevenueByMonth ?? new List<QuanLiKhachSan.ViewModels.Admin.DashboardViewModel.RevenuePoint>()).Select(r => r.Label)));
+            const revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((M.RevenueByMonth ?? new List<QuanLiKhachSan.ViewModels.Admin.DashboardViewModel.RevenuePoint>()).Select(r => r.Value)));
 
             const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
             if (revenueCtx) {
                 new Chart(revenueCtx, {
                     type: 'bar',
-                    data: {
-                        labels: revenueLabels,
-                        datasets: [{
-                            label: 'Doanh thu',
-                            data: revenueData,
-                            backgroundColor: 'rgba(58,110,165,0.85)'
-                        }]
-                    },
-                    options: {
-                        plugins: { legend: { display: false } },
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() } } }
-                    }
+                    data: { labels: revenueLabels, datasets: [{ label: 'Doanh thu', data: revenueData, backgroundColor: 'rgba(58,110,165,0.9)' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
                 });
             }
 
-            // Bookings by status chart
-            const statusLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BookingsByStatus.Select(x => x.Key)));
-            const statusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BookingsByStatus.Select(x => x.Value)));
+            const statusLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((M.BookingsByStatus ?? new List<KeyValuePair<string,int>>()).Select(x=>x.Key)));
+            const statusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((M.BookingsByStatus ?? new List<KeyValuePair<string,int>>()).Select(x=>x.Value)));
             const roomStatusCtx = document.getElementById('roomStatusChart')?.getContext('2d');
             if (roomStatusCtx) {
-                new Chart(roomStatusCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: statusLabels.length ? statusLabels : ['Trống','Đã đặt','Đang dọn dẹp','Bảo trì'],
-                        datasets: [{
-                            data: statusData.length ? statusData : [Model.RoomStatusCounts.Available, Model.RoomStatusCounts.Occupied, Model.RoomStatusCounts.Cleaning, Model.RoomStatusCounts.Maintenance],
-                            backgroundColor: ['rgba(28,200,138,0.8)','rgba(246,194,62,0.8)','rgba(54,185,204,0.8)','rgba(231,74,59,0.8)']
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
+                new Chart(roomStatusCtx, { type: 'pie', data: { labels: statusLabels.length?statusLabels:['Trống','Đã đặt','Đang dọn dẹp','Bảo trì'], datasets:[{ data: statusData.length?statusData:[M.RoomStatusCounts.Available,M.RoomStatusCounts.Occupied,M.RoomStatusCounts.Cleaning,M.RoomStatusCounts.Maintenance], backgroundColor: ['#1cc88a','#f6c23e','#36b9cc','#e74a3b'] }] }, options:{ responsive:true, maintainAspectRatio:false } });
             }
-
-            // Optionally: top rooms table already rendered server-side
-        });
+        })();
     </script>
 }
 
 @section Styles {
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
 }

@@ -1106,7 +1106,7 @@ namespace QuanLiKhachSan.Controllers
                 });
             }
 
-            return View("Admin/Bookings/Details", vm);
+            return View("~/Views/Admin/Bookings/Details.cshtml", vm);
         }
 
     }
