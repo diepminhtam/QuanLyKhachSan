@@ -4,374 +4,201 @@
     Layout = "_AdminLayout";
 }
 
-<div class="admin-rooms">
-    <!-- Page Header -->
-    <div class="page-header mb-4">
-        <div class="d-flex align-items-center justify-content-between">
+@functions{
+    private string GetStatusBadge(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "available" => "badge bg-success",
+            "occupied" => "badge bg-warning text-dark",
+            "maintenance" => "badge bg-danger",
+            "cleaning" => "badge bg-info text-white",
+            _ => "badge bg-secondary"
+        };
+    }
+}
+
+<div class="admin-rooms container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
             <h1 class="h3 mb-0">Quản lý phòng</h1>
-            <a href="/Admin/AddRoom" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i> Thêm phòng mới
-            </a>
+            <small class="text-muted">Danh sách phòng, tìm kiếm, chỉnh sửa và quản lý trạng thái.</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" href="@Url.Action("AddRoom", "Admin")"><i class="fas fa-plus me-1"></i> Thêm phòng mới</a>
+            <button class="btn btn-outline-secondary" id="refreshBtn"><i class="fas fa-sync-alt"></i></button>
         </div>
     </div>
 
-    <!-- Room Stats Cards -->
     <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card status-card h-100 available">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="status-title">Phòng trống</h6>
-                            <h3 class="status-value">@Model.AvailableCount</h3>
-                        </div>
-                        <div class="status-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
+        <div class="col-md-3 mb-2">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Phòng trống</small>
+                        <h4 class="mb-0">@Model.AvailableCount</h4>
                     </div>
+                    <i class="fas fa-check-circle fa-2x text-success"></i>
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card status-card h-100 occupied">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="status-title">Đang sử dụng</h6>
-                            <h3 class="status-value">@Model.OccupiedCount</h3>
-                        </div>
-                        <div class="status-icon">
-                            <i class="fas fa-bed"></i>
-                        </div>
+        <div class="col-md-3 mb-2">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Đang sử dụng</small>
+                        <h4 class="mb-0">@Model.OccupiedCount</h4>
                     </div>
+                    <i class="fas fa-bed fa-2x text-warning"></i>
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card status-card h-100 maintenance">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="status-title">Bảo trì</h6>
-                            <h3 class="status-value">@Model.MaintenanceCount</h3>
-                        </div>
-                        <div class="status-icon">
-                            <i class="fas fa-tools"></i>
-                        </div>
+        <div class="col-md-3 mb-2">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Bảo trì</small>
+                        <h4 class="mb-0">@Model.MaintenanceCount</h4>
                     </div>
+                    <i class="fas fa-tools fa-2x text-danger"></i>
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card status-card h-100 cleaning">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="status-title">Đang dọn dẹp</h6>
-                            <h3 class="status-value">@Model.CleaningCount</h3>
-                        </div>
-                        <div class="status-icon">
-                            <i class="fas fa-broom"></i>
-                        </div>
+        <div class="col-md-3 mb-2">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Đang dọn dẹp</small>
+                        <h4 class="mb-0">@Model.CleaningCount</h4>
                     </div>
+                    <i class="fas fa-broom fa-2x text-info"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Search & Filter Bar -->
     <div class="card mb-4">
         <div class="card-body">
-            <form id="roomSearchForm" class="room-search-form">
-                <div class="row g-3">
-                    <div class="col-lg-3 col-md-6">
-                        <input type="text" class="form-control" placeholder="Tìm kiếm theo tên" name="search">
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <select class="form-select" name="roomType">
-                            <option value="">Tất cả loại phòng</option>
-                            <option value="standard">Standard</option>
-                            <option value="deluxe">Deluxe</option>
-                            <option value="suite">Suite</option>
-                            <option value="executive">Executive</option>
-                            <option value="family">Family</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <select class="form-select" name="status">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="available">Trống</option>
-                            <option value="occupied">Đang sử dụng</option>
-                            <option value="maintenance">Bảo trì</option>
-                            <option value="cleaning">Đang dọn dẹp</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <select class="form-select" name="sortBy">
-                            <option value="name">Sắp xếp theo tên</option>
-                            <option value="price">Sắp xếp theo giá</option>
-                            <option value="type">Sắp xếp theo loại</option>
-                            <option value="capacity">Sắp xếp theo sức chứa</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-12">
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Tìm kiếm
-                            </button>
-                            <button type="reset" class="btn btn-outline-secondary">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                    </div>
+            <form id="roomSearchForm" method="get" class="row g-2 align-items-end">
+                <div class="col-lg-3">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input class="form-control" name="search" value="@Context.Request.Query["search"]" placeholder="Tên phòng" />
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label">Loại phòng</label>
+                    <select class="form-select" name="roomType">
+                        <option value="">Tất cả loại phòng</option>
+                        @{ var types = (Model.Rooms ?? new List<QuanLiKhachSan.ViewModels.Admin.RoomItemViewModel>()).Select(r=>r.RoomType).Where(x=>!string.IsNullOrEmpty(x)).Distinct().OrderBy(x=>x).ToList(); }
+                        @foreach(var t in types){
+                            if(Context.Request.Query["roomType"]==t){
+                                <option value="@t" selected>@t</option>
+                            } else {
+                                <option value="@t">@t</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" name="status">
+                        <option value="">Tất cả trạng thái</option>
+                        @if(Context.Request.Query["status"]=="available"){ <option value="available" selected>Trống</option> } else { <option value="available">Trống</option> }
+                        @if(Context.Request.Query["status"]=="occupied"){ <option value="occupied" selected>Đang sử dụng</option> } else { <option value="occupied">Đang sử dụng</option> }
+                        @if(Context.Request.Query["status"]=="maintenance"){ <option value="maintenance" selected>Bảo trì</option> } else { <option value="maintenance">Bảo trì</option> }
+                        @if(Context.Request.Query["status"]=="cleaning"){ <option value="cleaning" selected>Đang dọn dẹp</option> } else { <option value="cleaning">Đang dọn dẹp</option> }
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label">Sắp xếp</label>
+                    <select class="form-select" name="sortBy">
+                        @if(Context.Request.Query["sortBy"]=="name"){ <option value="name" selected>Tên</option> } else { <option value="name">Tên</option> }
+                        @if(Context.Request.Query["sortBy"]=="price"){ <option value="price" selected>Giá</option> } else { <option value="price">Giá</option> }
+                        @if(Context.Request.Query["sortBy"]=="type"){ <option value="type" selected>Loại</option> } else { <option value="type">Loại</option> }
+                    </select>
+                </div>
+
+                <input type="hidden" name="page" id="currentPage" value="@(Context.Request.Query["page"].ToString()==""?"1":Context.Request.Query["page"].ToString())" />
+
+                <div class="col-auto">
+                    <button class="btn btn-primary">Tìm kiếm</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Rooms Table -->
     <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Danh sách phòng</h5>
-                <div class="d-flex">
-                    <div class="dropdown me-2">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-download me-1"></i> Xuất
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-2"></i>Excel</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-2"></i>PDF</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-2"></i>CSV</a></li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-sm btn-outline-secondary" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th scope="col">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="selectAll">
-                                </div>
-                            </th>
-                            <th scope="col">Hình ảnh</th>
-                            <th scope="col">Tên phòng</th>
-                            <th scope="col">Loại phòng</th>
-                            <th scope="col">Giá/đêm</th>
-                            <th scope="col">Sức chứa</th>
-                            <th scope="col">Trạng thái</th>
-                            <th scope="col">Tầng</th>
-                            <th scope="col">Đánh giá</th>
-                            <th scope="col">Thao tác</th>
+                            <th style="width:40px"><input id="selectAll" type="checkbox" /></th>
+                            <th>Hình</th>
+                            <th>Tên phòng</th>
+                            <th>Loại</th>
+                            <th class="text-end">Giá/đêm</th>
+                            <th>Sức chứa</th>
+                            <th>Trạng thái</th>
+                            <th>Tầng</th>
+                            <th>Đánh giá</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td>
-                                <div class="room-image">
-                                    <img src="/images/rooms/deluxe-ocean.jpg" alt="Deluxe Hướng Biển">
-                                </div>
-                            </td>
-                            <td>Phòng Deluxe Hướng Biển</td>
-                            <td>Deluxe</td>
-                            <td>2.000.000 VNĐ</td>
-                            <td>2 người</td>
-                            <td><span class="badge bg-success">Trống</span></td>
-                            <td>3</td>
-                            <td>
-                                <div class="room-rating">
-                                    <i class="fas fa-star"></i>
-                                    <span>4.8</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editRoomModal" data-room-id="1">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRoomModal" data-room-id="1">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td>
-                                <div class="room-image">
-                                    <img src="/images/rooms/standard-twin.jpg" alt="Standard Twin">
-                                </div>
-                            </td>
-                            <td>Phòng Standard Giường Đôi</td>
-                            <td>Standard</td>
-                            <td>1.200.000 VNĐ</td>
-                            <td>2 người</td>
-                            <td><span class="badge bg-warning text-dark">Đang sử dụng</span></td>
-                            <td>2</td>
-                            <td>
-                                <div class="room-rating">
-                                    <i class="fas fa-star"></i>
-                                    <span>4.5</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editRoomModal" data-room-id="2">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRoomModal" data-room-id="2">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td>
-                                <div class="room-image">
-                                    <img src="/images/rooms/family-suite.jpg" alt="Family Suite">
-                                </div>
-                            </td>
-                            <td>Phòng Suite Gia Đình</td>
-                            <td>Suite</td>
-                            <td>3.500.000 VNĐ</td>
-                            <td>4 người</td>
-                            <td><span class="badge bg-success">Trống</span></td>
-                            <td>5</td>
-                            <td>
-                                <div class="room-rating">
-                                    <i class="fas fa-star"></i>
-                                    <span>4.9</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editRoomModal" data-room-id="3">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRoomModal" data-room-id="3">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td>
-                                <div class="room-image">
-                                    <img src="/images/rooms/executive-business.jpg" alt="Executive Business">
-                                </div>
-                            </td>
-                            <td>Phòng Executive Business</td>
-                            <td>Executive</td>
-                            <td>2.700.000 VNĐ</td>
-                            <td>2 người</td>
-                            <td><span class="badge bg-warning text-dark">Đang sử dụng</span></td>
-                            <td>6</td>
-                            <td>
-                                <div class="room-rating">
-                                    <i class="fas fa-star"></i>
-                                    <span>4.7</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editRoomModal" data-room-id="4">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRoomModal" data-room-id="4">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td>
-                                <div class="room-image">
-                                    <img src="/images/rooms/presidential-suite.jpg" alt="Presidential Suite">
-                                </div>
-                            </td>
-                            <td>Phòng Tổng Thống</td>
-                            <td>Suite</td>
-                            <td>8.000.000 VNĐ</td>
-                            <td>4 người</td>
-                            <td><span class="badge bg-info text-white">Đang dọn dẹp</span></td>
-                            <td>8</td>
-                            <td>
-                                <div class="room-rating">
-                                    <i class="fas fa-star"></i>
-                                    <span>5.0</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editRoomModal" data-room-id="5">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRoomModal" data-room-id="5">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        @if(Model.Rooms != null && Model.Rooms.Any()){
+                            foreach(var room in Model.Rooms){
+                                <tr data-id="@room.Id">
+                                    <td>
+                                        <div class="form-check"><input class="form-check-input room-checkbox" type="checkbox" value="@room.Id" /></div>
+                                    </td>
+                                    <td>
+                                        <div class="room-image">
+                                            <img src="@(string.IsNullOrEmpty(room.ImageUrl)?"/images/placeholder-room.svg":room.ImageUrl)" alt="@room.Name" />
+                                        </div>
+                                    </td>
+                                    <td><a href="@Url.Action("EditRoom", "Admin", new { id = room.Id })">@room.Name</a></td>
+                                    <td>@room.RoomType</td>
+                                    <td class="text-end">@room.PricePerNight.ToString("N0") VNĐ</td>
+                                    <td>@room.Capacity</td>
+                                    <td><span class="@GetStatusBadge(room.Status)">@room.Status</span></td>
+                                    <td>@room.Floor</td>
+                                    <td>
+                                        <div class="room-rating"><i class="fas fa-star"></i> @room.Rating.ToString("0.0")</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <a class="btn btn-sm btn-outline-primary me-1" href="@Url.Action("EditRoom", "Admin", new { id = room.Id })"><i class="fas fa-edit"></i></a>
+                                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRoomModal" data-room-id="@room.Id" data-room-name="@room.Name"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        } else {
+                            <tr><td colspan="10" class="text-center py-4 text-muted">Không có phòng nào.</td></tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
+
         <div class="card-footer">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="pagination-info">
-                    Hiển thị <span>1</span> đến <span>5</span> của <span>25</span> phòng
+            <div class="d-flex align-items-center justify-content-between">
+                <div><small class="text-muted">Hiển thị <strong>@(Model.Rooms?.Count() ?? 0)</strong> phòng</small></div>
+                <div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item @(Context.Request.Query["page"]=="1"||string.IsNullOrEmpty(Context.Request.Query["page"])?"disabled":"")">
+                                <a class="page-link page-link-nav" href="#" data-page="@((Context.Request.Query["page"].ToString()==""?1:int.Parse(Context.Request.Query["page"].ToString())-1))"><i class="fas fa-angle-left"></i></a>
+                            </li>
+                            @for(int i=1;i<=5;i++){
+                                <li class="page-item @(Context.Request.Query["page"]==i.ToString()?"active":"")"><a class="page-link page-link-nav" href="#" data-page="@i">@i</a></li>
+                            }
+                            <li class="page-item"><a class="page-link page-link-nav" href="#" data-page="@((Context.Request.Query["page"].ToString()==""?1:int.Parse(Context.Request.Query["page"].ToString())+1))"><i class="fas fa-angle-right"></i></a></li>
+                        </ul>
+                    </nav>
                 </div>
-                <ul class="pagination mb-0">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                            <i class="fas fa-angle-left"></i>
-                        </a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">
-                            <i class="fas fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-                <div class="items-per-page">
-                    <select class="form-select form-select-sm">
+                <div>
+                    <select class="form-select form-select-sm" id="pageSizeSelect">
                         <option value="10">10 / trang</option>
                         <option value="25">25 / trang</option>
                         <option value="50">50 / trang</option>
@@ -382,351 +209,121 @@
         </div>
     </div>
 
-    <!-- Bulk Actions Fixed Bar -->
-    <div class="bulk-actions-bar" style="display: none;">
-        <div class="container-fluid">
-            <div class="d-flex align-items-center">
-                <div class="me-3">
-                    <span class="selected-count">5</span> phòng đã chọn
+    <div class="bulk-actions-bar fixed-bottom bg-white border-top p-3 d-none">
+        <div class="d-flex align-items-center">
+            <div class="me-3"><span class="selected-count">0</span> phòng đã chọn</div>
+            <div>
+                <button class="btn btn-outline-success me-2" id="bulkAvailable">Đánh dấu trống</button>
+                <button class="btn btn-outline-warning me-2" id="bulkMaintenance">Đánh dấu bảo trì</button>
+                <button class="btn btn-outline-danger me-2" id="bulkDelete">Xóa</button>
+            </div>
+            <div class="ms-auto"><button class="btn btn-sm btn-secondary" id="clearSelection">Bỏ chọn</button></div>
+        </div>
+    </div>
+
+    <!-- Delete Room Modal -->
+    <div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Xác nhận xóa phòng</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa phòng <strong id="deleteRoomName">?</strong>?</p>
+                    <div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Thao tác không thể hoàn tác.</div>
                 </div>
-                <div class="bulk-actions">
-                    <button class="btn btn-sm btn-outline-success me-2" id="bulkAvailable">
-                        <i class="fas fa-check-circle me-1"></i> Đánh dấu trống
-                    </button>
-                    <button class="btn btn-sm btn-outline-warning me-2" id="bulkMaintenance">
-                        <i class="fas fa-tools me-1"></i> Đánh dấu bảo trì
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger me-2" id="bulkDelete">
-                        <i class="fas fa-trash me-1"></i> Xóa
-                    </button>
-                </div>
-                <button class="btn btn-sm btn-outline-secondary ms-auto" id="clearSelection">
-                    <i class="fas fa-times me-1"></i> Bỏ chọn
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add Room Modal -->
-<div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addRoomModalLabel">Thêm phòng mới</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addRoomForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="roomName" class="form-label">Tên phòng <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="roomName" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="roomType" class="form-label">Loại phòng <span class="text-danger">*</span></label>
-                            <select class="form-select" id="roomType" required>
-                                <option value="" selected disabled>Chọn loại phòng</option>
-                                <option value="standard">Standard</option>
-                                <option value="deluxe">Deluxe</option>
-                                <option value="suite">Suite</option>
-                                <option value="executive">Executive</option>
-                                <option value="family">Family</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="roomPrice" class="form-label">Giá phòng (VNĐ/đêm) <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="roomPrice" min="0" step="100000" required>
-                                <span class="input-group-text">VNĐ</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="roomCapacity" class="form-label">Sức chứa <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="roomCapacity" min="1" max="10" required>
-                                <span class="input-group-text">người</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="roomFloor" class="form-label">Tầng</label>
-                            <input type="number" class="form-control" id="roomFloor" min="1" max="20">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="roomNumber" class="form-label">Số phòng</label>
-                            <input type="text" class="form-control" id="roomNumber">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="roomStatus" class="form-label">Trạng thái</label>
-                            <select class="form-select" id="roomStatus">
-                                <option value="available" selected>Trống</option>
-                                <option value="occupied">Đang sử dụng</option>
-                                <option value="maintenance">Bảo trì</option>
-                                <option value="cleaning">Đang dọn dẹp</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="roomDescription" class="form-label">Mô tả</label>
-                        <textarea class="form-control" id="roomDescription" rows="3"></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="roomAmenities" class="form-label">Tiện nghi</label>
-                        <div class="amenities-container">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="wifi" value="wifi">
-                                <label class="form-check-label" for="wifi">Wi-Fi</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="tv" value="tv">
-                                <label class="form-check-label" for="tv">TV</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="ac" value="ac">
-                                <label class="form-check-label" for="ac">Điều hòa</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="minibar" value="minibar">
-                                <label class="form-check-label" for="minibar">Minibar</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="safe" value="safe">
-                                <label class="form-check-label" for="safe">Két an toàn</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="bathtub" value="bathtub">
-                                <label class="form-check-label" for="bathtub">Bồn tắm</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="roomImages" class="form-label">Hình ảnh</label>
-                        <input type="file" class="form-control" id="roomImages" multiple accept="image/*">
-                        <div class="form-text">Tối đa 5 hình ảnh. Kích thước tối đa 5MB mỗi ảnh.</div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="saveRoomBtn">Lưu phòng</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Room Modal (similar to Add Room Modal with pre-populated data) -->
-<div class="modal fade" id="editRoomModal" tabindex="-1" aria-labelledby="editRoomModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editRoomModalLabel">Sửa thông tin phòng</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- The form will be identical to addRoomForm but with pre-populated data -->
-                <!-- This would be implemented using JavaScript to fill in the data -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="updateRoomBtn">Cập nhật</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Room Modal -->
-<div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteRoomModalLabel">Xác nhận xóa phòng</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa phòng <strong id="deleteRoomName">Phòng Deluxe Hướng Biển</strong>?</p>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <span>Cảnh báo: Thao tác này không thể hoàn tác. Tất cả dữ liệu liên quan đến phòng này sẽ bị xóa.</span>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button class="btn btn-danger" id="confirmDeleteBtn">Xác nhận xóa</button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xác nhận xóa</button>
-            </div>
         </div>
     </div>
+
 </div>
 
-@section Scripts {
+@Html.AntiForgeryToken()
+
+@section Scripts{
     <script>
-        $(document).ready(function() {
-            // Select all checkboxes
-            $('#selectAll').change(function() {
-                $('tbody .form-check-input').prop('checked', this.checked);
-                updateBulkActionsBar();
-            });
+        (function(){
+            const getToken = ()=>document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const headers = ()=>({ 'Content-Type':'application/json', 'RequestVerificationToken': getToken() });
 
-            // Individual checkbox change
-            $('tbody .form-check-input').change(function() {
-                updateBulkActionsBar();
-            });
-
-            // Function to update bulk actions bar
-            function updateBulkActionsBar() {
-                const selectedCount = $('tbody .form-check-input:checked').length;
-                if (selectedCount > 0) {
-                    $('.selected-count').text(selectedCount);
-                    $('.bulk-actions-bar').fadeIn();
-                } else {
-                    $('.bulk-actions-bar').fadeOut();
-                }
+            function updateBulkBar(){
+                const cnt = document.querySelectorAll('.room-checkbox:checked').length;
+                document.querySelector('.selected-count').textContent = cnt;
+                document.querySelector('.bulk-actions-bar').classList.toggle('d-none', cnt===0);
             }
 
-            // Clear selection
-            $('#clearSelection').click(function() {
-                $('tbody .form-check-input').prop('checked', false);
-                $('#selectAll').prop('checked', false);
-                updateBulkActionsBar();
+            document.addEventListener('DOMContentLoaded', function(){
+                document.getElementById('selectAll')?.addEventListener('change', function(){
+                    document.querySelectorAll('tbody .room-checkbox').forEach(cb=>cb.checked=this.checked);
+                    updateBulkBar();
+                });
+
+                document.querySelectorAll('tbody').forEach(tb=>tb.addEventListener('change', function(e){ if(e.target && e.target.matches('.room-checkbox')) updateBulkBar(); }));
+
+                document.getElementById('clearSelection')?.addEventListener('click', function(){ document.querySelectorAll('.room-checkbox').forEach(cb=>cb.checked=false); document.getElementById('selectAll').checked=false; updateBulkBar(); });
+
+                document.getElementById('refreshBtn')?.addEventListener('click', ()=>location.reload());
+
+                // Delete modal population
+                var deleteRoomId = null;
+                var deleteModal = document.getElementById('deleteRoomModal');
+                deleteModal?.addEventListener('show.bs.modal', function(ev){
+                    const btn = ev.relatedTarget; if(!btn) return;
+                    deleteRoomId = btn.getAttribute('data-room-id');
+                    const name = btn.getAttribute('data-room-name') || '?';
+                    document.getElementById('deleteRoomName').textContent = name;
+                });
+
+                document.getElementById('confirmDeleteBtn')?.addEventListener('click', function(){
+                    if(!deleteRoomId){ alert('Không có phòng để xóa'); return; }
+                    fetch('/Admin/DeleteRoom/' + deleteRoomId, { method:'POST', headers: headers() })
+                        .then(r=>r.json()).then(j=>{ if(j.success){ alert(j.message||'Đã xóa'); location.reload(); } else alert(j.message||'Lỗi'); })
+                        .catch(()=>alert('Lỗi mạng'));
+                });
+
+                // Bulk actions
+                document.getElementById('bulkAvailable')?.addEventListener('click', function(){
+                    const ids = Array.from(document.querySelectorAll('.room-checkbox:checked')).map(i=>parseInt(i.value));
+                    if(!ids.length){ alert('Vui lòng chọn phòng'); return; }
+                    if(!confirm(`Đánh dấu ${ids.length} phòng là trống?`)) return;
+                    fetch('/Admin/BulkUpdateRooms', { method:'POST', headers: headers(), body: JSON.stringify({ ids: ids, status: 'available' }) })
+                        .then(r=>r.json()).then(j=>{ if(j.success){ alert(j.message||'Đã cập nhật'); location.reload(); } else alert(j.message||'Lỗi'); })
+                        .catch(()=>alert('Lỗi mạng'));
+                });
+
+                document.getElementById('bulkMaintenance')?.addEventListener('click', function(){
+                    const ids = Array.from(document.querySelectorAll('.room-checkbox:checked')).map(i=>parseInt(i.value));
+                    if(!ids.length){ alert('Vui lòng chọn phòng'); return; }
+                    if(!confirm(`Đánh dấu ${ids.length} phòng là bảo trì?`)) return;
+                    fetch('/Admin/BulkUpdateRooms', { method:'POST', headers: headers(), body: JSON.stringify({ ids: ids, status: 'maintenance' }) })
+                        .then(r=>r.json()).then(j=>{ if(j.success){ alert(j.message||'Đã cập nhật'); location.reload(); } else alert(j.message||'Lỗi'); })
+                        .catch(()=>alert('Lỗi mạng'));
+                });
+
+                document.getElementById('bulkDelete')?.addEventListener('click', function(){
+                    const ids = Array.from(document.querySelectorAll('.room-checkbox:checked')).map(i=>parseInt(i.value));
+                    if(!ids.length){ alert('Vui lòng chọn phòng'); return; }
+                    if(!confirm(`Xóa ${ids.length} phòng?`)) return;
+                    fetch('/Admin/BulkDeleteRooms', { method:'POST', headers: headers(), body: JSON.stringify(ids) })
+                        .then(r=>r.json()).then(j=>{ if(j.success){ alert(j.message||'Đã xóa'); location.reload(); } else alert(j.message||'Lỗi'); })
+                        .catch(()=>alert('Lỗi mạng'));
+                });
+
+                // Pagination links
+                document.querySelectorAll('.page-link-nav').forEach(a=>a.addEventListener('click', function(e){ e.preventDefault(); document.getElementById('currentPage').value = this.getAttribute('data-page')||'1'; document.getElementById('roomSearchForm').submit(); }));
+
             });
-
-            // Handle delete modal
-            $('#deleteRoomModal').on('show.bs.modal', function(event) {
-                const button = $(event.relatedTarget);
-                const roomId = button.data('room-id');
-                // In a real application, you would fetch the room name here
-                // For demo, we'll use hardcoded data
-                const roomNames = {
-                    '1': 'Phòng Deluxe Hướng Biển',
-                    '2': 'Phòng Standard Giường Đôi',
-                    '3': 'Phòng Suite Gia Đình',
-                    '4': 'Phòng Executive Business',
-                    '5': 'Phòng Tổng Thống'
-                };
-                $('#deleteRoomName').text(roomNames[roomId]);
-            });
-
-            // Handle edit modal
-            $('#editRoomModal').on('show.bs.modal', function(event) {
-                const button = $(event.relatedTarget);
-                const roomId = button.data('room-id');
-                // In a real application, you would fetch the room data here and populate the form
-            });
-
-            // Handle bulk actions
-            $('#bulkAvailable, #bulkMaintenance, #bulkDelete').click(function() {
-                const action = $(this).attr('id');
-                const selectedCount = $('tbody .form-check-input:checked').length;
-                let message = '';
-
-                if (action === 'bulkAvailable') {
-                    message = `Đánh dấu ${selectedCount} phòng là trạng thái trống?`;
-                } else if (action === 'bulkMaintenance') {
-                    message = `Đánh dấu ${selectedCount} phòng là trạng thái bảo trì?`;
-                } else if (action === 'bulkDelete') {
-                    message = `Xóa ${selectedCount} phòng đã chọn?`;
-                }
-
-                if (confirm(message)) {
-                    // Process the bulk action
-                    alert('Đã thực hiện thao tác thành công!');
-                    // In a real application, you would submit this to the server
-                }
-            });
-
-            // Form validation for adding new room
-            $('#saveRoomBtn').click(function() {
-                if ($('#addRoomForm')[0].checkValidity()) {
-                    alert('Thêm phòng mới thành công!');
-                    $('#addRoomModal').modal('hide');
-                    // In a real application, you would submit this to the server
-                } else {
-                    $('#addRoomForm')[0].reportValidity();
-                }
-            });
-        });
+        })();
     </script>
 }
 
-@section Styles {
+@section Styles{
     <style>
-        /* Room status card styles */
-        .status-card.available {
-            border-left: 4px solid #1cc88a;
-        }
-
-        .status-card.occupied {
-            border-left: 4px solid #f6c23e;
-        }
-
-        .status-card.maintenance {
-            border-left: 4px solid #e74a3b;
-        }
-
-        .status-card.cleaning {
-            border-left: 4px solid #36b9cc;
-        }
-
-        .status-card.available .status-icon {
-            color: #1cc88a;
-        }
-
-        .status-card.occupied .status-icon {
-            color: #f6c23e;
-        }
-
-        .status-card.maintenance .status-icon {
-            color: #e74a3b;
-        }
-
-        .status-card.cleaning .status-icon {
-            color: #36b9cc;
-        }
-
-        /* Room images in table */
-        .room-image {
-            width: 60px;
-            height: 40px;
-            overflow: hidden;
-            border-radius: 4px;
-        }
-
-            .room-image img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-        /* Room rating */
-        .room-rating {
-            display: flex;
-            align-items: center;
-        }
-
-            .room-rating i {
-                color: #f6c23e;
-                margin-right: 4px;
-            }
-
-        /* Bulk actions bar */
-        .bulk-actions-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #3a3b45;
-            color: white;
-            padding: 0.75rem 1rem;
-            z-index: 1030;
-            box-shadow: 0 -0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        }
+        .room-image{width:64px;height:48px;overflow:hidden;border-radius:6px}
+        .room-image img{width:100%;height:100%;object-fit:cover}
+        .room-rating i{color:#f6c23e;margin-right:4px}
+        .bulk-actions-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:0.75rem 1rem;border-top:1px solid #e9ecef;z-index:1030}
     </style>
 }

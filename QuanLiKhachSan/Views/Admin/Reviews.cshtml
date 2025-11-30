@@ -34,6 +34,7 @@
                                 <th>Điểm</th>
                                 <th>Trạng thái</th>
                                 <th>Ngày</th>
+                                <th class="text-end">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -51,6 +52,12 @@
                                     <td>@r.Comment</td>
                                     <td>@r.Rating</td>
                                     <td><span class="badge bg-secondary">@r.Status</span></td>
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-success approve-review" data-id="@r.Id">Phê duyệt</button>
+                                            <button class="btn btn-sm btn-danger reject-review" data-id="@r.Id">Từ chối</button>
+                                        </div>
+                                    </td>
                                     <td>@r.CreatedDate.ToString("dd/MM/yyyy")</td>
                                 </tr>
                             }
@@ -60,4 +67,22 @@
             </div>
         </div>
     }
+
+@section Scripts {
+    <script>
+        (function(){
+            function toast(m){ alert(m); }
+            document.addEventListener('click', function(e){
+                if(e.target.matches('.approve-review')){
+                    var id = e.target.getAttribute('data-id');
+                    fetch('/Admin/Reviews/Approve/' + id, { method: 'POST' }).then(r=>r.json()).then(j=>{ if(j.success){ toast(j.message); location.reload(); } });
+                }
+                if(e.target.matches('.reject-review')){
+                    var id = e.target.getAttribute('data-id');
+                    fetch('/Admin/Reviews/Reject/' + id, { method: 'POST' }).then(r=>r.json()).then(j=>{ if(j.success){ toast(j.message); location.reload(); } });
+                }
+            });
+        })();
+    </script>
+}
 </div>

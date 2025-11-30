@@ -3,37 +3,73 @@
     Layout = "_AdminLayout";
 }
 
-<div class="admin-reports">
-    <div class="page-header mb-4">
-        <h1 class="h3 mb-0">Báo cáo tổng hợp</h1>
-    </div>
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Doanh thu</h5>
-                    <!-- TODO: Hiển thị báo cáo doanh thu từ database -->
-                    <div class="alert alert-info">Chức năng báo cáo doanh thu sẽ được cập nhật khi có dữ liệu thực.</div>
-                </div>
-            </div>
+<div class="admin-reports container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0">Báo cáo tổng hợp</h1>
+            <small class="text-muted">Bảng điều khiển báo cáo: doanh thu, công suất và khách hàng.</small>
         </div>
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Công suất</h5>
-                    <!-- TODO: Hiển thị báo cáo công suất từ database -->
-                    <div class="alert alert-info">Chức năng báo cáo công suất sẽ được cập nhật khi có dữ liệu thực.</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Khách hàng</h5>
-                    <!-- TODO: Hiển thị báo cáo khách hàng từ database -->
-                    <div class="alert alert-info">Chức năng báo cáo khách hàng sẽ được cập nhật khi có dữ liệu thực.</div>
-                </div>
-            </div>
+        <div>
+            <button class="btn btn-outline-secondary" id="refreshReports"><i class="fas fa-sync-alt"></i></button>
         </div>
     </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Tổng doanh thu</small>
+                    <div class="h4 mt-2" id="totalRevenue">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Tổng đặt phòng</small>
+                    <div class="h4 mt-2" id="totalBookings">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Khách hàng</small>
+                    <div class="h4 mt-2" id="totalCustomers">—</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <canvas id="revenueChart" height="100"></canvas>
+        </div>
+    </div>
+
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function(){
+            function fmt(v){ return new Intl.NumberFormat('vi-VN').format(v) + ' VNĐ'; }
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            let revenueChart;
+            function load(){
+                fetch('/Admin/Reports/Data')
+                    .then(r=>r.json()).then(j=>{
+                        document.getElementById('totalRevenue').textContent = fmt(j.totalRevenue || 0);
+                        document.getElementById('totalBookings').textContent = (j.totalBookings || 0);
+                        document.getElementById('totalCustomers').textContent = (j.totalCustomers || 0);
+                        const labels = j.labels || [];
+                        const values = j.values || [];
+                        if(revenueChart) revenueChart.destroy();
+                        revenueChart = new Chart(ctx, { type: 'line', data: { labels, datasets: [{ label: 'Doanh thu', data: values, backgroundColor: 'rgba(64,91,255,0.08)', borderColor: '#405BFF', fill:true }] }, options: { responsive:true, plugins:{legend:{display:false}} } });
+                    }).catch(()=>{});
+            }
+            document.getElementById('refreshReports')?.addEventListener('click', load);
+            document.addEventListener('DOMContentLoaded', load);
+        })();
+    </script>
+}

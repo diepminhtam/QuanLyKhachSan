@@ -3,9 +3,46 @@
     Layout = "_AdminLayout";
 }
 
-<div class="admin-settings">
-    <div class="page-header mb-4">
-        <h1 class="h3 mb-0">Cài đặt hệ thống</h1>
+<div class="admin-settings container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0">Cài đặt hệ thống</h1>
+            <small class="text-muted">Cấu hình tiêu đề, email hỗ trợ và các tuỳ chọn cơ bản.</small>
+        </div>
     </div>
-    <div class="alert alert-info">Chức năng cài đặt sẽ được cập nhật khi có yêu cầu cụ thể.</div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="settingsForm">
+                <div class="mb-3">
+                    <label class="form-label">Tiêu đề trang</label>
+                    <input name="siteTitle" id="siteTitle" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email hỗ trợ</label>
+                    <input name="supportEmail" id="supportEmail" type="email" class="form-control" />
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function(){
+            function toast(m){ alert(m); }
+            function load(){
+                fetch('/Admin/Settings/Load').then(r=>r.json()).then(j=>{ if(j.success && j.settings){ try{ var s = j.settings; document.getElementById('siteTitle').value = s.SiteTitle || ''; document.getElementById('supportEmail').value = s.SupportEmail || ''; }catch(e){} } });
+            }
+            document.getElementById('settingsForm')?.addEventListener('submit', function(e){
+                e.preventDefault();
+                var fd = new FormData(this);
+                fetch('/Admin/Settings/Save', { method: 'POST', body: fd }).then(r=>r.json()).then(j=>{ if(j.success) toast(j.message); else toast(j.message||'Lỗi'); });
+            });
+            document.addEventListener('DOMContentLoaded', load);
+        })();
+    </script>
+}

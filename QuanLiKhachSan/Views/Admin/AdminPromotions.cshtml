@@ -3,11 +3,55 @@
     Layout = "_AdminLayout";
 }
 
-<div class="admin-promotions">
-    <div class="page-header mb-4">
-        <h1 class="h3 mb-0">Quản lý khuyến mãi</h1>
-        <a href="#" class="btn btn-primary"><i class="fas fa-plus me-1"></i> Thêm khuyến mãi mới</a>
+<div class="admin-promotions container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0">Quản lý khuyến mãi</h1>
+            <small class="text-muted">Tạo, chỉnh sửa và quản lý các chương trình khuyến mãi.</small>
+        </div>
+        <div>
+            <button class="btn btn-primary" id="openCreatePromo"><i class="fas fa-plus me-1"></i> Thêm khuyến mãi mới</button>
+        </div>
     </div>
-    <!-- TODO: Hiển thị danh sách khuyến mãi từ database -->
-    <div class="alert alert-info">Chức năng quản lý khuyến mãi sẽ được cập nhật khi có dữ liệu thực.</div>
+
+    <div id="promotionsContainer">
+        @{ await Html.RenderPartialAsync("~/Views/Admin/Promotions/_List.cshtml", new List<dynamic>()); }
+    </div>
+
+    <!-- Create modal -->
+    <div class="modal fade" id="createPromoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm khuyến mãi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="promoForm">
+                        <div class="mb-3">
+                            <label class="form-label">Tiêu đề</label>
+                            <input name="title" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mã</label>
+                            <input name="code" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giảm (%)</label>
+                            <input name="discount" type="number" min="0" max="100" class="form-control" value="10" />
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Lưu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+@section Scripts {
+    <script src="~/js/admin-promotions.js" asp-append-version="true"></script>
+}

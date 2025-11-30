@@ -1,0 +1,192 @@
+@model QuanLiKhachSan.ViewModels.Admin.UserDetailViewModel
+@using System.Globalization
+
+<!-- Load dedicated stylesheet for this details partial -->
+<link rel="stylesheet" href="@(Url.Content("~/css/admin-user-details.css"))" />
+<style>
+    /* Minimal fallback to soften unstyled renderings */
+    .user-detail .card { margin: 0; }
+    .user-detail .user-avatar { font-family: inherit; }
+    /* Ensure partial displays nicely when inserted into modal or page */
+    .user-detail { max-width: 1100px; margin: 0 auto; }
+</style>
+
+<div class="container-fluid p-4">
+    <div class="user-detail">
+    <div class="card">
+        <div class="card-body">
+            <div class="header-hero">
+                <div class="user-avatar rounded-circle rounded-initials d-flex align-items-center justify-content-center">@Model.Initials</div>
+                <div class="meta">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div>
+                            <div class="name">@(!string.IsNullOrWhiteSpace(Model.FullName) ? Model.FullName : "(Không có tên)")</div>
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                @if (Model.Status == "inactive") { <span class="badge bg-danger">Bị khóa</span> } else { <span class="badge bg-success">Đang hoạt động</span> }
+                                @if (Model.UserType == "vip") { <span class="badge bg-warning text-dark">VIP</span> }
+                                <small class="subtle">ID: <span class="fw-semibold">#@Model.UserId</span></small>
+                            </div>
+                            <div class="text-muted small mt-2">@(string.IsNullOrWhiteSpace(Model.Email) ? "-" : Model.Email)</div>
+
+                            <div class="stat-cards">
+                                <div class="card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon"><i class="fas fa-calendar-check"></i></div>
+                                        <div>
+                                            <h6>Đã đặt</h6>
+                                            <div class="value">@Model.BookingsCount</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon"><i class="fas fa-wallet"></i></div>
+                                        <div>
+                                            <h6>Tổng chi</h6>
+                                            <div class="value">@String.Format(new CultureInfo("vi-VN"), "{0:N0} VNĐ", Model.TotalSpending)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon"><i class="fas fa-star"></i></div>
+                                        <div>
+                                            <h6>Điểm</h6>
+                                            <div class="value">@Model.LoyaltyPoints</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <a class="btn btn-sm btn-outline-dark me-2" href="@Url.Action("Edit","Admin", new { id = Model.Id })"><i class="fas fa-edit me-1"></i>Chỉnh sửa</a>
+                    <button class="btn btn-sm btn-outline-danger lock-user" data-user-id="@Model.Id"><i class="fas fa-lock me-1"></i>Khóa / Mở khóa</button>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <div class="card mb-3">
+                        <div class="card-body p-3">
+                            <dl class="row mb-0">
+                                <dt class="col-5 text-muted small">Số điện thoại</dt>
+                                <dd class="col-7">@(string.IsNullOrWhiteSpace(Model.Phone) ? "-" : Model.Phone)</dd>
+
+                                <dt class="col-5 text-muted small">Địa chỉ</dt>
+                                <dd class="col-7">@(string.IsNullOrWhiteSpace(Model.Address) ? "-" : Model.Address)</dd>
+
+                                <dt class="col-5 text-muted small">Đăng ký</dt>
+                                <dd class="col-7">@Model.RegisterDate.ToString("dd/MM/yyyy")</dd>
+
+                                <dt class="col-5 text-muted small">Lần đăng nhập</dt>
+                                <dd class="col-7">@(Model.LastLoginDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body p-3">
+                            <h6 class="mb-2">Thống kê</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="small text-muted">Đã đặt phòng</div>
+                                <div class="fw-semibold">@Model.BookingsCount</div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="small text-muted">Tổng chi tiêu</div>
+                                <div class="fw-semibold">@String.Format(new CultureInfo("vi-VN"), "{0:N0} VNĐ", Model.TotalSpending)</div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="small text-muted">Điểm thưởng</div>
+                                <div class="fw-semibold">@Model.LoyaltyPoints</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <ul class="nav nav-tabs mb-3" id="userDetailTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings" type="button" role="tab">Đặt phòng</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities" type="button" role="tab">Hoạt động</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="bookings" role="tabpanel">
+                            @if (Model.RecentBookings != null && Model.RecentBookings.Any())
+                            {
+                                <div class="mb-2">
+                                    @foreach (var b in Model.RecentBookings)
+                                    {
+                                        var statusClass = "status secondary";
+                                        var s = (b.Status ?? string.Empty).ToLowerInvariant();
+                                        if (s.Contains("confirm")) { statusClass = "status confirmed"; }
+                                        else if (s.Contains("cancel")) { statusClass = "status cancelled"; }
+                                        else if (s.Contains("pending")) { statusClass = "status pending"; }
+                                        <div class="booking-card">
+                                            <div class="left">
+                                                <div class="badge-date">@b.CheckIn.ToString("dd/MM") - @b.CheckOut.ToString("dd/MM")</div>
+                                                <div class="meta">
+                                                    <div class="title">@b.BookingNumber <small class="text-muted ms-2">@b.RoomName</small></div>
+                                                    <div class="sub">@b.RoomName</div>
+                                                </div>
+                                            </div>
+                                            <div class="right">
+                                                <div class="mb-1"><span class="@statusClass">@b.Status</span></div>
+                                                <div class="fw-semibold">@String.Format(new CultureInfo("vi-VN"), "{0:N0} VNĐ", b.TotalPrice)</div>
+                                                <div class="actions mt-2">
+                                                    <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Bookings", "Admin")">Danh sách đặt phòng</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-4">
+                                    <div class="empty-illustration mb-3"><i class="fas fa-inbox fa-lg"></i></div>
+                                    <div>Không có lịch sử đặt phòng.</div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="tab-pane fade" id="activities" role="tabpanel">
+                            @if (Model.RecentActivities != null && Model.RecentActivities.Any())
+                            {
+                                <div class="list-group">
+                                    @foreach (var a in Model.RecentActivities)
+                                    {
+                                        <div class="list-group-item d-flex gap-3 align-items-start">
+                                            <div class="flex-shrink-0">
+                                                <div class="activity-icon bg-secondary"><i class="fas fa-dot-circle"></i></div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h6 class="mb-1">@a.Title</h6>
+                                                    <small class="text-muted">@a.Date.ToString("dd/MM/yyyy HH:mm")</small>
+                                                </div>
+                                                @if (!string.IsNullOrWhiteSpace(a.Description)) { <p class="mb-0 small text-muted">@a.Description</p> }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-history fa-2x mb-2"></i>
+                                    <div>Không có hoạt động gần đây.</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -481,9 +481,14 @@
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize date inputs (simple)
-            $('#start').datepicker({ dateFormat: 'dd/mm/yy' });
-            $('#end').datepicker({ dateFormat: 'dd/mm/yy' });
+            // Initialize date inputs using daterangepicker (single-date) or fallback to native date inputs
+            if (typeof $().daterangepicker === 'function') {
+                $('#start').daterangepicker({ singleDatePicker: true, showDropdowns: true, locale: { format: 'DD/MM/YYYY' } });
+                $('#end').daterangepicker({ singleDatePicker: true, showDropdowns: true, locale: { format: 'DD/MM/YYYY' } });
+            } else {
+                try { document.getElementById('start').setAttribute('type','date'); } catch {}
+                try { document.getElementById('end').setAttribute('type','date'); } catch {}
+            }
 
             // Prepare chart data from server model
             const revenueLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueByMonth.Select(r => r.Label)));

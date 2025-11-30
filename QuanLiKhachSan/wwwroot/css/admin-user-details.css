@@ -1,0 +1,546 @@
+/* Dedicated styles for Admin -> User Details partial */
+:root {
+  --aud-primary: #2a9df4;
+  --aud-accent: #405bff;
+  --card-bg: #fff;
+  --muted: #6c757d;
+  --surface-shadow: 0 8px 22px rgba(16, 24, 40, 0.06);
+}
+
+.user-detail {
+  max-width: 1120px;
+  margin: 0 auto;
+  color: #222;
+}
+
+/* Ensure a pleasant readable base for this partial regardless of outer CSS */
+.user-detail * {
+  box-sizing: border-box;
+}
+.user-detail {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+}
+.user-detail .card {
+  background: var(--card-bg);
+}
+
+.user-detail .card {
+  border: 0;
+  border-radius: 0.75rem;
+  background: var(--card-bg);
+  box-shadow: var(--surface-shadow);
+}
+
+.user-detail .card + .card {
+  margin-top: 1rem;
+}
+
+.user-detail .card-body {
+  padding: 1.25rem 1.5rem;
+}
+
+/* Header */
+.user-detail .user-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(42, 157, 244, 0.12);
+}
+
+.user-detail .rounded-initials {
+  background: linear-gradient(
+    135deg,
+    var(--aud-primary) 0%,
+    var(--aud-accent) 100%
+  );
+}
+
+.user-detail h5 {
+  margin-bottom: 0.35rem;
+  font-size: 1.125rem;
+}
+.user-detail .text-muted {
+  color: var(--muted);
+}
+
+/* Header hero */
+.user-detail .header-hero {
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(
+    90deg,
+    rgba(64, 91, 255, 0.06),
+    rgba(42, 157, 244, 0.02)
+  );
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 6px 20px rgba(16, 24, 40, 0.04);
+  align-items: center;
+}
+
+.user-detail .header-hero .meta {
+  flex: 1 1 auto;
+}
+
+.user-detail .header-hero .actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.user-detail .user-avatar {
+  width: 96px;
+  height: 96px;
+  font-size: 32px;
+  box-shadow: 0 12px 26px rgba(64, 91, 255, 0.12);
+  border: 4px solid rgba(255, 255, 255, 0.85);
+}
+
+.user-detail .role-pill {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  color: #fff;
+  background: #6b7280;
+}
+
+.user-detail .name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.user-detail .subtle {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* layout: avatar / main / actions */
+.user-detail .header-hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-gap: 1rem;
+}
+.user-detail .header-hero .user-avatar {
+  grid-row: 1 / span 2;
+}
+.user-detail .header-hero .meta {
+  align-self: center;
+}
+.user-detail .header-hero .actions {
+  align-self: center;
+}
+
+/* action buttons styling (higher specificity to override other site rules) */
+.user-detail .header-hero .actions .btn {
+  min-width: 110px;
+  padding: 0.45rem 0.7rem;
+  font-weight: 600;
+}
+.user-detail .header-hero .actions .btn-outline-secondary {
+  color: #374151;
+  border-color: rgba(99, 102, 241, 0.12);
+  background: transparent;
+}
+.user-detail .header-hero .actions .btn-outline-danger {
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.12);
+}
+
+/* make sure badges are legible */
+.user-detail .header-hero .badge {
+  box-shadow: none;
+  font-weight: 600;
+}
+
+/* Stat cards (small) */
+.user-detail .stat-cards {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+.user-detail .stat-cards .card {
+  flex: 1 1 0;
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  box-shadow: none;
+}
+.user-detail .stat-cards .card h6 {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.user-detail .stat-cards .card .value {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.user-detail .stat-cards .card .icon {
+  font-size: 20px;
+  color: rgba(55, 65, 81, 0.8);
+}
+.user-detail .stat-cards .card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(180deg, #fff, #fbfdff);
+  border: 1px solid #f1f5f9;
+}
+.user-detail .stat-cards .card .value {
+  color: #0f172a;
+}
+
+/* contact/info card */
+.user-detail .info-card {
+  padding: 1rem;
+  border-radius: 0.6rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.03);
+}
+.user-detail dl dt {
+  color: var(--muted);
+  font-weight: 600;
+}
+.user-detail dl dd {
+  margin-left: 0;
+  font-size: 0.96rem;
+  color: #111827;
+}
+
+/* unify card spacing across the partial */
+.user-detail .card + .card,
+.user-detail .card + .card-body {
+  margin-top: 1rem;
+}
+
+/* improved booking-card colors */
+.user-detail .booking-card {
+  background: linear-gradient(180deg, #ffffff, #fcfdff);
+  border: 1px solid #eef2ff;
+}
+.user-detail .booking-card .badge-date {
+  background: rgba(99, 102, 241, 0.06);
+  color: #374151;
+  font-weight: 700;
+}
+
+/* emphasize empty state */
+.user-detail .empty-illustration {
+  opacity: 0.95;
+}
+
+/* Improve booking card layout */
+.user-detail .booking-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-radius: 0.6rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.04);
+  margin-bottom: 0.75rem;
+}
+.user-detail .booking-card .left {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+.user-detail .booking-card .left .badge-date {
+  background: #f1f5f9;
+  color: #374151;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+.user-detail .booking-card .right {
+  text-align: right;
+  min-width: 160px;
+}
+.user-detail .booking-card .actions a {
+  margin-left: 0.5rem;
+}
+
+/* Make badges more prominent */
+.user-detail .badge {
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.04);
+}
+
+/* Buttons */
+.user-detail .btn-primary {
+  background: linear-gradient(90deg, var(--aud-primary), var(--aud-accent));
+  border: 0;
+}
+.user-detail .btn-outline-secondary {
+  border-color: rgba(99, 102, 241, 0.08);
+}
+
+/* Improve spacing inside cards */
+.user-detail .card-body.p-3 {
+  padding: 1rem 1.25rem;
+}
+
+/* Slight hover for list items */
+.user-detail .list-group-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.03);
+}
+
+@media (max-width: 768px) {
+  .user-detail .header-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .user-detail .stat-cards {
+    flex-direction: column;
+  }
+}
+
+/* Status badges */
+.user-detail .badge {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.5rem;
+}
+.user-detail .badge.bg-success {
+  background: #198754;
+}
+.user-detail .badge.bg-danger {
+  background: #dc3545;
+}
+.user-detail .badge.bg-warning {
+  background: #ffca2c;
+  color: #2b2b2b;
+}
+
+/* Action buttons */
+.user-detail .btn {
+  border-radius: 0.5rem;
+}
+.user-detail .btn-outline-secondary {
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+/* Left column (contact + stats) */
+.user-detail dl dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.user-detail dl dd {
+  margin-left: 0;
+  font-size: 0.95rem;
+}
+
+.user-detail .stats .fw-semibold {
+  font-size: 1rem;
+}
+
+/* Tabs and content */
+.user-detail .nav-tabs .nav-link {
+  border: 0;
+  color: #374151;
+}
+.user-detail .nav-tabs .nav-link.active {
+  color: var(--aud-accent);
+  font-weight: 600;
+}
+
+.user-detail .table {
+  margin-bottom: 0;
+}
+.user-detail .table th {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.user-detail .table td {
+  vertical-align: middle;
+}
+.user-detail .table-hover tbody tr:hover {
+  background: #fbfbfd;
+}
+
+/* Activity list */
+.user-detail .activity-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.user-detail .activity-icon.bg-secondary {
+  background: #6c757d;
+}
+
+.user-detail .list-group-item {
+  border: 0;
+  padding: 0.75rem 1rem;
+}
+.user-detail .list-group-item + .list-group-item {
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Empty states */
+.user-detail .empty-state {
+  color: #9aa3b2;
+  padding: 2rem 1rem;
+}
+.user-detail .empty-state i {
+  color: #c6c8d1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-detail {
+    padding: 0 0.5rem;
+  }
+  .user-detail .d-flex.align-items-center.justify-content-between {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .user-detail .text-end {
+    width: 100%;
+    text-align: left;
+  }
+  .user-detail .text-end .btn {
+    width: 48%;
+    margin-right: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-detail .text-end .btn {
+    width: 100%;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Utilities */
+.user-detail .muted-small {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Booking card list */
+.user-detail .booking-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(16, 24, 40, 0.03);
+  margin-bottom: 0.6rem;
+}
+.user-detail .booking-card .meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.user-detail .booking-card .meta .title {
+  font-weight: 700;
+}
+.user-detail .booking-card .meta .sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.user-detail .booking-card .status {
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+}
+.user-detail .booking-card .status.pending {
+  background: #fff3cd;
+  color: #665c00;
+}
+.user-detail .booking-card .status.confirmed {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+.user-detail .booking-card .status.cancelled {
+  background: #f8d7da;
+  color: #842029;
+}
+
+/* Timeline */
+.user-detail .timeline {
+  position: relative;
+  padding-left: 1rem;
+}
+.user-detail .timeline::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: #f1f5f9;
+}
+.user-detail .timeline-item {
+  position: relative;
+  margin-bottom: 1rem;
+  padding-left: 1.75rem;
+}
+.user-detail .timeline-item::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--aud-primary);
+  box-shadow: 0 6px 16px rgba(42, 157, 244, 0.12);
+}
+.user-detail .timeline-item .time {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.user-detail .timeline-item .card {
+  padding: 0.7rem 0.9rem;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.04);
+  border-radius: 0.6rem;
+}
+
+/* Empty state enhanced */
+.user-detail .empty-illustration {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f3f7ff, #eef6ff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #7b8ea7;
+}
+
+/* Fine-tune overall contrast */
+.user-detail {
+  color: #1f2937;
+}
+
+/* Compact table fallback for very small screens */
+@media (max-width: 420px) {
+  .user-detail .booking-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .user-detail .booking-card .text-end {
+    text-align: left;
+    margin-top: 0.5rem;
+  }
+}

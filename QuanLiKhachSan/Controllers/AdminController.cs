@@ -400,6 +400,230 @@ namespace QuanLiKhachSan.Controllers
             return View("AdminUsers", vm);
         }
 
+        [HttpGet("Users/Details/{id}")]
+        public async Task<IActionResult> UserDetails(string id)
+        {
+            var user = await _context.Users
+                .Include(u => u.Bookings)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null) return NotFound();
+
+            var detail = new UserDetailViewModel
+            {
+                Id = user.Id,
+                UserId = user.Id,
+                FirstName = SplitFirstName(user.FullName),
+                LastName = SplitLastName(user.FullName),
+                Email = user.Email,
+                Phone = user.PhoneNumber ?? string.Empty,
+                RegisterDate = DateTime.Now, // replace with actual created date if available
+                BookingsCount = user.Bookings?.Count() ?? 0,
+                TotalSpending = user.Bookings?.Sum(b => b.TotalPrice) ?? 0m,
+                Status = "active",
+                UserType = "normal",
+                Address = string.Empty,
+                LoyaltyPoints = 0,
+                LastLoginDate = null
+            };
+
+            // recent bookings
+            detail.RecentBookings = user.Bookings
+                .OrderByDescending(b => b.CreatedDate)
+                .Take(5)
+                .Select(b => new UserBookingViewModel
+                {
+                    BookingNumber = $"BK{b.Id:D6}",
+                    RoomName = b.Room?.Name ?? "-",
+                    CheckIn = b.CheckIn,
+                    CheckOut = b.CheckOut,
+                    Status = b.BookingStatus?.Name ?? "-",
+                    TotalPrice = b.TotalPrice
+                }).ToList();
+
+            // recent activities (simple sample)
+            detail.RecentActivities = new List<UserActivityViewModel>
+            {
+                new UserActivityViewModel { Date = DateTime.Now.AddDays(-1), Title = "Đăng nhập", Description = "Đăng nhập thành công", Type = "login" }
+            };
+
+            return PartialView("~/Views/Admin/Users/Details.cshtml", detail);
+        }
+
+        // --- Reviews moderation endpoints (AJAX) ---
+        [HttpPost("Reviews/Approve/{id}")]
+        public IActionResult ApproveReview(int id)
+        {
+            // In this demo repo reviews are sample data. In a real app you'd update DB here.
+            return Json(new { success = true, message = $"Đã phê duyệt đánh giá #{id}" });
+        }
+
+        [HttpPost("Reviews/Reject/{id}")]
+        public IActionResult RejectReview(int id)
+        {
+            return Json(new { success = true, message = $"Đã từ chối đánh giá #{id}" });
+        }
+
+        // --- Promotions (in-memory demo store) ---
+        private static List<dynamic> _promotionsStore = new List<dynamic>();
+
+        [HttpGet("Promotions/List")]
+        public IActionResult PromotionsList()
+        {
+            // Return a partial with current promotions
+            return PartialView("~/Views/Admin/Promotions/_List.cshtml", _promotionsStore);
+        }
+
+        [HttpPost("Promotions/Create")]
+        public IActionResult CreatePromotion([FromForm] string title, [FromForm] string code, [FromForm] decimal discount)
+        {
+            var id = (_promotionsStore.LastOrDefault()?.Id as int? ?? 0) + 1;
+            _promotionsStore.Add(new { Id = id, Title = title, Code = code, Discount = discount, Active = true, Created = DateTime.Now });
+            return Json(new { success = true, message = "Tạo khuyến mãi thành công" });
+        }
+
+        [HttpPost("Promotions/Delete/{id}")]
+        public IActionResult DeletePromotion(int id)
+        {
+            var item = _promotionsStore.FirstOrDefault(p => (int)p.Id == id);
+            if (item != null) _promotionsStore.Remove(item);
+            return Json(new { success = true });
+        }
+
+        // --- Reports data endpoint ---
+        [HttpGet("Reports/Data")]
+        public async Task<IActionResult> ReportsData()
+        {
+            // Build simple demo metrics using real data where available
+            var totalRevenue = await _context.Bookings.SumAsync(b => (decimal?)b.TotalPrice) ?? 0m;
+            var totalBookings = await _context.Bookings.CountAsync();
+            var totalCustomers = await _context.Users.CountAsync();
+
+            // revenue last 12 months
+            var twelveMonthsAgo = DateTime.UtcNow.AddMonths(-11);
+            var revenueByMonth = await _context.Bookings
+                .Where(b => b.CreatedDate >= new DateTime(twelveMonthsAgo.Year, twelveMonthsAgo.Month, 1))
+                .GroupBy(b => new { b.CreatedDate.Year, b.CreatedDate.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Total = g.Sum(x => (decimal?)x.TotalPrice) ?? 0m })
+                .ToListAsync();
+
+            var labels = new List<string>();
+            var values = new List<decimal>();
+            for (int i = 11; i >= 0; i--)
+            {
+                var dt = DateTime.UtcNow.AddMonths(-i);
+                labels.Add(dt.ToString("MMM yyyy"));
+                var found = revenueByMonth.FirstOrDefault(r => r.Year == dt.Year && r.Month == dt.Month);
+                values.Add(found?.Total ?? 0m);
+            }
+
+            return Json(new { totalRevenue, totalBookings, totalCustomers, labels, values });
+        }
+
+        // --- Settings save/load (JSON file under App_Data) ---
+        private string GetSettingsPath() => Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "admin-settings.json");
+
+        [HttpGet("Settings/Load")]
+        public IActionResult LoadSettings()
+        {
+            try
+            {
+                var path = GetSettingsPath();
+                if (!System.IO.File.Exists(path)) return Json(new { success = true, settings = new { SiteTitle = "Luxury Hotel" } });
+                var json = System.IO.File.ReadAllText(path);
+                var obj = System.Text.Json.JsonSerializer.Deserialize<object>(json);
+                return Json(new { success = true, settings = obj });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("Settings/Save")]
+        public IActionResult SaveSettings([FromForm] string siteTitle, [FromForm] string supportEmail)
+        {
+            try
+            {
+                var path = GetSettingsPath();
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                var obj = new { SiteTitle = siteTitle, SupportEmail = supportEmail };
+                var json = System.Text.Json.JsonSerializer.Serialize(obj, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                System.IO.File.WriteAllText(path, json);
+                return Json(new { success = true, message = "Lưu cài đặt thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("Users/ToggleLock/{id}")]
+        public async Task<IActionResult> ToggleLock(string id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null) return Json(new { success = false, message = "Không tìm thấy người dùng" });
+
+            try
+            {
+                if (user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow)
+                {
+                    user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+                }
+                else
+                {
+                    user.LockoutEnd = null;
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, locked = user.LockoutEnd != null });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public class BulkUsersActionDto
+        {
+            public string Action { get; set; }
+            public List<string> Ids { get; set; } = new List<string>();
+        }
+
+        [HttpPost("Users/BulkAction")]
+        public async Task<IActionResult> BulkAction([FromBody] BulkUsersActionDto model)
+        {
+            if (model == null || model.Ids == null || !model.Ids.Any()) return Json(new { success = false, message = "Không có người dùng nào được chọn" });
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var users = await _context.Users.Where(u => model.Ids.Contains(u.Id)).ToListAsync();
+
+                foreach (var u in users)
+                {
+                    switch (model.Action?.ToLower())
+                    {
+                        case "activate":
+                            u.LockoutEnd = null; break;
+                        case "deactivate":
+                            u.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100); break;
+                        case "verify":
+                            u.EmailConfirmed = true; break;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+                return Json(new { success = true, message = $"Thực hiện {model.Action} cho {users.Count} tài khoản" });
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         private static string SplitFirstName(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return "";
