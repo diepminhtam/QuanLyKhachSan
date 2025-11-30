@@ -5,6 +5,14 @@
 
 <div class="profile-container">
     <div class="container py-5">
+        @if (TempData.ContainsKey("SuccessMessage"))
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData.ContainsKey("ErrorMessage"))
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
         <!-- Profile Header -->
         <div class="profile-header mb-4">
             <div class="row align-items-center">
@@ -102,37 +110,38 @@
                                 </button>
                             </div>
 
-                            <form id="profile-form" class="needs-validation" novalidate>
+                            <form id="profile-form" method="post" action="/Account/UpdateProfile" class="needs-validation" novalidate>
+                                @Html.AntiForgeryToken()
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="firstName" class="form-label">Tên</label>
-                                        <input type="text" class="form-control" id="firstName" value="@Model.FirstName" disabled required>
+                                        <input name="FirstName" type="text" class="form-control" id="firstName" value="@Model.FirstName" disabled required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="lastName" class="form-label">Họ</label>
-                                        <input type="text" class="form-control" id="lastName" value="@Model.LastName" disabled required>
+                                        <input name="LastName" type="text" class="form-control" id="lastName" value="@Model.LastName" disabled required>
                                     </div>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="email" class="form-label">Email</label>
-                                        <input type="email" class="form-control" id="email" value="@Model.Email" disabled required>
+                                        <input name="Email" type="email" class="form-control" id="email" value="@Model.Email" disabled required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="phone" class="form-label">Số điện thoại</label>
-                                        <input type="tel" class="form-control" id="phone" value="@Model.PhoneNumber" disabled>
+                                        <input name="PhoneNumber" type="tel" class="form-control" id="phone" value="@Model.PhoneNumber" disabled>
                                     </div>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="birthdate" class="form-label">Ngày sinh</label>
-                                        <input type="date" class="form-control" id="birthdate" value="@(Model.Birthdate?.ToString("yyyy-MM-dd"))" disabled>
+                                        <input name="Birthdate" type="date" class="form-control" id="birthdate" value="@(Model.Birthdate?.ToString("yyyy-MM-dd"))" disabled>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="gender" class="form-label">Giới tính</label>
-                                        <select class="form-select" id="gender" disabled>
+                                        <select name="Gender" class="form-select" id="gender" disabled>
                                             <option value="">-- Chọn --</option>
                                             <option value="male" selected="@(Model.Gender == "male")">Nam</option>
                                             <option value="female" selected="@(Model.Gender == "female")">Nữ</option>
@@ -143,25 +152,25 @@
 
                                 <div class="mb-3">
                                     <label for="address" class="form-label">Địa chỉ</label>
-                                    <input type="text" class="form-control" id="address" value="@Model.Address" disabled>
+                                        <input name="Address" type="text" class="form-control" id="address" value="@Model.Address" disabled>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label for="city" class="form-label">Thành phố</label>
-                                        <input type="text" class="form-control" id="city" value="@Model.City" disabled>
+                                        <input name="City" type="text" class="form-control" id="city" value="@Model.City" disabled>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="state" class="form-label">Tỉnh/Thành</label>
-                                        <input type="text" class="form-control" id="state" value="@Model.State" disabled>
+                                        <input name="State" type="text" class="form-control" id="state" value="@Model.State" disabled>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="zipCode" class="form-label">Mã bưu chính</label>
-                                        <input type="text" class="form-control" id="zipCode" value="@Model.ZipCode" disabled>
+                                        <input name="ZipCode" type="text" class="form-control" id="zipCode" value="@Model.ZipCode" disabled>
                                     </div>
                                 </div>
 
-                                <div class="d-flex justify-content-end mt-4 profile-action-buttons" style="display: none !important;">
+                                <div class="d-flex justify-content-end mt-4 profile-action-buttons" style="display: none;">
                                     <button type="button" class="btn btn-outline-secondary me-2" id="cancel-edit-btn">Hủy</button>
                                     <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                                 </div>
@@ -589,39 +598,42 @@
                             <div class="account-settings-section">
                                 <h5>Cài đặt tài khoản</h5>
                                 <div class="account-settings-list">
-                                    <div class="account-setting-item">
-                                        <div>
-                                            <h6>Xác thực hai yếu tố</h6>
-                                            <p class="text-muted">Tăng cường bảo mật cho tài khoản của bạn</p>
+                                        <div class="account-setting-item">
+                                            <div>
+                                                <h6>Xác thực hai yếu tố</h6>
+                                                <p class="text-muted mb-0">Tăng cường bảo mật cho tài khoản của bạn</p>
+                                            </div>
+                                            <div>
+                                                <form method="post" action="/Account/ToggleTwoFactor">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary">@(Model.TwoFactorEnabled ? "Tắt" : "Bật")</button>
+                                                </form>
+                                            </div>
                                         </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="two-factor-switch" @(Model.TwoFactorEnabled ? "checked" : "")>
+                                        <div class="account-setting-item">
+                                            <div>
+                                                <h6>Thông báo đăng nhập</h6>
+                                                <p class="text-muted mb-0">Nhận email thông báo khi có đăng nhập mới</p>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="login-notify-switch" checked>
+                                            </div>
+                                        </div>
+                                        <div class="account-setting-item">
+                                            <div>
+                                                <h6>Vô hiệu hóa tài khoản</h6>
+                                                <p class="text-muted mb-0">Tạm thời vô hiệu hóa tài khoản của bạn</p>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline-danger" id="disable-account-btn">Vô hiệu hóa</button>
+                                        </div>
+                                        <div class="account-setting-item border-danger">
+                                            <div>
+                                                <h6 class="text-danger">Xóa tài khoản</h6>
+                                                <p class="text-muted mb-0">Xóa vĩnh viễn tài khoản và dữ liệu của bạn</p>
+                                            </div>
+                                            <button class="btn btn-sm btn-danger" id="delete-account-btn">Xóa tài khoản</button>
                                         </div>
                                     </div>
-                                    <div class="account-setting-item">
-                                        <div>
-                                            <h6>Thông báo đăng nhập</h6>
-                                            <p class="text-muted">Nhận email thông báo khi có đăng nhập mới</p>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="login-notify-switch" checked>
-                                        </div>
-                                    </div>
-                                    <div class="account-setting-item">
-                                        <div>
-                                            <h6>Vô hiệu hóa tài khoản</h6>
-                                            <p class="text-muted">Tạm thời vô hiệu hóa tài khoản của bạn</p>
-                                        </div>
-                                        <button class="btn btn-sm btn-outline-danger" id="disable-account-btn">Vô hiệu hóa</button>
-                                    </div>
-                                    <div class="account-setting-item border-danger">
-                                        <div>
-                                            <h6 class="text-danger">Xóa tài khoản</h6>
-                                            <p class="text-muted">Xóa vĩnh viễn tài khoản và dữ liệu của bạn</p>
-                                        </div>
-                                        <button class="btn btn-sm btn-danger" id="delete-account-btn">Xóa tài khoản</button>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

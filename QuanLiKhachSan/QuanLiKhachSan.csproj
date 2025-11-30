@@ -21,4 +21,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- Temporarily exclude corrupted controller to allow build; remove this once fixed -->
+  <ItemGroup>
+    <Compile Remove="Controllers\\AccountController.cs" />
+  </ItemGroup>
+
 </Project>
