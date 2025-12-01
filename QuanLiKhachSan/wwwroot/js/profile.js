@@ -208,33 +208,35 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Handle cancel booking buttons in profile list
-  document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.cancel-booking-btn');
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".cancel-booking-btn");
     if (!btn) return;
-    const id = btn.getAttribute('data-id');
+    const id = btn.getAttribute("data-id");
     if (!id) return;
 
-    if (!confirm('Bạn có chắc chắn muốn hủy đặt phòng này?')) return;
+    if (!confirm("Bạn có chắc chắn muốn hủy đặt phòng này?")) return;
 
     // Find antiforgery token on the page
-    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    const tokenInput = document.querySelector(
+      'input[name="__RequestVerificationToken"]'
+    );
     const token = tokenInput ? tokenInput.value : null;
 
     // Build form and submit to /Bookings/Cancel
-    const form = document.createElement('form');
-    form.method = 'post';
-    form.action = '/Bookings/Cancel';
+    const form = document.createElement("form");
+    form.method = "post";
+    form.action = "/Bookings/Cancel";
 
-    const idInput = document.createElement('input');
-    idInput.type = 'hidden';
-    idInput.name = 'id';
+    const idInput = document.createElement("input");
+    idInput.type = "hidden";
+    idInput.name = "id";
     idInput.value = id;
     form.appendChild(idInput);
 
     if (token) {
-      const t = document.createElement('input');
-      t.type = 'hidden';
-      t.name = '__RequestVerificationToken';
+      const t = document.createElement("input");
+      t.type = "hidden";
+      t.name = "__RequestVerificationToken";
       t.value = token;
       form.appendChild(t);
     }
