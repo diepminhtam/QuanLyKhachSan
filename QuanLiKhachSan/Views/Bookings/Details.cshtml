@@ -1,32 +1,26 @@
 ﻿@model QuanLiKhachSan.ViewModels.Booking.BookingDetailsViewModel
 @{
-    ViewData["Title"] = $"Chi tiết đặt phòng #{Model.BookingNumber}";
+    var vm = Model ?? new QuanLiKhachSan.ViewModels.Booking.BookingDetailsViewModel();
+    ViewData["Title"] = $"Chi tiết đặt phòng #{vm.BookingNumber}";
 }
 
-<!-- Booking Details Banner -->
-<div class="booking-details-banner">
-    <div class="overlay"></div>
-    <div class="container">
-        <div class="banner-content">
-            <h1>Chi tiết đặt phòng</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-                    <li class="breadcrumb-item"><a asp-controller="Bookings" asp-action="Index">Đặt phòng của tôi</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Chi tiết đặt phòng</li>
-                </ol>
-            </nav>
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-3">
+        <div>
+            <h1 class="h4 mb-1">Chi tiết đặt phòng <small class="text-muted">#@vm.BookingNumber</small></h1>
+            <div class="text-muted small">Đặt ngày: @vm.BookingDate.ToString("dd/MM/yyyy HH:mm")</div>
+        </div>
+        <div class="text-end">
+            <span class="badge @GetStatusClass(vm.Status) fs-6">@vm.Status</span>
+            <div class="mt-2">
+                <span class="me-2"><strong>Tổng:</strong> @vm.TotalPrice.ToString("N0") VNĐ</span>
+                <span class="text-muted">&middot;</span>
+                <span class="ms-2 text-muted">@vm.PaymentStatus</span>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="booking-details-container">
-    <div class="container py-5">
-        <!-- Booking Status Bar -->
-        <div class="booking-status-bar @GetStatusClass(Model.Status) mb-4">
-            <div class="booking-id">Mã đặt phòng: <strong>#@Model.BookingNumber</strong></div>
-            <div class="status-badge">@Model.Status</div>
-        </div>
+    <div class="row">
 
         <div class="row">
             <!-- Main Content -->
@@ -39,18 +33,25 @@
                         </div>
                         <div class="card-body">
                             <div class="timeline">
-                                @foreach (var activity in Model.BookingActivities.OrderByDescending(a => a.Date))
+                                @if (vm.BookingActivities != null && vm.BookingActivities.Any())
                                 {
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker @GetActivityClass(activity.Type)">
-                                            <i class="@GetActivityIcon(activity.Type)"></i>
+                                    @foreach (var activity in vm.BookingActivities.OrderByDescending(a => a.Date))
+                                    {
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker @GetActivityClass(activity.Type)">
+                                                <i class="@GetActivityIcon(activity.Type)"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6 class="mb-1">@activity.Title</h6>
+                                                <p class="mb-1">@activity.Description</p>
+                                                <small class="text-muted">@activity.Date.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </div>
                                         </div>
-                                        <div class="timeline-content">
-                                            <h6 class="mb-1">@activity.Title</h6>
-                                            <p class="mb-1">@activity.Description</p>
-                                            <small class="text-muted">@activity.Date.ToString("dd/MM/yyyy HH:mm")</small>
-                                        </div>
-                                    </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-muted">Chưa có hoạt động nào cho đơn đặt này.</div>
                                 }
                             </div>
                         </div>
@@ -66,7 +67,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-4 mb-3 mb-md-0">
-                                    <img src="@Model.RoomImageUrl" alt="@Model.RoomName" class="img-fluid rounded">
+                                    <img src="@(string.IsNullOrEmpty(vm.RoomImageUrl) ? "/images/rooms/room-placeholder.svg" : vm.RoomImageUrl)" alt="@vm.RoomName" class="img-fluid rounded" />
                                 </div>
                                 <div class="col-md-8">
                                     <h5>@Model.RoomName</h5>
@@ -88,11 +89,11 @@
                                         }
                                         <span>@Model.RoomRating</span>
                                     </div>
-                                    <div class="room-specs mb-3">
-                                        <span class="room-spec"><i class="fas fa-ruler-combined"></i> @Model.RoomSize m²</span>
-                                        <span class="room-spec"><i class="fas fa-users"></i> Tối đa @Model.RoomCapacity người</span>
-                                        <span class="room-spec"><i class="fas fa-bed"></i> @Model.BedType</span>
-                                        <span class="room-spec"><i class="fas fa-map-marker-alt"></i> Tầng @Model.Floor, @Model.Building</span>
+                                    <div class="room-specs mb-3 d-flex flex-wrap gap-2">
+                                        <span class="badge bg-light text-dark"><i class="fas fa-ruler-combined me-1"></i> @vm.RoomSize m²</span>
+                                        <span class="badge bg-light text-dark"><i class="fas fa-users me-1"></i> Tối đa @vm.RoomCapacity</span>
+                                        @if (!string.IsNullOrEmpty(vm.BedType)) { <span class="badge bg-light text-dark"><i class="fas fa-bed me-1"></i> @vm.BedType</span> }
+                                        @if (!string.IsNullOrEmpty(vm.Floor)) { <span class="badge bg-light text-dark"><i class="fas fa-map-marker-alt me-1"></i> Tầng @vm.Floor</span> }
                                     </div>
                                     <p>@Model.RoomDescription</p>
                                     <a href="@Url.Action("Details", "Rooms", new { id = Model.RoomId })" class="btn btn-outline-primary btn-sm">
@@ -116,7 +117,7 @@
                                     <div class="stay-detail-item">
                                         <div class="detail-label">Nhận phòng</div>
                                         <div class="detail-value">
-                                            <span class="date">@Model.CheckInDate.ToString("dddd, dd/MM/yyyy")</span>
+                                            <span class="date">@vm.CheckInDate.ToString("dddd, dd/MM/yyyy")</span>
                                             <span class="time">Từ 14:00</span>
                                         </div>
                                     </div>
@@ -125,7 +126,7 @@
                                     <div class="stay-detail-item">
                                         <div class="detail-label">Trả phòng</div>
                                         <div class="detail-value">
-                                            <span class="date">@Model.CheckOutDate.ToString("dddd, dd/MM/yyyy")</span>
+                                            <span class="date">@vm.CheckOutDate.ToString("dddd, dd/MM/yyyy")</span>
                                             <span class="time">Trước 12:00</span>
                                         </div>
                                     </div>
@@ -133,13 +134,13 @@
                                 <div class="col-md-6 mb-3">
                                     <div class="stay-detail-item">
                                         <div class="detail-label">Thời gian lưu trú</div>
-                                        <div class="detail-value">@Model.NightCount đêm</div>
+                                        <div class="detail-value">@vm.NightCount đêm</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <div class="stay-detail-item">
                                         <div class="detail-label">Số khách</div>
-                                        <div class="detail-value">@Model.GuestsCount người</div>
+                                        <div class="detail-value">@vm.GuestsCount người</div>
                                     </div>
                                 </div>
                             </div>
@@ -165,19 +166,19 @@
                                 <div class="col-md-6 mb-3">
                                     <div class="guest-detail-item">
                                         <div class="detail-label">Họ tên</div>
-                                        <div class="detail-value">@Model.GuestName</div>
+                                        <div class="detail-value">@(!string.IsNullOrEmpty(vm.GuestName) ? vm.GuestName : "-")</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <div class="guest-detail-item">
                                         <div class="detail-label">Email</div>
-                                        <div class="detail-value">@Model.GuestEmail</div>
+                                        <div class="detail-value">@(!string.IsNullOrEmpty(vm.GuestEmail) ? vm.GuestEmail : "-")</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <div class="guest-detail-item">
                                         <div class="detail-label">Điện thoại</div>
-                                        <div class="detail-value">@Model.GuestPhone</div>
+                                        <div class="detail-value">@(!string.IsNullOrEmpty(vm.GuestPhone) ? vm.GuestPhone : "-")</div>
                                     </div>
                                 </div>
                             </div>
@@ -222,40 +223,42 @@
                             <h5 class="mb-0"><i class="fas fa-receipt me-2"></i> Tóm tắt thanh toán</h5>
                         </div>
                         <div class="card-body">
-                            <div class="payment-item">
-                                <div class="payment-label">Giá phòng x @Model.NightCount đêm</div>
-                                <div class="payment-value">@Model.RoomPrice.ToString("N0") VNĐ</div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <div class="text-muted">Giá phòng (tổng cho @vm.NightCount đêm)</div>
+                                <div class="fw-semibold">@vm.RoomPrice.ToString("N0") VNĐ</div>
                             </div>
-                            <div class="payment-item">
-                                <div class="payment-label">Phí dịch vụ</div>
-                                <div class="payment-value">@Model.ServiceFee.ToString("N0") VNĐ</div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <div class="text-muted">Phí dịch vụ</div>
+                                <div>@vm.ServiceFee.ToString("N0") VNĐ</div>
                             </div>
-                            <div class="payment-item">
-                                <div class="payment-label">Thuế</div>
-                                <div class="payment-value">@Model.TaxFee.ToString("N0") VNĐ</div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <div class="text-muted">Thuế</div>
+                                <div>@vm.TaxFee.ToString("N0") VNĐ</div>
                             </div>
-                            @if (Model.Discount > 0)
+                            @if (vm.Discount > 0)
                             {
-                                <div class="payment-item discount">
-                                    <div class="payment-label">Giảm giá</div>
-                                    <div class="payment-value">-@Model.Discount.ToString("N0") VNĐ</div>
+                                <div class="d-flex justify-content-between mb-2 text-success">
+                                    <div>Giảm giá</div>
+                                    <div>-@vm.Discount.ToString("N0") VNĐ</div>
                                 </div>
                             }
-                            <div class="payment-total">
-                                <div class="total-label">Tổng cộng</div>
-                                <div class="total-value">@Model.TotalPrice.ToString("N0") VNĐ</div>
+
+                            <hr />
+                            <div class="d-flex justify-content-between mb-3">
+                                <div class="fw-semibold">Tổng cộng</div>
+                                <div class="fw-bold">@vm.TotalPrice.ToString("N0") VNĐ</div>
                             </div>
 
                             <div class="payment-method">
-                                <div class="payment-method-header">
-                                    <h6><i class="fas fa-credit-card me-2"></i> Phương thức thanh toán</h6>
-                                    <span class="payment-status @GetPaymentStatusClass(Model.PaymentStatus)">@Model.PaymentStatus</span>
+                                <div class="payment-method-header d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0"><i class="fas fa-credit-card me-2"></i> Phương thức thanh toán</h6>
+                                    <span class="payment-status @GetPaymentStatusClass(vm.PaymentStatus)">@vm.PaymentStatus</span>
                                 </div>
-                                <div class="payment-method-details">
-                                    <p class="mb-0">@Model.PaymentMethod</p>
-                                    @if (!string.IsNullOrEmpty(Model.PaymentDetails))
+                                <div class="payment-method-details small text-muted">
+                                    <div>@vm.PaymentMethod</div>
+                                    @if (!string.IsNullOrEmpty(vm.PaymentDetails))
                                     {
-                                        <small class="text-muted">@Model.PaymentDetails</small>
+                                        <div class="mt-1">@vm.PaymentDetails</div>
                                     }
                                 </div>
                             </div>
@@ -269,32 +272,32 @@
                         <div class="card-body">
                             <div class="d-grid gap-2">
                                 <a href="@Url.Action("Index", "Bookings")" class="btn btn-outline-secondary">
-                                    <i class="fas fa-arrow-left"></i> Quay lại danh sách đặt phòng
+                                    <i class="fas fa-arrow-left"></i> Quay lại
                                 </a>
 
-                                @if (Model.IsCancellable)
+                                @if (vm.IsCancellable)
                                 {
                                     <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
-                                        <i class="fas fa-times"></i> Hủy đặt phòng
+                                        <i class="fas fa-times"></i> Hủy
                                     </button>
                                 }
 
-                                @if (Model.CanReview)
+                                @if (vm.CanReview)
                                 {
-                                    <a href="@Url.Action("AddReview", "Reviews", new { bookingId = Model.Id })" class="btn btn-warning">
+                                    <a href="@Url.Action("AddReview", "Reviews", new { bookingId = vm.Id })" class="btn btn-warning">
                                         <i class="fas fa-star"></i> Viết đánh giá
                                     </a>
                                 }
 
-                                @if (Model.HasReview)
+                                @if (vm.HasReview)
                                 {
-                                    <a href="@Url.Action("ViewReview", "Reviews", new { bookingId = Model.Id })" class="btn btn-outline-success">
-                                        <i class="fas fa-comment-alt"></i> Xem đánh giá của bạn
+                                    <a href="@Url.Action("ViewReview", "Reviews", new { bookingId = vm.Id })" class="btn btn-outline-success">
+                                        <i class="fas fa-comment-alt"></i> Xem đánh giá
                                     </a>
                                 }
 
                                 <button class="btn btn-primary" onclick="window.print()">
-                                    <i class="fas fa-print"></i> In thông tin đặt phòng
+                                    <i class="fas fa-print"></i> In
                                 </button>
                             </div>
                         </div>
@@ -368,7 +371,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không, giữ đặt phòng</button>
                     <form asp-controller="Bookings" asp-action="Cancel" method="post">
-                        <input type="hidden" name="bookingId" value="@Model.Id" />
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
                         <input type="hidden" id="cancelReasonInput" name="reason" value="" />
                         <button type="submit" class="btn btn-danger" id="confirm-cancel">Xác nhận hủy</button>
                     </form>

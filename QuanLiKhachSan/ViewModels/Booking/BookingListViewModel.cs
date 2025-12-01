@@ -44,7 +44,22 @@
 
         // Helper properties
         public int NightCount => (CheckOutDate - CheckInDate).Days;
-        public bool CanCancel => Status == "Chờ xác nhận" || Status == "Đã xác nhận" && CheckInDate > DateTime.Now;
+        public bool CanCancel
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Status)) return false;
+                // Pending bookings can be cancelled any time before check-in
+                if (Status.Equals("Chờ xác nhận", StringComparison.OrdinalIgnoreCase) || Status.Equals("pending", StringComparison.OrdinalIgnoreCase))
+                    return CheckInDate > DateTime.Now;
+
+                // Confirmed bookings only cancellable if more than 24 hours remain
+                if (Status.Equals("Đã xác nhận", StringComparison.OrdinalIgnoreCase) || Status.Equals("confirmed", StringComparison.OrdinalIgnoreCase))
+                    return CheckInDate > DateTime.Now.AddHours(24);
+
+                return false;
+            }
+        }
         public bool CanReview => Status == "Hoàn thành" && !HasReview;
         public bool IsUpcoming => CheckInDate > DateTime.Now && Status != "Đã hủy";
         public bool IsActive => CheckInDate <= DateTime.Now && CheckOutDate >= DateTime.Now && Status != "Đã hủy";

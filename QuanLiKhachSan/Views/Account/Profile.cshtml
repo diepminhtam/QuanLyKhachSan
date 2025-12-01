@@ -248,9 +248,14 @@
 
                                                         <div class="booking-actions mt-3">
                                                             <a href="#" class="btn btn-sm btn-outline-primary me-2"><i class="fas fa-eye me-1"></i> Chi tiết</a>
-                                                            @if (booking.Status == "Pending" || booking.Status == "Confirmed")
-                                                            {
-                                                                <button class="btn btn-sm btn-outline-danger me-2 cancel-booking-btn" data-id="@booking.Id"><i class="fas fa-times me-1"></i> Hủy đặt phòng</button>
+                                                            @{
+                                                                var s = (booking.Status ?? string.Empty).ToLower();
+                                                                var canCancelPending = (s.Contains("chờ") || s.Contains("pending")) && booking.CheckInDate > DateTime.Now;
+                                                                var canCancelConfirmed = (s.Contains("xác nhận") || s.Contains("confirmed")) && booking.CheckInDate > DateTime.Now.AddHours(24);
+                                                                if (canCancelPending || canCancelConfirmed)
+                                                                {
+                                                                    <button class="btn btn-sm btn-outline-danger me-2 cancel-booking-btn" data-id="@booking.Id"><i class="fas fa-times me-1"></i> Hủy đặt phòng</button>
+                                                                }
                                                             }
                                                             @if (booking.Status == "Completed" && !booking.HasReview)
                                                             {

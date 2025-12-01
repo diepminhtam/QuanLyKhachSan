@@ -349,7 +349,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không, giữ đặt phòng</button>
                 <form id="cancelForm" asp-controller="Bookings" asp-action="Cancel" method="post">
-                    <input type="hidden" id="bookingId" name="bookingId" value="" />
+                    <input type="hidden" id="bookingId" name="id" value="" />
                     <input type="hidden" id="cancelReasonInput" name="reason" value="" />
                     <button type="submit" class="btn btn-danger">Xác nhận hủy</button>
                 </form>
@@ -380,36 +380,28 @@
                 }
             });
 
-            // Xử lý form hủy đặt phòng
+            // Xử lý form hủy đặt phòng: validate và submit bình thường để server xử lý
             $('#cancelForm').on('submit', function(e) {
-                e.preventDefault();
-
                 const reason = $('#cancelReason').val();
                 if (!reason) {
                     alert('Vui lòng chọn lý do hủy đặt phòng');
+                    e.preventDefault();
                     return;
                 }
 
                 if (reason === 'other') {
                     const otherReason = $('#otherReason').val();
-                    if (!otherReason) {
+                    if (!otherReason || !otherReason.trim()) {
                         alert('Vui lòng nhập lý do hủy đặt phòng');
+                        e.preventDefault();
                         return;
                     }
-                    $('#cancelReasonInput').val(otherReason);
+                    $('#cancelReasonInput').val(otherReason.trim());
                 } else {
                     $('#cancelReasonInput').val(reason);
                 }
 
-                // Trong thực tế, form sẽ submit bình thường
-                // Ở đây ta chỉ hiển thị thông báo cho demo
-                alert('Đã hủy đặt phòng thành công!');
-                $('#cancelModal').modal('hide');
-
-                // Reload page after 1 second
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                // Allow the form to submit normally (includes antiforgery token if present in DOM)
             });
         });
     </script>

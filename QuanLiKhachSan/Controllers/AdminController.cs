@@ -780,7 +780,7 @@ namespace QuanLiKhachSan.Controllers
                 try
                 {
                     // Xử lý upload hình ảnh (giả lập)
-                    string mainImagePath = "/images/rooms/room-placeholder.jpg";
+                    string mainImagePath = "/images/rooms/room-placeholder.svg";
                     if (model.MainImage != null)
                     {
                         // Giả lập đường dẫn ảnh thành công
@@ -1060,7 +1060,7 @@ namespace QuanLiKhachSan.Controllers
                 RoomName = booking.Room?.Name ?? "-",
                 RoomType = booking.Room?.RoomType ?? "",
                 RoomDescription = booking.Room?.Description ?? "",
-                RoomImageUrl = booking.Room?.ImageUrl ?? "/images/rooms/room-placeholder.jpg",
+                RoomImageUrl = booking.Room?.ImageUrl ?? "/images/rooms/room-placeholder.svg",
                 RoomRating = booking.Room?.AverageRating ?? 0,
                 RoomCapacity = booking.Room?.Capacity ?? 1,
                 CheckInDate = booking.CheckIn,

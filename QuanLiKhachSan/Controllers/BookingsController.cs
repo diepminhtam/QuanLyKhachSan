@@ -316,6 +316,7 @@ namespace QuanLiKhachSan.Controllers
                     .Include(b => b.Room)
                     .Include(b => b.BookingStatus)
                     .Include(b => b.User)
+                    .Include(b => b.Payments).ThenInclude(p => p.PaymentStatus)
                     .FirstOrDefaultAsync(b => b.Id == id);
 
                 if (booking == null)
@@ -431,6 +432,30 @@ namespace QuanLiKhachSan.Controllers
                     return Forbid();
                 }
 
+                // Calculate price breakdown and populate a richer view model
+                var nights = (booking.CheckOut - booking.CheckIn).Days;
+                nights = nights > 0 ? nights : 1;
+
+                var roomPriceTotal = booking.Room != null ? (booking.Room.PricePerNight * nights) : 0m;
+                var serviceFee = Math.Round(roomPriceTotal * 0.05m, 0);
+                var taxFee = Math.Round(roomPriceTotal * 0.1m, 0);
+
+                // If booking.TotalPrice differs, compute discount as the difference (safe fallback)
+                var expectedTotal = roomPriceTotal + serviceFee + taxFee;
+                var discount = 0m;
+                if (booking.TotalPrice < expectedTotal)
+                {
+                    discount = expectedTotal - booking.TotalPrice;
+                }
+
+                var payment = booking.Payments?.OrderByDescending(p => p.PaymentDate).FirstOrDefault();
+                var paymentStatus = payment?.PaymentStatus?.Name ?? (booking.Payments != null && booking.Payments.Any() ? "Đã thanh toán" : "Chưa thanh toán");
+                var paymentMethod = string.Empty;
+
+                var statusName = (booking.BookingStatus?.Name ?? string.Empty).ToLower();
+                var isCancelled = statusName.Contains("hủy") || statusName.Contains("cancel");
+                var isConfirmed = statusName.Contains("xác nhận") || statusName.Contains("confirmed");
+
                 var viewModel = new BookingDetailsViewModel
                 {
                     Id = booking.Id,
@@ -439,14 +464,71 @@ namespace QuanLiKhachSan.Controllers
                     BookingDate = booking.CreatedDate,
                     RoomId = booking.RoomId,
                     RoomName = booking.Room?.Name ?? "Không xác định",
+                    RoomType = booking.Room?.RoomType ?? "",
+                    RoomDescription = booking.Room?.Description ?? string.Empty,
+                    RoomImageUrl = booking.Room?.ImageUrl ?? "/images/rooms/room-placeholder.svg",
+                    RoomRating = booking.Room?.AverageRating ?? 0,
+                    RoomCapacity = booking.Room?.Capacity ?? 1,
                     CheckInDate = booking.CheckIn,
                     CheckOutDate = booking.CheckOut,
                     GuestsCount = booking.Guests,
                     GuestName = currentUser?.FullName ?? "Khách hàng",
+                    GuestEmail = currentUser?.Email ?? string.Empty,
+                    GuestPhone = currentUser?.PhoneNumber ?? string.Empty,
+                    RoomPrice = roomPriceTotal,
+                    ServiceFee = serviceFee,
+                    TaxFee = taxFee,
+                    Discount = discount,
                     TotalPrice = booking.TotalPrice,
-                    IsCancellable = booking.CheckIn > DateTime.Now &&
-                                   booking.BookingStatus?.Name != "Đã hủy"
+                    RoomSize = 0,
+                    BedType = string.Empty,
+                    Floor = string.Empty,
+                    Building = string.Empty,
+                    PaymentMethod = string.Empty,
+                    PaymentStatus = paymentStatus,
+                    PaymentDetails = string.Empty,
+                    IsCancellable = !isCancelled && (!isConfirmed ? booking.CheckIn > DateTime.Now : booking.CheckIn > DateTime.Now.AddHours(24)),
+                    FreeCancellationDeadline = booking.CheckIn.AddHours(-24),
+                    CanReview = booking.CheckOut < DateTime.Now && booking.Review == null,
+                    HasReview = booking.Review != null
                 };
+
+                // Attach booking activities (status history + payments)
+                var histories = await _context.BookingStatusHistories
+                    .Where(h => h.BookingId == id)
+                    .Include(h => h.FromBookingStatus)
+                    .Include(h => h.ToBookingStatus)
+                    .OrderByDescending(h => h.ChangedAt)
+                    .ToListAsync();
+
+                foreach (var h in histories)
+                {
+                    var type = "update";
+                    var toName = h.ToBookingStatus?.Name ?? string.Empty;
+                    if (toName.Contains("xác nhận") || toName.Contains("Đã xác nhận") || toName.Contains("confirmed")) type = "confirm";
+                    if (toName.Contains("hủy") || toName.Contains("Đã hủy") || toName.Contains("cancel")) type = "cancel";
+
+                    viewModel.BookingActivities.Add(new BookingActivityViewModel
+                    {
+                        Date = h.ChangedAt,
+                        Title = h.ToBookingStatus?.Name ?? "Trạng thái cập nhật",
+                        Description = h.Note ?? $"{h.FromBookingStatus?.Name ?? "-"} → {h.ToBookingStatus?.Name ?? "-"}",
+                        Type = type
+                    });
+                }
+
+                // Add payments as activities
+                var payments = booking.Payments?.OrderByDescending(p => p.PaymentDate) ?? Enumerable.Empty<QuanLiKhachSan.Models.Payment>();
+                foreach (var p in payments)
+                {
+                    viewModel.BookingActivities.Add(new BookingActivityViewModel
+                    {
+                        Date = p.PaymentDate,
+                        Title = $"Thanh toán: {p.Amount:N0} VNĐ",
+                        Description = p.PaymentStatus?.Name ?? string.Empty,
+                        Type = "payment"
+                    });
+                }
 
                 return View(viewModel);
             }
@@ -481,11 +563,42 @@ namespace QuanLiKhachSan.Controllers
                     return Forbid();
                 }
 
-                // Kiểm tra có thể hủy không
-                if (booking.CheckIn <= DateTime.Now || booking.BookingStatus?.Name == "Đã hủy")
+                // Kiểm tra có thể hủy không (khách chỉ được hủy khi chưa được xác nhận và chưa đến ngày check-in)
+                var currentStatus = (booking.BookingStatus?.Name ?? string.Empty).ToLower();
+                var alreadyCancelled = currentStatus.Contains("hủy") || currentStatus.Contains("cancel");
+                var alreadyConfirmed = currentStatus.Contains("xác nhận") || currentStatus.Contains("confirmed");
+
+                if (alreadyCancelled)
                 {
-                    TempData["Error"] = "Không thể hủy đặt phòng này";
+                    TempData["Error"] = "Đặt phòng đã được hủy trước đó.";
                     return RedirectToAction("Details", new { id });
+                }
+
+                // Nếu là user thường, không cho hủy khi đã xác nhận
+                if (!User.IsInRole("Admin") && alreadyConfirmed)
+                {
+                    TempData["Error"] = "Không thể hủy đơn đã được xác nhận. Vui lòng liên hệ quản trị để được hỗ trợ.";
+                    return RedirectToAction("Details", new { id });
+                }
+
+                // Hạn chót hủy:
+                // - Nếu booking đã xác nhận (confirmed) => chỉ cho hủy khi còn >24 giờ trước check-in
+                // - Nếu booking chưa xác nhận (pending/other) => cho hủy miễn là chưa tới ngày nhận phòng
+                if (alreadyConfirmed)
+                {
+                    if (booking.CheckIn <= DateTime.Now.AddHours(24))
+                    {
+                        TempData["Error"] = "Chỉ có thể hủy đơn đã xác nhận nếu còn hơn 24 giờ trước giờ nhận phòng.";
+                        return RedirectToAction("Details", new { id });
+                    }
+                }
+                else
+                {
+                    if (booking.CheckIn <= DateTime.Now)
+                    {
+                        TempData["Error"] = "Không thể hủy đặt phòng khi đã đến hoặc đã qua ngày nhận phòng.";
+                        return RedirectToAction("Details", new { id });
+                    }
                 }
 
                 // Lấy trạng thái "Đã hủy"
